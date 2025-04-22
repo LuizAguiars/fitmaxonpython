@@ -5,3 +5,9 @@ venv\Scripts\activate (iniciar o ambiente virtual)
 python app/app.py rodar o server local
 
 
+
+git add .  "Diz ao Git quais arquivos você quer "preparar" para o commit"
+git commit -m "mensagem explicando o que mudou"
+git push "Envia as alterações locais para o GitHub."
+
+
