@@ -1,0 +1,7 @@
+abrir a dependencia
+
+venv\Scripts\activate (iniciar o ambiente virtual)
+
+python app/app.py rodar o server local
+
+

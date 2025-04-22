@@ -1,0 +1,375 @@
+/* Estilização geral */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: Arial, sans-serif;
+    background-color: #0a0a0a;
+    color: white;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: url(../IMG/fundo.jpg) no-repeat center center fixed;
+    background-size: cover;
+    background-attachment: fixed;
+    
+}
+
+header {
+    background-color: rgba(0, 31, 91);
+    color: white;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 160px;
+}
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    left: 25px;
+    top: 15px;
+  }
+
+  .logo1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    top: 15px;
+  }
+  
+
+  .logo img {
+    height: 100px;
+  }
+
+
+  .logo1 img {
+    height: 100px;
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    gap: 10px;
+    width: 40%;
+  }
+  
+  input[type="text"] {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  button {
+    padding: 8px 20px;
+    margin: 0 5px;
+    border: none;
+    background-color: #e0e0e0;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+  }
+  
+  button:hover {
+    background-color: #ccc;
+  }
+
+.auth {
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: column; 
+    justify-content: space-between; 
+    align-items: center; 
+    position: absolute; 
+    top: 42px; 
+    right: 90px; 
+    width: 200px; 
+}
+
+
+.auth a {
+    color: white;
+    text-decoration: none;
+    padding: 5px;
+    display: flex;
+}
+
+.auth a:hover {
+    color: orange;
+    transition: color 0.3s;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 5px;
+  }
+  
+  nav a {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    margin-top: 30px;
+  }
+  
+  nav a:hover {
+    color: orange;
+    transition: color 0.3s;
+  }
+
+/* FOOTER */
+footer {
+    width: 100%;
+    background-color: #001f5b;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.banner {
+    background-image: url('IMG/banner.jpg'); /* Substitua pela imagem do seu banner */
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 70px 20px;
+    font-weight: bold;
+}
+
+.banner h1 {
+    font-size: 42px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.banner p {
+    font-size: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.benefits {
+    display: flex;
+    justify-content: space-around;
+    padding: 50px 10px;
+    background:rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    margin: 30px;
+}
+
+.benefit {
+    text-align: center;
+    width: 30%;
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.benefit:hover {
+    transform: scale(1.05);
+}
+
+.benefit img {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 15px;
+}
+
+.benefit h3 {
+    font-size: 22px;
+    color: #ffa500;
+    margin-bottom: 10px;
+}
+
+.benefit p {
+    font-size: 16px;
+    color: #ddd;
+}
+
+.testimonials {
+    text-align: center;
+    padding: 40px 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    margin: 30px;
+}
+
+.testimonials h2 {
+    font-size: 28px;
+    color: #ffa500;
+    margin-bottom: 20px;
+}
+
+.testimonials blockquote {
+    font-style: italic;
+    color: #ccc;
+    font-size: 18px;
+    max-width: 700px;
+    margin: 0 auto 15px;
+}
+
+.testimonials cite {
+    font-weight: bold;
+    color: #fff;
+    font-size: 16px;
+}
+
+.business-hours {
+  font-size: 16px;            /* Tamanho da fonte */
+  color: #fff;               /* Cor do texto (branco) */
+  padding: 8px 15px;         /* Espaçamento interno */
+  border-radius: 20px;       /* Bordas arredondadas */
+  margin-top: 0;             /* Remover qualquer margem superior */
+  display: inline-block;     /* Fazer com que o texto ocupe apenas o espaço necessário */
+  font-weight: bold;         /* Deixar o texto mais forte */
+  text-align: center;        /* Centralizar o texto */
+  position: relative;        /* Posicionamento relativo */
+  top: 10px;                /* Move o horário um pouco para cima */
+}
+
+.business-hours:hover {
+
+  cursor: default;           /* Remover o cursor de clique */
+}
+
+.benefit {
+  will-change: transform;
+}
+
+
+
+
+
+
+
+
+
+ /* mensagem de erro */
+.flash-messages {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.flash-messages li {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  background-color: #ffc107; /* cor de alerta padrão */
+  color: #333;
+}
+
+.flash-messages li.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.flash-messages li.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+ /* mensagem de erro */
+
+
+
+
+ body.form-container {
+  display: block;
+  height: auto;
+  min-height: 100vh;
+  padding-top: 160px; /* Altura do header */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.form-container {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  box-sizing: border-box;
+  margin: auto;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+
+.form-container h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.login-link {
+  margin-top: 15px;
+}
+
+.login-link a {
+  text-decoration: none;
+  color: #007bff;
+}

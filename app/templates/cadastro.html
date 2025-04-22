@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitmax Gym</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+ 
+
+</head>
+<body>
+    <header>
+        <div class="logo1">
+            
+            <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+        </div>
+        
+    </header>
+
+
+    <div class="cadastro-container">
+        <h2>Cadastro</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flash-messages">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+        <form method="POST">
+            <input type="text" name="nome" placeholder="Nome completo" required>
+
+            <div class="form-row">
+                <input type="email" name="email" placeholder="E-mail" required>
+                <input type="password" name="senha" placeholder="Senha" required>
+            </div>
+
+            <input type="text" name="cpf" placeholder="CPF" required maxlength="14">
+
+
+            <div class="form-row">
+                <input type="text" name="endereco" placeholder="Endereço completo" required>
+                <input type="text" name="cep" placeholder="CEP" required>
+            </div>
+
+            <input type="date" name="data" required>
+
+            <div class="form-row">
+                <select name="sexo" required>
+                    <option value="">Selecione o sexo</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="O">Outro</option>
+                </select>
+
+                <select name="plano" required>
+                    <option value="">Selecione o plano</option>
+                    {% for plano in planos %}
+                        <option value="{{ plano[0] }}">{{ plano[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit">Cadastrar</button>
+        </form>
+        <p class="login-link"><a href="/login">Já tem conta? Faça login</a></p>
+    </div>
+    
+ <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+
+</body>
+</html>

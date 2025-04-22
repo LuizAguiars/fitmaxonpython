@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitmax Gym</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+
+</head>
+<body>
+  <header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    </div>
+
+    <div class="search-container">
+        <input type="text" placeholder="Pesquisar..." />
+        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+    </div>
+
+    <div class="usuario-logado">
+        <p>Olá, {{ nome }} 👋</p>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+
+    <!-- Aqui vem o horário, abaixo da busca -->
+    <nav class="menu-logado">
+      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
+      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
+      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
+  </nav>
+  
+</header>
+    
+    <section class="banner">
+        <h1>Bom te ver de Novo {{ nome }}, Lembre-se</h1>
+        <p>Na Fitmax Gym, oferecemos a melhor estrutura para você alcançar seus objetivos.</p>
+    </section>
+    
+    <section class="benefits">
+        <div class="benefit">
+            <img src="{{ url_for('static', filename='IMG/academia.png') }}" alt="Equipamentos modernos">
+            <h3>Equipamentos Modernos</h3>
+            <p>Treine com o que há de melhor no mercado.</p>
+        </div>
+        <div class="benefit">
+            <img src="{{ url_for('static', filename='IMG/personal.png') }}" alt="PersonalTrainers">
+            <h3>Personal Trainers</h3>
+            <p>Profissionais preparados para te guiar.</p>
+        </div>
+        <div class="benefit">
+            <img src="{{ url_for('static', filename='IMG/halter.png') }}" alt="Ambiente motivador">
+            <h3>Ambiente Motivador</h3>
+            <p>Uma academia feita para você dar o seu melhor.</p>
+        </div>
+    </section>
+    
+    <section class="testimonials">
+        <h2>O que nossos alunos dizem</h2>
+        <blockquote>"A Fitmax Gym mudou minha vida! Ambiente incrível e excelentes profissionais."</blockquote>
+        <cite>- João Silva</cite>
+    </section>
+    
+    
+    <footer>
+        <p><strong>SEDE</strong></p>
+        <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
+        <p>FONE: (41) 99999-8888</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+
+</body>
+</html>
