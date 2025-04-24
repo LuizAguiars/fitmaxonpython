@@ -39,3 +39,27 @@ function preencherCamposEditar() {
 
 
 
+function preencherCamposEditarPersonal() {
+  const select = document.getElementById('selectEditar');
+  const option = select.options[select.selectedIndex];
+
+  document.getElementById('editNome').value = option.getAttribute('data-nome') || '';
+  document.getElementById('editEmail').value = option.getAttribute('data-email') || '';
+  document.getElementById('editEspecialidade').value = option.getAttribute('data-especialidade') || '';
+  document.getElementById('editUnidade').value = option.getAttribute('data-unidade') || '';
+}
+
+function preencherCamposEditarUsuario() {
+  const select = document.getElementById('selectEditarUsuario');
+  const option = select.options[select.selectedIndex];
+  if (!option) return;
+  document.getElementById('editNome').value = option.dataset.nome || '';
+  document.getElementById('editEmail').value = option.dataset.email || '';
+  document.getElementById('editEndereco').value = option.dataset.endereco || '';
+  document.getElementById('editCEP').value = option.dataset.cep || '';
+  document.getElementById('editSexo').value = option.dataset.sexo || '';
+  document.getElementById('editStatus').value = option.dataset.status || '';
+  document.getElementById('editPlano').value = option.dataset.plano || '';
+  document.getElementById('editUnidade').value = option.dataset.unidade || '';
+  document.getElementById('editPagamento').value = option.dataset.pagamento || '0';
+}

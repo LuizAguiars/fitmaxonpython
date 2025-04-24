@@ -152,20 +152,146 @@ def minha_conta():
     return render_template('minhaconta.html')
 
 
-@app.route('/gestao-personal')
+@app.route('/gestao-personal', methods=['GET', 'POST'])
 def gestao_personal():
     if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar a gestão dos personal trainers.", "error")
+        flash("Você precisa estar logado para acessar a gestão de personais.", "error")
         return redirect(url_for('login'))
-    return render_template('gestao_personal.html')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        acao = request.form.get('acao')
+        id = request.form.get('id')
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        especialidade = request.form.get('especialidade')
+        id_unidade = request.form.get('id_unidade')
+
+        try:
+            if acao == 'incluir':
+                cursor.execute("""
+                    INSERT INTO PERSONAL (Nome_Personal, Email_Personal, Especialidade, ID_Unidade)
+                    VALUES (%s, %s, %s, %s)
+                """, (nome, email, especialidade, id_unidade))
+                flash("Personal incluído com sucesso!", "success")
+
+            elif acao == 'editar':
+                cursor.execute("""
+                    UPDATE PERSONAL
+                    SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
+                    WHERE ID_Personal=%s
+                """, (nome, email, especialidade, id_unidade, id))
+                flash("Personal alterado com sucesso!", "warning")
+
+            elif acao == 'remover':
+                cursor.execute(
+                    "DELETE FROM PERSONAL WHERE ID_Personal=%s", (id,))
+                flash("Personal removido com sucesso!", "error")
+
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            flash(f"Erro ao processar operação: {str(e)}", "error")
+
+    # JOIN com UNIDADES para exibir nome da unidade
+    cursor.execute("""
+        SELECT p.*, u.Nome_Unidade
+        FROM PERSONAL p
+        LEFT JOIN UNIDADES u ON p.ID_Unidade = u.ID_Unidades
+    """)
+    personais = cursor.fetchall()
+
+    # Lista de unidades para o dropdown
+    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    unidades = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("gestao_personal.html", personais=personais, unidades=unidades)
 
 
-@app.route('/gestao-usuarios')
+@app.route('/gestao-usuarios', methods=['GET', 'POST'])
 def gestao_usuarios():
     if 'usuario' not in session:
         flash("Você precisa estar logado para acessar a gestão de usuários.", "error")
         return redirect(url_for('login'))
-    return render_template('gestao_usuarios.html')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        acao = request.form.get('acao')
+        id = request.form.get('id')
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('senha')  # só usado ao incluir
+        cpf = request.form.get('cpf')
+        endereco = request.form.get('endereco')
+        cep = request.form.get('cep')
+        sexo = request.form.get('sexo')
+        status = request.form.get('status_cliente')
+        pagou = int(request.form.get('pagou_mes_atual') or 0)
+        unidade_id = request.form.get('id_unidade')
+        plano_id = request.form.get('id_plano')
+
+        try:
+            if acao == 'incluir':
+                cursor.execute("""
+                    INSERT INTO USUARIO
+                    (Nome_User, Email_user, Senha_User, Data_Cadastro_user, Unidade_Prox_ID,
+                     cpf_user, endereco_user, CEP_USER, ID_PLANO, sexo_user, status_cliente, pagou_mes_atual)
+                    VALUES (%s, %s, %s, CURDATE(), %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou))
+                flash("Usuário incluído com sucesso!", "success")
+
+            elif acao == 'editar':
+                cursor.execute("""
+                    UPDATE USUARIO SET
+                        Nome_User=%s,
+                        Email_user=%s,
+                        endereco_user=%s,
+                        CEP_USER=%s,
+                        sexo_user=%s,
+                        status_cliente=%s,
+                        pagou_mes_atual=%s,
+                        Unidade_Prox_ID=%s,
+                        ID_PLANO=%s
+                    WHERE ID_User=%s
+                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, id))
+                flash("Usuário atualizado com sucesso!", "warning")
+
+            elif acao == 'remover':
+                cursor.execute("DELETE FROM USUARIO WHERE ID_User = %s", (id,))
+                flash("Usuário removido com sucesso!", "error")
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Erro ao processar operação: {str(e)}", "error")
+
+    # Listar usuários com join
+    cursor.execute("""
+        SELECT u.*, un.Nome_Unidade, p.nome_plano
+        FROM USUARIO u
+        LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
+        LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
+    """)
+    usuarios = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM UNIDADES")
+    unidades = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM PLANO")
+    planos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
 
 @app.route('/gestao-equipamentos')

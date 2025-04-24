@@ -3,47 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitmax Gym</title>
-    
+    <title>Gestão de Personais - Fitmax Gym</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
-
 </head>
 <body>
   <header>
     <div class="logo">
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
-
     <div class="search-container">
         <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+        <button>🔍</button>
     </div>
-
-    <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
-        <form method="POST" action="{{ url_for('logout') }}">
-            <button type="submit">Sair</button>
-        </form>
-    </div>
-
-    <!-- Aqui vem o horário, abaixo da busca -->
     <nav class="menu-logado">
-      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
-  </nav>
-  
-</header>
-    
-   <a href="">Gestão dos personais</a>
-    
-    
-    <footer>
-        <p><strong>SEDE</strong></p>
-        <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
-        <p>FONE: (41) 99999-8888</p>
-    </footer>
-    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+        <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
+        <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
+        <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
+    </nav>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="botoes-acoes">
+  <button class="btn verde" onclick="abrirModal('modalIncluir')">➕ Incluir</button>
+  <button class="btn amarelo" onclick="abrirModal('modalEditar')">✏️ Editar</button>
+  <button class="btn vermelho" onclick="abrirModal('modalRemover')">🗑️ Remover</button>
+</div>
+
+<div class="tabela-unidades-container">
+  <table class="tabela-unidades">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Especialidade</th>
+        <th>Unidade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for personal in personais %}
+      <tr>
+        <td>{{ personal.ID_Personal }}</td>
+        <td>{{ personal.Nome_Personal }}</td>
+        <td>{{ personal.Email_Personal }}</td>
+        <td>{{ personal.Especialidade }}</td>
+        <td>{{ personal.Nome_Unidade }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL REMOVER PERSONAL -->
+<div id="modalRemover" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Remover Personal</h2>
+    <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <input type="hidden" name="acao" value="remover">
+      <select name="id" required>
+        <option value="">Selecione o Personal</option>
+        {% for personal in personais %}
+        <option value="{{ personal.ID_Personal }}">
+          {{ personal.ID_Personal }} - {{ personal.Nome_Personal }} - {{ personal.Email_Personal }}
+        </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Remover</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalRemover')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PERSONAL -->
+<div id="modalEditar" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Editar Personal</h2>
+    <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <input type="hidden" name="acao" value="editar">
+      <select name="id" id="selectEditar" required onchange="preencherCamposEditarPersonal()">
+        <option value="">Selecione o Personal</option>
+        {% for personal in personais %}
+        <option value="{{ personal.ID_Personal }}"
+                data-nome="{{ personal.Nome_Personal }}"
+                data-email="{{ personal.Email_Personal }}"
+                data-especialidade="{{ personal.Especialidade }}"
+                data-unidade="{{ personal.ID_Unidade }}">
+          {{ personal.ID_Personal }} - {{ personal.Nome_Personal }} - {{ personal.Email_Personal }}
+        </option>
+        {% endfor %}
+      </select>
+      <input type="text" name="nome" id="editNome" placeholder="Nome do Personal">
+      <input type="email" name="email" id="editEmail" placeholder="Email">
+      <input type="text" name="especialidade" id="editEspecialidade" placeholder="Especialidade">
+      <select name="id_unidade" id="editUnidade" required>
+        <option value="">Selecione a Unidade</option>
+        {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Salvar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalEditar')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL INCLUIR PERSONAL -->
+<div id="modalIncluir" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Incluir Personal</h2>
+    <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <input type="hidden" name="acao" value="incluir">
+      <input type="text" name="nome" placeholder="Nome do Personal" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="especialidade" placeholder="Especialidade" required>
+      <select name="id_unidade" required>
+        <option value="">Selecione a Unidade</option>
+        {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Confirmar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalIncluir')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <p><strong>SEDE</strong></p>
+  <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
+  <p>FONE: (41) 99999-8888</p>
+</footer>
+<script src="{{ url_for('static', filename='js/flash.js') }}"></script>
 
 </body>
 </html>

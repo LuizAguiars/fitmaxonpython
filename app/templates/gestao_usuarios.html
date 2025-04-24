@@ -1,49 +1,198 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitmax Gym</title>
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Usuários - Fitmax Gym</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
 </head>
 <body>
-  <header>
-    <div class="logo">
-        <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
-    </div>
-
-    <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
-    </div>
-
-    <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
-        <form method="POST" action="{{ url_for('logout') }}">
-            <button type="submit">Sair</button>
-        </form>
-    </div>
-
-    <!-- Aqui vem o horário, abaixo da busca -->
-    <nav class="menu-logado">
-      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
+<header>
+  <div class="logo">
+    <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+  </div>
+  <nav class="menu-logado">
+    <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
+    <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
+    <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
   </nav>
-  
 </header>
-    
-   <a href="">Gestão dos usuários</a>
-    
-    
-    <footer>
-        <p><strong>SEDE</strong></p>
-        <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
-        <p>FONE: (41) 99999-8888</p>
-    </footer>
-    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+      <div class="flash-message {{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endwith %}
+
+<div class="botoes-acoes">
+  <button class="btn verde" onclick="abrirModal('modalIncluir')">➕ Incluir</button>
+  <button class="btn amarelo" onclick="abrirModal('modalEditar')">✏️ Editar</button>
+  <button class="btn vermelho" onclick="abrirModal('modalRemover')">🗑️ Remover</button>
+</div>
+
+<div class="tabela-unidades-container">
+  <table class="tabela-unidades">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>CPF</th>
+        <th>Unidade</th>
+        <th>Plano</th>
+        <th>Status</th>
+        <th>Pagamento Atual</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for usuario in usuarios %}
+      <tr>
+        <td>{{ usuario.ID_User }}</td>
+        <td>{{ usuario.Nome_User }}</td>
+        <td>{{ usuario.Email_user }}</td>
+        <td>{{ usuario.cpf_user }}</td>
+        <td>{{ usuario.Nome_Unidade }}</td>
+        <td>{{ usuario.nome_plano }}</td>
+        <td>{{ usuario.status_cliente }}</td>
+        <td>{{ 'Sim' if usuario.pagou_mes_atual else 'Não' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL INCLUIR -->
+<div id="modalIncluir" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Incluir Usuário</h2>
+    <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <input type="hidden" name="acao" value="incluir">
+      <input type="text" name="nome" placeholder="Nome" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="senha" placeholder="Senha" required>
+      <input type="text" name="cpf" placeholder="CPF" required>
+      <input type="text" name="endereco" placeholder="Endereço">
+      <input type="text" name="cep" placeholder="CEP">
+      <select name="sexo" required>
+        <option value="">Sexo</option>
+        <option value="M">Masculino</option>
+        <option value="F">Feminino</option>
+        <option value="O">Outro</option>
+      </select>
+      <select name="status_cliente" required>
+        <option value="">Status</option>
+        <option value="Ativo">Ativo</option>
+        <option value="Inativo">Inativo</option>
+        <option value="Inadimplente">Inadimplente</option>
+      </select>
+      <select name="pagou_mes_atual">
+        <option value="1">Pagou mês atual</option>
+        <option value="0">Não pagou</option>
+      </select>
+      <select name="id_unidade" required>
+        <option value="">Unidade</option>
+        {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+      <select name="id_plano" required>
+        <option value="">Plano</option>
+        {% for plano in planos %}
+        <option value="{{ plano.ID_PLANO }}">{{ plano.nome_plano }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Confirmar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalIncluir')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR (preenchido via JS) -->
+<div id="modalEditar" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Editar Usuário</h2>
+    <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <input type="hidden" name="acao" value="editar">
+      <select name="id" id="selectEditarUsuario" onchange="preencherCamposEditarUsuario()" required>
+        <option value="">Selecione o Usuário</option>
+        {% for usuario in usuarios %}
+        <option value="{{ usuario.ID_User }}"
+                data-nome="{{ usuario.Nome_User }}"
+                data-email="{{ usuario.Email_user }}"
+                data-endereco="{{ usuario.endereco_user }}"
+                data-cep="{{ usuario.CEP_USER }}"
+                data-sexo="{{ usuario.sexo_user }}"
+                data-status="{{ usuario.status_cliente }}"
+                data-plano="{{ usuario.ID_PLANO }}"
+                data-unidade="{{ usuario.Unidade_Prox_ID }}"
+                data-pagamento="{{ usuario.pagou_mes_atual }}">
+          {{ usuario.ID_User }} - {{ usuario.Nome_User }} - {{ usuario.Email_user }}
+        </option>
+        {% endfor %}
+      </select>
+      <input type="text" name="nome" id="editNome" placeholder="Nome">
+      <input type="email" name="email" id="editEmail" placeholder="Email">
+      <input type="text" name="endereco" id="editEndereco" placeholder="Endereço">
+      <input type="text" name="cep" id="editCEP" placeholder="CEP">
+      <select name="sexo" id="editSexo">
+        <option value="M">Masculino</option>
+        <option value="F">Feminino</option>
+        <option value="O">Outro</option>
+      </select>
+      <select name="status_cliente" id="editStatus">
+        <option value="Ativo">Ativo</option>
+        <option value="Inativo">Inativo</option>
+        <option value="Inadimplente">Inadimplente</option>
+      </select>
+      <select name="pagou_mes_atual" id="editPagamento">
+        <option value="1">Pagou mês atual</option>
+        <option value="0">Não pagou</option>
+      </select>
+      <select name="id_unidade" id="editUnidade">
+        {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+      <select name="id_plano" id="editPlano">
+        {% for plano in planos %}
+        <option value="{{ plano.ID_PLANO }}">{{ plano.nome_plano }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Salvar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalEditar')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL REMOVER -->
+<div id="modalRemover" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Remover Usuário</h2>
+    <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <input type="hidden" name="acao" value="remover">
+      <select name="id" required>
+        <option value="">Selecione o Usuário</option>
+        {% for usuario in usuarios %}
+        <option value="{{ usuario.ID_User }}">{{ usuario.ID_User }} - {{ usuario.Nome_User }} - {{ usuario.Email_user }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="confirmar">Remover</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalRemover')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <p><strong>SEDE</strong></p>
+  <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
+  <p>FONE: (41) 99999-8888</p>
+</footer>
+<script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+
 
 </body>
 </html>
