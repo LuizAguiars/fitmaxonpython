@@ -23,6 +23,8 @@ def get_db_connection():
 def home():
     return render_template('inicial.html')
 
+# -------------------- Rotas de tela de login -------------------- #
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -51,6 +53,8 @@ def login():
         return redirect(url_for('inicial_logado'))
 
     return render_template('login.html')
+
+# -------------------- Rotas de tela de cadastro -------------------- #
 
 
 @app.route('/cadastro', methods=['GET', 'POST'])
@@ -103,6 +107,8 @@ def cadastro():
 
     return render_template('cadastro.html', planos=planos)
 
+# -------------------- Rotas de tela inicial logado  -------------------- #
+
 
 @app.route('/inicial-logado')
 def inicial_logado():
@@ -120,12 +126,16 @@ def inicial_logado():
     response.headers["Expires"] = "0"
     return response
 
+# -------------------- Rotas de tela de deslogin -------------------- #
+
 
 @app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     flash("Você saiu da sua conta com sucesso!", "success")
     return redirect(url_for('login'))
+
+# -------------------- Rotas de tela de painel do gestor -------------------- #
 
 
 @app.route('/painel-gestor')
@@ -135,6 +145,8 @@ def painel_gestor():
         return redirect(url_for('login'))
     return render_template('paineldogestor.html')
 
+# -------------------- Rotas de tela de painel de personal -------------------- #
+
 
 @app.route('/painel-personal')
 def painel_personal():
@@ -143,6 +155,8 @@ def painel_personal():
         return redirect(url_for('login'))
     return render_template('paineldopersonal.html')
 
+# -------------------- Rotas de tela de minha conta -------------------- #
+
 
 @app.route('/minha-conta')
 def minha_conta():
@@ -150,6 +164,8 @@ def minha_conta():
         flash("Você precisa estar logado para acessar sua conta.", "error")
         return redirect(url_for('login'))
     return render_template('minhaconta.html')
+
+# -------------------- Rotas de tela de gestão dos personais  -------------------- #
 
 
 @app.route('/gestao-personal', methods=['GET', 'POST'])
@@ -211,6 +227,8 @@ def gestao_personal():
     conn.close()
 
     return render_template("gestao_personal.html", personais=personais, unidades=unidades)
+
+# -------------------- Rotas de tela de gestão dos usuarios  -------------------- #
 
 
 @app.route('/gestao-usuarios', methods=['GET', 'POST'])
@@ -293,6 +311,8 @@ def gestao_usuarios():
 
     return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
+# -------------------- Rotas de tela de gestão dos equipamentos  -------------------- #
+
 
 @app.route('/gestao-equipamentos', methods=['GET', 'POST'])
 def gestao_equipamentos():
@@ -373,6 +393,8 @@ def gestao_equipamentos():
         tipos_equipamento=tipos_equipamento
     )
 
+# -------------------- Rotas de tela de gestão das unidades  -------------------- #
+
 
 @app.route('/gestao-unidades', methods=['GET', 'POST'])
 def gerenciar_unidade():
@@ -437,6 +459,8 @@ def gerenciar_unidade():
     cursor.close()
     conn.close()
     return render_template('gestao_unidades.html', unidades=unidades, regioes=regioes)
+
+# -------------------- Rotas de tela de gestão dos planos  -------------------- #
 
 
 @app.route('/gestao-planos', methods=['GET', 'POST'])
