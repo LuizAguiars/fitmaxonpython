@@ -1,5 +1,5 @@
 @echo off
 git add .
-git commit -m "comentarios melhorados" 
+git commit -m "PADRONIZACAO HEADER PAINEL GESTOR" 
 git push
 pause

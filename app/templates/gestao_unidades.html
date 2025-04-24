@@ -12,19 +12,17 @@
     <div class="logo">
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
-    <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button>🔍</button>
-    </div>
- 
+    <h1>GESTÃO DE UNIDADES</h1>
         
             <button type="submit">Sair</button>
         </form>
     </div>
+    
     <nav class="menu-logado">
         <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
         <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
         <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
+        <a  href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
     </nav>
   </header>
   {% with messages = get_flashed_messages(with_categories=true) %}
