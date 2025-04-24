@@ -63,3 +63,22 @@ function preencherCamposEditarUsuario() {
   document.getElementById('editUnidade').value = option.dataset.unidade || '';
   document.getElementById('editPagamento').value = option.dataset.pagamento || '0';
 }
+
+function preencherCamposEditarEquipamento() {
+  const select = document.getElementById('selectEditarEquipamento');
+  const option = select.options[select.selectedIndex];
+  if (!option) return;
+  document.getElementById('editNome').value = option.dataset.nome || '';
+  document.getElementById('editDescricao').value = option.dataset.descricao || '';
+
+  // Converter data para formato yyyy-mm-dd caso esteja completa
+  if (option.dataset.data) {
+    const data = new Date(option.dataset.data);
+    if (!isNaN(data)) {
+      document.getElementById('editDataCompra').value = data.toISOString().split('T')[0];
+    }
+  }
+  document.getElementById('editUnidade').value = option.dataset.unidade || '';
+  document.getElementById('editStatus').value = option.dataset.status || '';
+  document.getElementById('editTipo').value = option.dataset.tipo || '';
+}

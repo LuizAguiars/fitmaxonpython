@@ -15,3 +15,24 @@ VALUES
 
 ALTER TABLE USUARIO
 ADD COLUMN Senha_User VARCHAR(255) NOT NULL;
+
+
+
+
+
+INSERT INTO tipo_equipamento (nome_tipo_equipamento) VALUES
+('Equipamentos de Cardio'),
+('Equipamentos de Musculação'),
+('Equipamentos Funcionais'),
+('Equipamentos de Alongamento'),
+('Equipamentos de Pilates'),
+('Equipamentos de Artes Marciais'),
+('Acessórios Livres');
+
+
+INSERT INTO status_dos_Equipamentos (status_do_Equipamento) VALUES
+('Ativo'),
+('Inativo'),
+('Manutenção'),
+('Descartado');
+
