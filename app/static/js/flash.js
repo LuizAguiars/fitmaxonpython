@@ -82,3 +82,25 @@ function preencherCamposEditarEquipamento() {
   document.getElementById('editStatus').value = option.dataset.status || '';
   document.getElementById('editTipo').value = option.dataset.tipo || '';
 }
+
+
+
+function preencherCamposEditarPlano() {
+  const select = document.getElementById('selectEditarPlano');
+  const option = select.options[select.selectedIndex];
+
+  if (!option) return;
+
+  document.getElementById('editNome').value = option.dataset.nome || '';
+  document.getElementById('editDescricao').value = option.dataset.descricao || '';
+  document.getElementById('editDuracao').value = option.dataset.duracao || '';
+  document.getElementById('editValor').value = option.dataset.valor || '';
+}
+
+function abrirModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('active');
+}

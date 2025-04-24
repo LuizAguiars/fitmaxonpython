@@ -22,12 +22,14 @@ CREATE TABLE UNIDADES (
 );
 
 -- PLANOS
-CREATE TABLE PLANO (
-    ID_PLANO INT AUTO_INCREMENT PRIMARY KEY,
-    nome_plano VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
-    duracao_meses INT NOT NULL
-);
+CREATE TABLE `plano` (
+   `ID_PLANO` int NOT NULL AUTO_INCREMENT,
+   `nome_plano` varchar(100) NOT NULL,
+   `descricao` varchar(255) DEFAULT NULL,
+   `duracao_meses` int NOT NULL,
+   `valor_plano` decimal(10,2) NOT NULL,
+   PRIMARY KEY (`ID_PLANO`)
+ );
 
 -- TIPO DE EQUIPAMENTO
 CREATE TABLE tipo_equipamento (
