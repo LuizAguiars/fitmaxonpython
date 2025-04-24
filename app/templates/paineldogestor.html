@@ -36,7 +36,14 @@
   
 </header>
     
-<a>paine gestor</a>
+<nav class="menu-logado1">
+    <a href="{{ url_for('gerenciar_unidade') }}">Gestão das Unidades</a>
+    <a href="{{ url_for('gestao_personal') }}">Gestão dos Personal</a>
+    <span class="quebra-linha"></span>
+    <a href="{{ url_for('gestao_usuarios') }}">Gestão dos Usuários</a>
+    <a href="{{ url_for('gestao_equipamentos') }}">Gestão de Equipamentos</a>
+</nav>
+
     
     <footer>
         <p><strong>SEDE</strong></p>

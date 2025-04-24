@@ -12,6 +12,12 @@ CREATE TABLE UNIDADES (
     Nome_Unidade VARCHAR(100),
     Endereco_Unidade VARCHAR(255),
     ID_Regiao INT,
+    Capacidade INT,
+    fone INT,
+    Cidade VARCHAR(100),
+    Estado VARCHAR(100),
+    CEP VARCHAR,
+
     FOREIGN KEY (ID_Regiao) REFERENCES REGIAO(ID_Regiao)
 );
 
