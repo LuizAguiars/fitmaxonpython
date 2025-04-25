@@ -513,6 +513,25 @@ def gestao_planos():
     conn.close()
 
     return render_template("gestao_de_planos.html", planos=planos)
+# -------------------- Rotas de tela de criação de tipo de treino  -------------------- #
+
+
+@app.route('/treinos-padrao')
+def treinos_padrao():
+    if 'usuario' not in session:
+        flash("Você precisa estar logado para acessar os treinos padrão.", "error")
+        return redirect(url_for('login'))
+    return render_template('treinos_padrao.html')
+
+# -------------------- Rotas de tela de relatorios  -------------------- #
+
+
+@app.route('/relatorios')
+def relatorios():
+    if 'usuario' not in session:
+        flash("Você precisa estar logado para acessar os relatórios.", "error")
+        return redirect(url_for('login'))
+    return render_template('relatorios.html')
 
 
 if __name__ == '__main__':

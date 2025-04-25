@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitmax Gym</title>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial5.css') }}">
 
 </head>
 <body>
@@ -36,16 +36,61 @@
   
 </header>
     
-<nav class="menu-logado1">
-    <a href="{{ url_for('gerenciar_unidade') }}">Gestão das Unidades</a>
-    <a href="{{ url_for('gestao_personal') }}">Gestão dos Personal</a>
+<div class="menu-logado1">
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/fitmaxlocal.png') }}" alt="Unidades">
+      </div>
+      <a href="{{ url_for('gerenciar_unidade') }}" class="btn grande">Gestão das Unidades</a>
+    </div>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/personal1.jfif') }}" alt="Personais">
+      </div>
+      <a href="{{ url_for('gestao_personal') }}" class="btn grande">Gestão dos Personais</a>
+    </div>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/user.jpeg') }}" alt="Usuários">
+      </div>
+      <a href="{{ url_for('gestao_usuarios') }}" class="btn grande">Gestão dos Usuários</a>
+    </div>
+  
     <span class="quebra-linha"></span>
-    <a href="{{ url_for('gestao_usuarios') }}">Gestão dos Usuários</a>
-    <a href="{{ url_for('gestao_equipamentos') }}">Gestão de Equipamentos</a>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/equipamentos.jpg') }}" alt="Equipamentos">
+      </div>
+      <a href="{{ url_for('gestao_equipamentos') }}" class="btn grande">Gestão de Equipamentos</a>
+    </div>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/planos.png') }}" alt="Planos">
+      </div>
+      <a href="{{ url_for('gestao_planos') }}" class="btn grande">Gestão de Planos</a>
+    </div>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/treinos.png') }}" alt="Treinos">
+      </div>
+      <a href="{{ url_for('treinos_padrao') }}" class="btn grande">Treinos Padrão</a>
+    </div>
+  
     <span class="quebra-linha"></span>
-    <a href="{{ url_for('gestao_planos') }}">Gestão de Planos</a>
-    <!--  <a href="{{ url_for('gestao_equipamentos') }}">Gestão de Equipamentos</a> -->
-</nav>
+  
+    <div class="botao-imagem">
+      <div class="imagem-overlay">
+        <img src="{{ url_for('static', filename='IMG/relatorio.webp') }}" alt="Relatórios">
+      </div>
+      <a href="{{ url_for('relatorios') }}" class="btn grande">Relatórios</a>
+    </div>
+  </div>
+  
 
     
     <footer>

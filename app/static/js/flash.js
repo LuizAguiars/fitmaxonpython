@@ -104,3 +104,32 @@ function abrirModal(id) {
 function fecharModal(id) {
   document.getElementById(id).classList.remove('active');
 }
+
+
+function preencherCamposEditarPlano() {
+  const select = document.getElementById('selectEditarPlano');
+  const option = select.options[select.selectedIndex];
+
+  if (!option) return;
+
+  document.getElementById('editNome').value = option.dataset.nome || '';
+  document.getElementById('editDescricao').value = option.dataset.descricao || '';
+  document.getElementById('editDuracao').value = option.dataset.duracao || '';
+  document.getElementById('editValor').value = option.dataset.valor || '';
+}
+
+function abrirModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// Hover com imagem de fundo
+const botoesImagem = document.querySelectorAll('.botao-imagem');
+botoesImagem.forEach(btn => {
+  const overlay = btn.querySelector('.imagem-overlay');
+  btn.addEventListener('mouseenter', () => overlay.classList.add('active'));
+  btn.addEventListener('mouseleave', () => overlay.classList.remove('active'));
+});
