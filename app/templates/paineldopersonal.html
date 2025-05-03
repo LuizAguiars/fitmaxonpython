@@ -13,14 +13,9 @@
     <div class="logo">
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
+    <h1>PAINEL DO PERSONAL</h1>
 
-    <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
-    </div>
 
-    <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
         <form method="POST" action="{{ url_for('logout') }}">
             <button type="submit">Sair</button>
         </form>

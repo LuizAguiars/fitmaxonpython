@@ -1,5 +1,5 @@
 @echo off
 git add .
-git commit -m "create databsecompleto" 
+git commit -m "backupdatabase" 
 git push
 pause
