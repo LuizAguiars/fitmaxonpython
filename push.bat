@@ -9,7 +9,8 @@ REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
 git commit -m "push no develop %DATAHORA%"
 
-git push develop
+REM Envia para a branch develop no remoto
+git push origin develop
 
 echo Push realizado na branch DEVELOP com sucesso!
 pause
