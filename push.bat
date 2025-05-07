@@ -1,6 +1,6 @@
 @echo off
 REM Altere para o diretório do seu projeto
-cd /d C:\Users\Luiz Aguiar\Documents\fitmaxcompleto
+cd /d C:\Users\gusta\Desktop\projetofitmax\fitmaxonpython
 
 REM Adiciona todas as alterações
 git add .
