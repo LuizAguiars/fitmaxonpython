@@ -7,9 +7,9 @@ git add .
 
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
-git commit -m "novas instrucoes final %DATAHORA%"
+git commit -m "push no develop %DATAHORA%"
 
-git push origin main --force
+git push develop
 
 echo Push realizado na branch DEVELOP com sucesso!
 pause

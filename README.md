@@ -52,7 +52,8 @@ git config --global user.email "seuemail@exemplo.com"
 
 Clone o repositório
 no git bash dentro da pasta onde deseja clonar (baixar o projeto) digite:
-git clone https://github.com/LuizAguiars/fitmaxonpython.git
+git clone --branch develop https://github.com/LuizAguiars/fitmaxonpython.git
+
 
 
 3. Crie um ambiente virtual (recomendado):
