@@ -60,7 +60,7 @@ Crie o banco de dados com base nos arquivos .sql da pasta querys bd/
 
 Atualize os dados de conexão no arquivo:
 
-app/app.py <--- para rodar o projeto
+python app/app.py <--- para rodar o projeto
 
 
 8. Acesse o sistema no navegador:
