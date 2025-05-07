@@ -147,7 +147,6 @@ Se a senha (password) configurada acima for diferente da senha do seu MySQL loca
 python app/app.py ou python app.py <--- para rodar o projeto
 
 
-
 8. Acesse o sistema no navegador:
 http://localhost:5000
 
