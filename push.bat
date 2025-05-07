@@ -10,7 +10,7 @@ git add .
 
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
-git commit -m "teste %DATAHORA%"
+git commit -m "teste delete%DATAHORA%"
 
 REM Atualiza repositório local
 git fetch origin
