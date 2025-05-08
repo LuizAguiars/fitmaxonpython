@@ -16,11 +16,19 @@ function abrirModal(id) {
   modal.classList.add('active');
 }
 
-function fecharModal(id) {
-  const modal = document.getElementById(id);
-  modal.classList.remove('active');
+
+function abrirModalEditar(id) {
+  const select = document.getElementById('selectEditar');
+  select.value = id;
+  preencherCamposEditar(); // já existente
+  abrirModal('modalEditar');
 }
 
+function abrirModalRemover(id) {
+  const select = document.querySelector('#modalRemover select[name="id"]');
+  select.value = id;
+  abrirModal('modalRemover');
+}
 
 
 function preencherCamposEditar() {
