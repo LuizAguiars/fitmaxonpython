@@ -536,3 +536,33 @@ def relatorios():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+
+@app.route('/feedbacks')
+def index():
+    return render_template('feedbacks.html')
+
+@app.route('/enviar-feedback', methods=['POST'])
+def enviar_feedback():
+    nota = request.form.get('nota')
+    comentario = request.form.get('comentario')
+    motivos = request.form.getlist('motivos[]')
+    elogios = request.form.getlist('elogios[]')
+
+    print(f"Nota: {nota}")
+    print(f"Comentário: {comentario}")
+    print(f"Motivos: {motivos}")
+    print(f"Elogios: {elogios}")
+
+    return redirect(url_for('sucesso'))
+
+@app.route('/sucesso')
+def sucesso():
+    return render_template('sucesso.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
