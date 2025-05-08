@@ -564,20 +564,32 @@ button:hover {
   background-color: #28a745;
 }
 
-.btn.amarelo {
-  background-color: #ffc107;
-  color: black;
-}
-
-.btn.vermelho {
-  background-color: #dc3545;
-}
 
 .btn:hover {
   opacity: 0.9;
   transform: scale(1.05);
 }
 
+.btn-acao {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  margin: 0 5px;
+  transition: transform 0.2s ease;
+}
+
+.btn-acao:hover {
+  transform: scale(1.2);
+}
+
+.btn-acao.editar {
+  color: #ffc107; /* amarelo */
+}
+
+.btn-acao.remover {
+  color: #dc3545; /* vermelho */
+}
 
 
 .tabela-unidades-container {
