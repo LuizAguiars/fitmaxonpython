@@ -10,7 +10,7 @@ git add .
 
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
-git commit -m "AJUSTE DE EDITAR E EXCLUIR%DATAHORA%"
+git commit -m "teste, nao mudei nada%DATAHORA%"
 
 REM Atualiza repositório local
 git fetch origin
