@@ -30,21 +30,45 @@ function abrirModalRemover(id) {
   abrirModal('modalRemover');
 }
 
+// Ajuste no modal para editar sem dropdown
+function abrirModalEditar(id) {
+  const linha = document.querySelector(`tr[data-id='${id}']`);
 
-function preencherCamposEditar() {
-  const select = document.getElementById('selectEditar');
-  const option = select.options[select.selectedIndex];
+  document.getElementById('editId').value = id;
+  document.getElementById('editNome').value = linha.dataset.nome || '';
+  document.getElementById('editEndereco').value = linha.dataset.endereco || '';
+  document.getElementById('editCapacidade').value = linha.dataset.capacidade || '';
+  document.getElementById('editFone').value = linha.dataset.fone || '';
+  document.getElementById('editCidade').value = linha.dataset.cidade || '';
+  document.getElementById('editEstado').value = linha.dataset.estado || '';
+  document.getElementById('editCep').value = linha.dataset.cep || '';
+  document.getElementById('editRegiao').value = linha.dataset.regiao || '';
 
-  document.getElementById('editNome').value = option.getAttribute('data-nome') || '';
-  document.getElementById('editEndereco').value = option.getAttribute('data-endereco') || '';
-  document.getElementById('editCapacidade').value = option.getAttribute('data-capacidade') || '';
-  document.getElementById('editFone').value = option.getAttribute('data-fone') || '';
-  document.getElementById('editCidade').value = option.getAttribute('data-cidade') || '';
-  document.getElementById('editEstado').value = option.getAttribute('data-estado') || '';
-  document.getElementById('editCep').value = option.getAttribute('data-cep') || '';
-  document.getElementById('editRegiao').value = option.getAttribute('data-regiao') || '';
+  // Atualiza o cabeçalho com info da unidade selecionada
+  document.getElementById('infoId').textContent = id;
+  document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+  document.getElementById('infoEndereco').textContent = linha.dataset.endereco || '';
+
+  abrirModal('modalEditar');
 }
+// Ajuste no modal para editar sem dropdown
 
+
+function abrirModalRemover(id) {
+  const linha = document.querySelector(`tr[data-id='${id}']`);
+  if (!linha) return;
+
+  // Preenche o ID para envio
+  document.getElementById('removerIdInput').value = id;
+
+  // Mostra os dados no modal
+  document.getElementById('removerId').textContent = id;
+  document.getElementById('removerNome').textContent = linha.dataset.nome || '';
+  document.getElementById('removerEndereco').textContent = linha.dataset.endereco || '';
+
+  abrirModal('modalRemover');
+}
+// modal remover com nome em vez de
 
 
 function preencherCamposEditarPersonal() {

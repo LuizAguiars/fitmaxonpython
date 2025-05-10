@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Ajuste da tela feedback codigo de envio estava no html %DATAHORA%"
+git commit -m "Ajuste no editar e excluir sem dropdown %DATAHORA%"
 
 
 
