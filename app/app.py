@@ -1,22 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
 from mysql.connector import Error
+from db import get_db_connection
 
 app = Flask(__name__)
 app.secret_key = 'secreto'
-
-# -------------------- Configuração de Conexão -------------------- #
-
-
-def get_db_connection():
-    return mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='8474',
-        database='fitmaxgym'
-    )
-
-# -------------------- Rotas do Sistema -------------------- #
 
 
 @app.route('/')

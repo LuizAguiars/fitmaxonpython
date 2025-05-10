@@ -29,7 +29,7 @@ IF %ERRORLEVEL% EQU 1 (
 )
 
 REM Envia para a branch develop no remoto
-git push origin develop 
+git push origin develop --force
 
 echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
 pause
