@@ -2,7 +2,7 @@
 SETLOCAL
 
 REM Caminho para o seu projeto
-cd D:\Users\luif\Desktop\projetofitmax\fitmaxonpython
+cd https://github.com/LuizAguiars/fitmaxonpython.git
 
 echo [INFO] Alternando para a branch develop...
 git checkout develop
