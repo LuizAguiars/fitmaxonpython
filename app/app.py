@@ -522,5 +522,67 @@ def relatorios():
     return render_template('relatorios.html')
 
 
+@app.route('/feedbacks')
+def feedbacks():
+    if 'usuario' not in session:
+        flash("Você precisa estar logado para realizar o feedback", "error")
+        return redirect(url_for('login'))
+    return render_template('feedbacks.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# -------------------- Não mexer -------------------- #
+
+
