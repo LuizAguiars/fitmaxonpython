@@ -15,7 +15,7 @@ body {
 }
 
 .logofeedback {
-  background-color: #003366;
+  background-color: rgba(0, 31, 91);
   height: 100px;
   width: 100%;
   display: flex;
@@ -34,7 +34,7 @@ body {
 .voltar {
   position: absolute;
   right: 50px;
-  color: #003366;
+  color:  rgba(0, 31, 91);
   background-color: white;
   text-decoration: none;
   font-weight: bold;
@@ -114,20 +114,6 @@ button:hover {
 .feedback-opcoes label {
   display: block;
   margin: 0.3rem 0;
-}
-
-.hidden {
-  display: none;
-}
-.mensagem-sucesso {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  padding: 1rem 2rem;
-  margin-bottom: 1rem;
-  border-radius: 5px;
-  font-weight: bold;
-  text-align: center;
 }
 
 .hidden {
