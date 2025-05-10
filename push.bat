@@ -1,6 +1,7 @@
+
 @echo off
 REM Altere para o diretório do seu projeto
-cd /d C:\Users\gusta\Desktop\projetofitmax\fitmaxonpython
+cd /d D:\Projetofitmaxpython\fitmaxonpython
 
 REM Troca para a branch develop
 git checkout develop
@@ -28,8 +29,7 @@ IF %ERRORLEVEL% EQU 1 (
 )
 
 REM Envia para a branch develop no remoto
-git push origin develop 
+git push origin develop --force
 
 echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
 pause
-
