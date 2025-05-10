@@ -1,29 +1,51 @@
 @echo off
-REM Altere para o diretório do seu projeto
+SETLOCAL
+
+REM Caminho para o seu projeto
 cd /d D:\Users\luif\Desktop\projetofitmax\fitmaxonpython
 
-REM Troca para a branch develop
+echo [INFO] Alternando para a branch develop...
 git checkout develop
 
-REM Adiciona todas as alterações
+echo [INFO] Adicionando alterações...
 git add .
 
-git commit -m "Tela Feedback front"
+echo [INFO] Criando commit...
+git commit -m "Tela_Feedback_front"
 
-REM Atualiza repositórios locais
+echo [INFO] Atualizando repositório local...
 git fetch origin
 
-REM Verifica se main está à frente da develop
+REM Verifica se origin/main está à frente de origin/develop
 git merge-base --is-ancestor origin/main origin/develop
 IF %ERRORLEVEL% EQU 1 (
-    echo [INFO] A branch develop está atrás da main. Fazendo merge...
+    echo [INFO] Fazendo merge de origin/main em develop...
     git merge origin/main
+    IF %ERRORLEVEL% NEQ 0 (
+        echo [ERRO] Conflito durante o merge! Resolva os conflitos e commite antes de continuar.
+        goto end
+    )
 ) ELSE (
-    echo [INFO] A branch develop já está atualizada com a main.
+    echo [INFO] develop já está atualizado com main.
 )
 
-REM Envia para a branch develop no remoto
-git push origin develop 
+REM Rebase com origin/develop para evitar push rejeitado
+echo [INFO] Rebase com origin/develop para evitar conflitos de push...
+git pull origin develop --rebase
+IF %ERRORLEVEL% NEQ 0 (
+    echo [ERRO] Conflito durante o rebase! Resolva e tente novamente.
+    goto end
+)
 
-echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
+REM Push final
+echo [INFO] Enviando alterações para o GitHub...
+git push origin develop
+IF %ERRORLEVEL% NEQ 0 (
+    echo [ERRO] Push falhou. Verifique se há conflitos ou mudanças remotas.
+) ELSE (
+    echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
+)
+
+:end
 pause
+ENDLOCAL
