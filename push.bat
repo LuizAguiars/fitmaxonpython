@@ -5,6 +5,6 @@ git init
 git add .
 git commit -m "Atualização"
 git branch -M main
-git push origin develop
+git push origin main
 
 pause
