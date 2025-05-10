@@ -1,5 +1,5 @@
 @echo off
-cd /d D:\Users\luif\Desktop\Projetofitmaxpython\fitmaxonpython
+cd /d D:\Projetofitmaxpython\fitmaxonpython
 
 git init
 git add .
