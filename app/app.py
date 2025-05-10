@@ -514,46 +514,78 @@ def treinos_padrao():
 # -------------------- Rotas de tela de feedback  -------------------- #
 
 
-@app.route("/feedbacks", methods=["GET", "POST"])
+@app.route('/feedbacks', methods=["POST", "GET"])
 def feedbacks():
     if request.method == "POST":
-        nota = request.form["nota"]
-        comentario = request.form["comentario"]
-        usuario_id = request.form["usuario_id"]
-        
-        connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="sua_senha",
-            database="nome_do_banco_de_dados"
-        )
-        cursor = connection.cursor()
-        cursor.execute("SELECT idfeedback, nota_user, Comentario, id_user_feedback FROM feedback ORDER BY nota_user ASC")
-        connection.commit()
-        connection.close()
-        return redirect(url_for('feedbacks'))  # Redireciona para a mesma página após o envio do feedback
+        try:
+            nota = request.form["nota"]
+            comentario = request.form["comentario"]
+            usuario_id = request.form["usuario_id"]  # Certifique-se de que este campo esteja no formulário!
 
-    return render_template("feedbacks.html")
+            # Log de debug para verificar se os dados estão chegando corretamente
+            print(f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
 
+            # Usando a função para obter a conexão com o banco
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                INSERT INTO feedback (nota_user, Comentario, id_user_feedback)
+                VALUES (%s, %s, %s)
+            """, (nota, comentario, usuario_id))
+
+            connection.commit()
+
+        except Exception as e:
+            return f"Erro ao salvar no banco: {e}", 500
+
+        finally:
+            if 'connection' in locals():
+                connection.close()
+
+        return redirect(url_for('feedbacks'))  # Após a inserção, redireciona para evitar reenvio do formulário
+
+    else:
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                SELECT idfeedback, nota_user, Comentario, id_user_feedback
+                FROM feedback
+                ORDER BY nota_user
+            """)
+            feedbacks = cursor.fetchall()
+
+        except Exception as e:
+            return f"Erro ao buscar feedbacks do banco: {e}", 500
+
+        finally:
+            if 'connection' in locals():
+                connection.close()
+
+        return render_template("feedbacks.html", feedbacks=feedbacks)
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
-
-
-@app.route("/relatorios")
+@app.route('/relatorios', methods=["GET"])
 def relatorios():
-    connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="8474",
-        database="fitmaxgym"
-    )
+    connection = get_db_connection()
     cursor = connection.cursor()
-    cursor.execute("SELECT idfeedback, nota_user, Comentario, id_user_feedback FROM feedback ORDER BY nota_user ASC")
 
+    cursor.execute("""
+        SELECT idfeedback, nota_user, Comentario, id_user_feedback
+        FROM feedback
+        ORDER BY nota_user
+    """)
     feedbacks = cursor.fetchall()
+
     connection.close()
+
     return render_template("relatorios.html", feedbacks=feedbacks)
 
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 

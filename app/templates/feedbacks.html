@@ -18,8 +18,20 @@
   <div class="container">
     <h2>Enviar Feedback</h2>
 
+    <!-- Exibindo as mensagens de flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+      {% endif %}
+      {% endwith %}
+
    
-    <form id="form-feedback" action="{{ url_for('feedbacks') }}" method="POST">
+      <form id="form-feedback" action="{{ url_for('feedbacks') }}" method="POST">
+      <input type="hidden" name="usuario_id" value="1">  <!-- Exemplo de usuário_id -->
       <div class="stars" id="stars">
         <span class="star" data-value="5">&#9733;</span>
         <span class="star" data-value="4">&#9733;</span>
@@ -59,6 +71,13 @@
     </form>
   </div>
 
-  <script src="static/js/feedbacks.js"></script>
+  <script src="static/js/feedbacks.js">
+  </script>
+  
+  <script>
+    // Isso cria a variável 'feedbacksUrl' com a URL gerada automaticamente pelo Flask
+    const feedbacksUrl = "{{ url_for('feedbacks') }}"; 
+  </script>
+
 </body>
 </html>
