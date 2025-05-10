@@ -1,6 +1,6 @@
 @echo off
 REM Altere para o diretório do seu projeto
-cd /d "D:\Users\luif\Desktop\Projetofitmaxpython\fitmaxonpython"
+cd /d "D:\Users\luif\Desktop:\Projetofitmaxpython\fitmaxonpython"
 
 REM Troca para a branch develop
 git checkout develop
