@@ -19,7 +19,7 @@
     <h2>Enviar Feedback</h2>
 
    
-    <form id="form-feedback">
+    <form id="form-feedback" action="{{ url_for('feedbacks') }}" method="POST">
       <div class="stars" id="stars">
         <span class="star" data-value="5">&#9733;</span>
         <span class="star" data-value="4">&#9733;</span>

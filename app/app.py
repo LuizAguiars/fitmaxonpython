@@ -511,39 +511,48 @@ def treinos_padrao():
         return redirect(url_for('login'))
     return render_template('treinos_padrao.html')
 
-# -------------------- Rotas de tela de relatorios  -------------------- #
+# -------------------- Rotas de tela de feedback  -------------------- #
 
 
-@app.route('/relatorios')
-def relatorios():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar os relatórios.", "error")
-        return redirect(url_for('login'))
-    return render_template('relatorios.html')
-
-
-@app.route('/feedbacks')
+@app.route("/feedbacks", methods=["GET", "POST"])
 def feedbacks():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para realizar o feedback", "error")
-        return redirect(url_for('login'))
-    return render_template('feedbacks.html')
+    if request.method == "POST":
+        nota = request.form["nota"]
+        comentario = request.form["comentario"]
+        usuario_id = request.form["usuario_id"]
+        
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="sua_senha",
+            database="nome_do_banco_de_dados"
+        )
+        cursor = connection.cursor()
+        cursor.execute("SELECT idfeedback, nota_user, Comentario, id_user_feedback FROM feedback ORDER BY nota_user ASC")
+        connection.commit()
+        connection.close()
+        return redirect(url_for('feedbacks'))  # Redireciona para a mesma página após o envio do feedback
+
+    return render_template("feedbacks.html")
+
+# -------------------- Rotas de tela de relatorio  -------------------- #
 
 
 
+@app.route("/relatorios")
+def relatorios():
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="8474",
+        database="fitmaxgym"
+    )
+    cursor = connection.cursor()
+    cursor.execute("SELECT idfeedback, nota_user, Comentario, id_user_feedback FROM feedback ORDER BY nota_user ASC")
 
-
-
-
-
-
-
-
-
-
-
-
-
+    feedbacks = cursor.fetchall()
+    connection.close()
+    return render_template("relatorios.html", feedbacks=feedbacks)
 
 
 
