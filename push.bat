@@ -1,5 +1,5 @@
 @echo off
-cd  D:\Users\luif\Desktop\projetofitmax\fitmaxonpython
+cd  D:\Users\luif\Desktop\Projetofitmaxpython\fitmaxonpython
 
 git add .
 git commit -m "FEEDBAKS"
