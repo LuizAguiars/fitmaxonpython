@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
 from mysql.connector import Error
+from db import get_db_connection
 
 app = Flask(__name__)
 app.secret_key = 'secreto'
 
-# -------------------- Configuração de Conexão -------------------- #
 
 
+<<<<<<< HEAD
+=======
 def get_db_connection():
     return mysql.connector.connect(
         host='localhost',
@@ -18,6 +20,7 @@ def get_db_connection():
 
 # -------------------- Rotas do Sistema -------------------- #
 
+>>>>>>> origin/main
 
 @app.route('/')
 def home():
