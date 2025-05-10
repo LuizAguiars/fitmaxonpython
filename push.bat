@@ -1,6 +1,6 @@
 cd /d "D:\Projetofitmaxpython\fitmaxonpython"
 git init
 git add .
-git commit -m "Salvando mudanças antes da troca de branch"
+git commit -m "tela front feedback"
 git checkout -b develop
 git push --set-upstream origin develop
