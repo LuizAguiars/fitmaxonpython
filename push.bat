@@ -2,7 +2,7 @@
 SETLOCAL
 
 REM Caminho para o seu projeto
-cd /d D:\Users\luif\Desktop\projetofitmax\fitmaxonpython
+cd D:\Users\luif\Desktop\projetofitmax\fitmaxonpython
 
 echo [INFO] Alternando para a branch develop...
 git checkout develop
