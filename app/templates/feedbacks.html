@@ -2,15 +2,27 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedbacks.css') }}">
   <title>Enviar Feedback</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedbacks.css') }}">
+   
 </head>
 <body>
-  <img src="{{ url_for('static', filename='IMG/fundo.jpg') }}" alt="fITMAX">
 
+<div class="logofeedback">
+  <a href="{{ url_for('inicial_logado') }}" class="voltar">Voltar</a>
+  <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" class="logo-img">
+</div>
+
+
+  </nav>
   <div class="container">
     <h2>Enviar Feedback</h2>
-    <form method="POST" action="{{ url_for('enviar_feedback') }}">
+
+    <div id="mensagem-sucesso" class="mensagem-sucesso hidden">
+      <p>Feedback enviado com sucesso! Obrigado!</p>
+    </div>
+
+    <form id="form-feedback">
       <div class="stars" id="stars">
         <span class="star" data-value="5">&#9733;</span>
         <span class="star" data-value="4">&#9733;</span>
@@ -38,18 +50,18 @@
         <label><input type="checkbox" name="elogios[]" value="Atendimento atencioso"> Atendimento atencioso</label>
         <label><input type="checkbox" name="elogios[]" value="Variedade de aulas"> Variedade de aulas</label>
         <label><input type="checkbox" name="elogios[]" value="Limpeza e organização"> Limpeza e organização</label>
+      
       </div>
       <br>
       <br>
 
       <label for="comentario">Comentário (opcional):</label>
-      <textarea name="comentario" id="comentario" placeholder="Deixe um Comentário!"></textarea>
+      <textarea name="comentario" id="comentario" placeholder="Deixe um comentário!"></textarea>
 
       <button type="submit">Enviar</button>
     </form>
   </div>
-<script src="{{ url_for('static', filename='js/feedbacks.js') }}"></script>
 
- 
+  <script src="static/js/feedbacks.js"></script>
 </body>
 </html>

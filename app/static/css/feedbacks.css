@@ -2,7 +2,7 @@ body {
   font-family: Arial, sans-serif;
   padding: 2rem;
   background-color: #f0f0f0;
-  background-image: url('static/IMG/fundo.jpg'); 
+  background: url(../IMG/fundo.jpg) no-repeat center center fixed;
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -12,6 +12,39 @@ body {
   display: flex;
   justify-content: center; /* Centraliza horizontalmente */
   align-items: center; /* Centraliza verticalmente */
+}
+
+.logofeedback {
+  background-color: #003366;
+  height: 100px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0 20px;
+  z-index: 1000;
+}
+.logo-img {
+  height: 85px;
+}
+
+.voltar {
+  position: absolute;
+  right: 50px;
+  color: #003366;
+  background-color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 20px; /* Aqui está o radius */
+  transition: background-color 0.3s ease;
+}
+
+.voltar:hover {
+  background-color: #f99100;
 }
 
 .container {
@@ -81,6 +114,20 @@ button:hover {
 .feedback-opcoes label {
   display: block;
   margin: 0.3rem 0;
+}
+
+.hidden {
+  display: none;
+}
+.mensagem-sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
 }
 
 .hidden {
