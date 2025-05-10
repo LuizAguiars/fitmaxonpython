@@ -1,5 +1,5 @@
 @echo off
-cd /d "D:\Projetofitmaxpython\fitmaxonpython"  @REM SEU DIRETORIO PORRA
+
 echo Verificando atualizacoes...
 
 :: Buscar atualizações do repositório remoto
