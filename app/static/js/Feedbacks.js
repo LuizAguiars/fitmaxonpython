@@ -3,7 +3,6 @@ const notaInput = document.getElementById('nota');
 const feedbackNegativo = document.getElementById('feedback-negativo');
 const feedbackPositivo = document.getElementById('feedback-positivo');
 const form = document.getElementById('form-feedback');
-const mensagemSucesso = document.getElementById('mensagem-sucesso');
 const comentarioInput = document.getElementById('comentario');
 let selectedRating = 0;
 
@@ -35,6 +34,36 @@ function atualizarFeedbackCampos(nota) {
   }
 }
 
+function exibirMensagemEnvio() {
+  // Criação da mensagem
+  const mensagemEnvio = document.createElement('div');
+  mensagemEnvio.textContent = "Feedback enviado com sucesso!";
+  
+  // Estilos da mensagem
+  mensagemEnvio.style.backgroundColor = 'green';
+  mensagemEnvio.style.color = 'white';
+  mensagemEnvio.style.padding = '10px';
+  mensagemEnvio.style.marginTop = '10px';
+  mensagemEnvio.style.borderRadius = '5px';
+  mensagemEnvio.style.textAlign = 'center';
+  mensagemEnvio.style.fontSize = '16px';
+  
+  // Estilização para centralizar a mensagem
+  mensagemEnvio.style.position = 'absolute';
+  mensagemEnvio.style.top = '50%';
+  mensagemEnvio.style.left = '50%';
+  mensagemEnvio.style.transform = 'translate(-50%, -50%)';
+  mensagemEnvio.style.zIndex = '1000';  // Garantir que a mensagem fique sobre outros elementos
+  
+  // Adicionando a mensagem ao corpo ou formulário
+  document.body.appendChild(mensagemEnvio);
+  
+  // Exibir a mensagem por 3 segundos e depois removê-la
+  setTimeout(() => {
+    mensagemEnvio.remove();
+  }, 4000);
+}
+
 stars.forEach(star => {
   const value = parseInt(star.dataset.value);
 
@@ -62,9 +91,12 @@ form.addEventListener('submit', (e) => {
   console.log('Motivos:', motivos);
   console.log('Elogios:', elogios);
 
-  mensagemSucesso.classList.remove('hidden');
+  // Exibe a mensagem de sucesso após o envio
+  exibirMensagemEnvio();
+
+  // Limpar o formulário
   form.reset();
-  updateStars();
-  atualizarFeedbackCampos(0);
-  selectedRating = 0;
+  updateStars();  // Isso garante que as estrelas sejam resetadas
+  atualizarFeedbackCampos(0); // Reseta a visibilidade dos campos de feedback
+  selectedRating = 0; // Reseta o rating
 });
