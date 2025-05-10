@@ -10,7 +10,10 @@ git add .
 
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
+
 git commit -m "Ajuste de Senha de banco de dados %DATAHORA%"
+
+
 
 REM Atualiza repositório local
 git fetch origin
@@ -29,3 +32,4 @@ git push origin develop
 
 echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
 pause
+
