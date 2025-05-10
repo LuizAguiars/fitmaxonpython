@@ -7,21 +7,6 @@ app = Flask(__name__)
 app.secret_key = 'secreto'
 
 
-
-<<<<<<< HEAD
-=======
-def get_db_connection():
-    return mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='8474',
-        database='fitmaxgym'
-    )
-
-# -------------------- Rotas do Sistema -------------------- #
-
->>>>>>> origin/main
-
 @app.route('/')
 def home():
     return render_template('inicial.html')
