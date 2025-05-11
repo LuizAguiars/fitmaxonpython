@@ -3,6 +3,9 @@ import mysql.connector
 from mysql.connector import Error
 from db import get_db_connection
 
+from validacoes import validar_cpf
+
+
 app = Flask(__name__)
 app.secret_key = 'secreto'
 
@@ -23,7 +26,7 @@ def login():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(
-            "SELECT Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
+            "SELECT ID_User, Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
         resultado = cur.fetchone()
         cur.close()
         conn.close()
@@ -32,15 +35,20 @@ def login():
             flash("E-mail não cadastrado!", "error")
             return redirect(url_for('login'))
 
-        senha_correta, nome = resultado
+        id_user, senha_correta, nome = resultado
         if senha != senha_correta:
             flash("Senha incorreta!", "error")
             return redirect(url_for('login'))
 
-        session['usuario'] = nome
+        # Agora salvamos o ID corretamente na sessão
+        session['usuario'] = id_user
+        # opcional, pode usar para exibir "Bem-vindo, nome"
+        session['nome'] = nome
+
         return redirect(url_for('inicial_logado'))
 
     return render_template('login.html')
+
 
 # -------------------- Rotas de tela de cadastro -------------------- #
 
@@ -59,38 +67,58 @@ def cadastro():
         email = request.form['email']
         senha = request.form['senha']
         cpf = request.form['cpf']
-        data = request.form['data']
+        data_nascimento = request.form['data_nascimento']
         sexo = request.form['sexo']
         endereco = request.form['endereco']
         cep = request.form['cep']
         id_plano = request.form['plano']
 
+        # Validações de CPF
         if len(cpf) > 14:
             flash("CPF inválido. Deve ter no máximo 14 caracteres.", "error")
             return redirect(url_for('cadastro'))
 
+        if not validar_cpf(cpf):
+            flash("CPF inválido. Digite um CPF real e válido.", "error")
+            return redirect(url_for('cadastro'))
+
         try:
             conn = get_db_connection()
-            cur = conn.cursor()
+            cur = conn.cursor(dictionary=True)
+
+            # Verifica se CPF já existe
+            cur.execute("SELECT * FROM USUARIO WHERE cpf_user = %s", (cpf,))
+            if cur.fetchone():
+                flash("CPF já cadastrado!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('cadastro'))
+
+            # Verifica se e-mail já existe
+            cur.execute(
+                "SELECT * FROM USUARIO WHERE Email_user = %s", (email,))
+            if cur.fetchone():
+                flash("E-mail já cadastrado!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('cadastro'))
+
+            # Insere novo usuário (Data_Cadastro_user será preenchido automaticamente)
             cur.execute("""
                 INSERT INTO USUARIO
-                (Nome_User, Email_user, Senha_User, cpf_user, Data_Cadastro_user,
+                (Nome_User, Email_user, Senha_User, cpf_user, Data_Nascimento,
                  sexo_user, endereco_user, CEP_USER, ID_PLANO, status_cliente)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (nome, email, senha, cpf, data, sexo, endereco, cep, id_plano, 'Ativo'))
+            """, (nome, email, senha, cpf, data_nascimento, sexo, endereco, cep, id_plano, 'Ativo'))
+
             conn.commit()
             cur.close()
             conn.close()
             flash("Cadastro realizado com sucesso!", "success")
             return redirect(url_for('login'))
 
-        except mysql.connector.IntegrityError as e:
-            if "Email_user" in str(e):
-                flash("E-mail já cadastrado!", "error")
-            elif "cpf_user" in str(e):
-                flash("CPF já cadastrado!", "error")
-            else:
-                flash("Erro ao cadastrar. Tente novamente.", "error")
+        except Exception as e:
+            flash(f"Erro ao cadastrar: {str(e)}", "error")
             return redirect(url_for('cadastro'))
 
     return render_template('cadastro.html', planos=planos)
@@ -104,8 +132,8 @@ def inicial_logado():
         flash("Você precisa estar logado para acessar essa página.", "error")
         return redirect(url_for('login'))
 
-    nome_completo = session['usuario']
-    primeiro_nome = nome_completo.split()[0]
+    nome_completo = session.get('nome', '')
+    primeiro_nome = nome_completo.split()[0] if nome_completo else 'Usuário'
 
     response = make_response(render_template(
         'iniciallogado.html', nome=primeiro_nome))
@@ -158,12 +186,12 @@ def minha_conta():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Cadastro_user, cpf_user, endereco_user,
+        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, endereco_user,
                CEP_USER, sexo_user, status_cliente, pagou_mes_atual
         FROM usuario
         WHERE ID_User = %s
     """, (user_id,))
-    
+
     usuario = cursor.fetchone()
     db.close()
 
