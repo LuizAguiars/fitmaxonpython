@@ -287,15 +287,17 @@ def gestao_usuarios():
         pagou = int(request.form.get('pagou_mes_atual') or 0)
         unidade_id = request.form.get('id_unidade')
         plano_id = request.form.get('id_plano')
+        data_nascimento = request.form.get('data_nascimento')
 
         try:
             if acao == 'incluir':
                 cursor.execute("""
                     INSERT INTO USUARIO
-                    (Nome_User, Email_user, Senha_User, Data_Cadastro_user, Unidade_Prox_ID,
-                     cpf_user, endereco_user, CEP_USER, ID_PLANO, sexo_user, status_cliente, pagou_mes_atual)
-                    VALUES (%s, %s, %s, CURDATE(), %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou))
+                    (Nome_User, Email_user, Senha_User, Unidade_Prox_ID,
+                     cpf_user, endereco_user, CEP_USER, ID_PLANO,
+                     sexo_user, status_cliente, pagou_mes_atual, Data_Nascimento)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou, data_nascimento))
                 flash("Usuário incluído com sucesso!", "success")
 
             elif acao == 'editar':
@@ -309,9 +311,10 @@ def gestao_usuarios():
                         status_cliente=%s,
                         pagou_mes_atual=%s,
                         Unidade_Prox_ID=%s,
-                        ID_PLANO=%s
+                        ID_PLANO=%s,
+                        Data_Nascimento=%s
                     WHERE ID_User=%s
-                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, id))
+                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, data_nascimento, id))
                 flash("Usuário atualizado com sucesso!", "warning")
 
             elif acao == 'remover':
@@ -323,6 +326,27 @@ def gestao_usuarios():
         except Exception as e:
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
+
+    # Listar usuários com JOIN
+    cursor.execute("""
+        SELECT u.*, un.Nome_Unidade, p.nome_plano
+        FROM USUARIO u
+        LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
+        LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
+    """)
+    usuarios = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM UNIDADES")
+    unidades = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM PLANO")
+    planos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
+
 
     # Listar usuários com join
     cursor.execute("""
