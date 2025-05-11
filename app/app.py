@@ -151,7 +151,24 @@ def minha_conta():
     if 'usuario' not in session:
         flash("Você precisa estar logado para acessar sua conta.", "error")
         return redirect(url_for('login'))
-    return render_template('minhaconta.html')
+
+    user_id = session['usuario']  # ID_User armazenado na sessão
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT Nome_User, Email_user, Data_Cadastro_user, cpf_user, endereco_user,
+               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        FROM usuario
+        WHERE ID_User = %s
+    """, (user_id,))
+    
+    usuario = cursor.fetchone()
+    db.close()
+
+    return render_template('minhaconta.html', usuario=usuario)
+
 
 # -------------------- Rotas de tela de gestão dos personais  -------------------- #
 
@@ -520,10 +537,12 @@ def feedbacks():
         try:
             nota = request.form["nota"]
             comentario = request.form["comentario"]
-            usuario_id = request.form["usuario_id"]  # Certifique-se de que este campo esteja no formulário!
+            # Certifique-se de que este campo esteja no formulário!
+            usuario_id = request.form["usuario_id"]
 
             # Log de debug para verificar se os dados estão chegando corretamente
-            print(f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
+            print(
+                f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
 
             # Usando a função para obter a conexão com o banco
             connection = get_db_connection()
@@ -543,7 +562,8 @@ def feedbacks():
             if 'connection' in locals():
                 connection.close()
 
-        return redirect(url_for('feedbacks'))  # Após a inserção, redireciona para evitar reenvio do formulário
+        # Após a inserção, redireciona para evitar reenvio do formulário
+        return redirect(url_for('feedbacks'))
 
     else:
         try:
@@ -567,6 +587,7 @@ def feedbacks():
         return render_template("feedbacks.html", feedbacks=feedbacks)
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
+
 @app.route('/relatorios', methods=["GET"])
 def relatorios():
     connection = get_db_connection()
@@ -584,46 +605,8 @@ def relatorios():
     return render_template("relatorios.html", feedbacks=feedbacks)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-from flask import Flask, render_template, request, jsonify
-
-app = Flask(__name__)
 
 # -------------------- Não mexer -------------------- #
-
-
