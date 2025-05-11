@@ -38,10 +38,10 @@
 </header>
     
 <div class="minha-conta">
-    <h2>Minha Conta</h2>
+    <h2>MINHA CONTA</h2>
     <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
-    <p><strong>Data de Cadastro:</strong> {{ usuario.Data_Cadastro_user }}</p>
+    <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
     <p><strong>CPF:</strong> {{ usuario.cpf_user }}</p>
     <p><strong>Endereço:</strong> {{ usuario.endereco_user or 'Não informado' }}</p>
     <p><strong>CEP:</strong> {{ usuario.CEP_USER or 'Não informado' }}</p>
@@ -63,6 +63,7 @@
         <p>FONE: (41) 99999-8888</p>
     </footer>
     <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+    
 
 </body>
 </html>
