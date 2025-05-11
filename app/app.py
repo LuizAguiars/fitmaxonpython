@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
+import traceback 
 from mysql.connector import Error
 from db import get_db_connection
 
@@ -565,6 +566,7 @@ def feedbacks():
                 connection.close()
 
         return render_template("feedbacks.html", feedbacks=feedbacks)
+        
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
 @app.route('/relatorios')
