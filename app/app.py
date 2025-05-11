@@ -4,6 +4,9 @@ import traceback
 from mysql.connector import Error
 from db import get_db_connection
 
+from validacoes import validar_cpf
+
+
 app = Flask(__name__)
 app.secret_key = 'secreto'
 
@@ -24,7 +27,7 @@ def login():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(
-            "SELECT Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
+            "SELECT ID_User, Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
         resultado = cur.fetchone()
         cur.close()
         conn.close()
@@ -33,15 +36,20 @@ def login():
             flash("E-mail não cadastrado!", "error")
             return redirect(url_for('login'))
 
-        senha_correta, nome = resultado
+        id_user, senha_correta, nome = resultado
         if senha != senha_correta:
             flash("Senha incorreta!", "error")
             return redirect(url_for('login'))
 
-        session['usuario'] = nome
+        # Agora salvamos o ID corretamente na sessão
+        session['usuario'] = id_user
+        # opcional, pode usar para exibir "Bem-vindo, nome"
+        session['nome'] = nome
+
         return redirect(url_for('inicial_logado'))
 
     return render_template('login.html')
+
 
 # -------------------- Rotas de tela de cadastro -------------------- #
 
@@ -60,38 +68,58 @@ def cadastro():
         email = request.form['email']
         senha = request.form['senha']
         cpf = request.form['cpf']
-        data = request.form['data']
+        data_nascimento = request.form['data_nascimento']
         sexo = request.form['sexo']
         endereco = request.form['endereco']
         cep = request.form['cep']
         id_plano = request.form['plano']
 
+        # Validações de CPF
         if len(cpf) > 14:
             flash("CPF inválido. Deve ter no máximo 14 caracteres.", "error")
             return redirect(url_for('cadastro'))
 
+        if not validar_cpf(cpf):
+            flash("CPF inválido. Digite um CPF real e válido.", "error")
+            return redirect(url_for('cadastro'))
+
         try:
             conn = get_db_connection()
-            cur = conn.cursor()
+            cur = conn.cursor(dictionary=True)
+
+            # Verifica se CPF já existe
+            cur.execute("SELECT * FROM USUARIO WHERE cpf_user = %s", (cpf,))
+            if cur.fetchone():
+                flash("CPF já cadastrado!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('cadastro'))
+
+            # Verifica se e-mail já existe
+            cur.execute(
+                "SELECT * FROM USUARIO WHERE Email_user = %s", (email,))
+            if cur.fetchone():
+                flash("E-mail já cadastrado!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('cadastro'))
+
+            # Insere novo usuário (Data_Cadastro_user será preenchido automaticamente)
             cur.execute("""
                 INSERT INTO USUARIO
-                (Nome_User, Email_user, Senha_User, cpf_user, Data_Cadastro_user,
+                (Nome_User, Email_user, Senha_User, cpf_user, Data_Nascimento,
                  sexo_user, endereco_user, CEP_USER, ID_PLANO, status_cliente)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (nome, email, senha, cpf, data, sexo, endereco, cep, id_plano, 'Ativo'))
+            """, (nome, email, senha, cpf, data_nascimento, sexo, endereco, cep, id_plano, 'Ativo'))
+
             conn.commit()
             cur.close()
             conn.close()
             flash("Cadastro realizado com sucesso!", "success")
             return redirect(url_for('login'))
 
-        except mysql.connector.IntegrityError as e:
-            if "Email_user" in str(e):
-                flash("E-mail já cadastrado!", "error")
-            elif "cpf_user" in str(e):
-                flash("CPF já cadastrado!", "error")
-            else:
-                flash("Erro ao cadastrar. Tente novamente.", "error")
+        except Exception as e:
+            flash(f"Erro ao cadastrar: {str(e)}", "error")
             return redirect(url_for('cadastro'))
 
     return render_template('cadastro.html', planos=planos)
@@ -105,8 +133,8 @@ def inicial_logado():
         flash("Você precisa estar logado para acessar essa página.", "error")
         return redirect(url_for('login'))
 
-    nome_completo = session['usuario']
-    primeiro_nome = nome_completo.split()[0]
+    nome_completo = session.get('nome', '')
+    primeiro_nome = nome_completo.split()[0] if nome_completo else 'Usuário'
 
     response = make_response(render_template(
         'iniciallogado.html', nome=primeiro_nome))
@@ -152,7 +180,24 @@ def minha_conta():
     if 'usuario' not in session:
         flash("Você precisa estar logado para acessar sua conta.", "error")
         return redirect(url_for('login'))
-    return render_template('minhaconta.html')
+
+    user_id = session['usuario']  # ID_User armazenado na sessão
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, endereco_user,
+               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        FROM usuario
+        WHERE ID_User = %s
+    """, (user_id,))
+
+    usuario = cursor.fetchone()
+    db.close()
+
+    return render_template('minhaconta.html', usuario=usuario)
+
 
 # -------------------- Rotas de tela de gestão dos personais  -------------------- #
 
@@ -243,15 +288,17 @@ def gestao_usuarios():
         pagou = int(request.form.get('pagou_mes_atual') or 0)
         unidade_id = request.form.get('id_unidade')
         plano_id = request.form.get('id_plano')
+        data_nascimento = request.form.get('data_nascimento')
 
         try:
             if acao == 'incluir':
                 cursor.execute("""
                     INSERT INTO USUARIO
-                    (Nome_User, Email_user, Senha_User, Data_Cadastro_user, Unidade_Prox_ID,
-                     cpf_user, endereco_user, CEP_USER, ID_PLANO, sexo_user, status_cliente, pagou_mes_atual)
-                    VALUES (%s, %s, %s, CURDATE(), %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou))
+                    (Nome_User, Email_user, Senha_User, Unidade_Prox_ID,
+                     cpf_user, endereco_user, CEP_USER, ID_PLANO,
+                     sexo_user, status_cliente, pagou_mes_atual, Data_Nascimento)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou, data_nascimento))
                 flash("Usuário incluído com sucesso!", "success")
 
             elif acao == 'editar':
@@ -265,9 +312,10 @@ def gestao_usuarios():
                         status_cliente=%s,
                         pagou_mes_atual=%s,
                         Unidade_Prox_ID=%s,
-                        ID_PLANO=%s
+                        ID_PLANO=%s,
+                        Data_Nascimento=%s
                     WHERE ID_User=%s
-                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, id))
+                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, data_nascimento, id))
                 flash("Usuário atualizado com sucesso!", "warning")
 
             elif acao == 'remover':
@@ -279,6 +327,27 @@ def gestao_usuarios():
         except Exception as e:
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
+
+    # Listar usuários com JOIN
+    cursor.execute("""
+        SELECT u.*, un.Nome_Unidade, p.nome_plano
+        FROM USUARIO u
+        LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
+        LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
+    """)
+    usuarios = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM UNIDADES")
+    unidades = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM PLANO")
+    planos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
+
 
     # Listar usuários com join
     cursor.execute("""
@@ -521,10 +590,12 @@ def feedbacks():
         try:
             nota = request.form["nota"]
             comentario = request.form["comentario"]
-            usuario_id = request.form["usuario_id"]  # Certifique-se de que este campo esteja no formulário!
+            # Certifique-se de que este campo esteja no formulário!
+            usuario_id = request.form["usuario_id"]
 
             # Log de debug para verificar se os dados estão chegando corretamente
-            print(f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
+            print(
+                f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
 
             # Usando a função para obter a conexão com o banco
             connection = get_db_connection()
@@ -544,7 +615,8 @@ def feedbacks():
             if 'connection' in locals():
                 connection.close()
 
-        return redirect(url_for('feedbacks'))  # Após a inserção, redireciona para evitar reenvio do formulário
+        # Após a inserção, redireciona para evitar reenvio do formulário
+        return redirect(url_for('feedbacks'))
 
     else:
         try:
@@ -569,79 +641,69 @@ def feedbacks():
         
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
-@app.route('/relatorios')
+
+
+@app.route('/relatorios', methods=["GET"])
 def relatorios():
     # Conectar ao banco de dados
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Consulta para calcular as porcentagens de cada estrela (1-5)
+    # Consulta: porcentagem por nota
     cursor.execute("""
         SELECT 
             (SUM(CASE WHEN nota_user = 5 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `5 estrelas`,
             (SUM(CASE WHEN nota_user = 4 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `4 estrelas`,
             (SUM(CASE WHEN nota_user = 3 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `3 estrelas`,
             (SUM(CASE WHEN nota_user = 2 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `2 estrelas`,
-            (SUM(CASE WHEN nota_user  = 1 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `1 estrela`
+            (SUM(CASE WHEN nota_user = 1 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `1 estrela`
         FROM feedback
     """)
     porcentagens = cursor.fetchone()
 
-    # Consulta para pegar a quantidade de feedbacks por unidade e região
+    # Consulta: quantidade por unidade e região
     cursor.execute("""
         SELECT 
-            u.ID_Unidades AS id_unidade,  # Ajustado para o nome correto
-            r.ID_Regiao AS id_regiao,  # Ajustado para o nome correto
+            u.ID_Unidades AS id_unidade,
+            r.ID_Regiao AS id_regiao,
             COUNT(*) AS quantidade
         FROM feedback f
-        JOIN unidades u ON f.id_unidade = u.ID_Unidades  # Ajustado para o nome correto
-        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao  # Ajustado para o nome correto
+        JOIN unidades u ON f.id_unidade = u.ID_Unidades
+        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
         GROUP BY u.ID_Unidades, r.ID_Regiao
         ORDER BY u.ID_Unidades, r.ID_Regiao
     """)
     feedbacks = cursor.fetchall()
 
-    # Fechar a conexão
+    # ✅ Nova consulta: comentários com nota, id_user, nome da unidade e nome da região
+    cursor.execute("""
+        SELECT 
+            f.nota_user,
+            f.Comentario,
+            f.id_user_feedback,
+            u.Nome_Unidade AS nome_unidade,
+            r.Nome_Regiao AS nome_regiao
+        FROM feedback f
+        JOIN unidades u ON f.id_unidade = u.ID_Unidades
+        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
+        WHERE f.Comentario IS NOT NULL AND f.Comentario != ''
+        ORDER BY f.nota_user
+    """)
+    comentarios = cursor.fetchall()
+
+    # Fechar conexão
     cursor.close()
     conn.close()
 
-    # Enviar para o template
-    return render_template('relatorios.html', porcentagens=porcentagens, feedbacks=feedbacks)
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # Renderizar template
+    return render_template('relatorios.html',
+                           porcentagens=porcentagens,
+                           feedbacks=feedbacks,
+                           comentarios=comentarios)
 
 
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-from flask import Flask, render_template, request, jsonify
-
-app = Flask(__name__)
 
 # -------------------- Não mexer -------------------- #
-
-

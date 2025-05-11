@@ -50,7 +50,12 @@
                 <input type="text" name="cep" placeholder="CEP" required>
             </div>
 
-            <input type="date" name="data" required>
+            <label for="data_nascimento" style="color: #8d8c8c; margin-left: 2px;">Data de Nascimento:</label>
+            <input type="date" name="data_nascimento" id="data_nascimento" required>
+
+
+
+
 
             <div class="form-row">
                 <select name="sexo" required>
@@ -73,7 +78,9 @@
         <p class="login-link"><a href="/login">Já tem conta? Faça login</a></p>
     </div>
     
- <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
+    
 
 </body>
 </html>

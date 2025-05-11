@@ -623,3 +623,33 @@ button:hover {
 
 
 
+.minha-conta {
+  background-color: rgba(0, 31, 91); /* azul escuro */
+  color: #f0f4f8; /* texto claro */
+  padding: 30px 40px;
+  margin: 40px auto;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 31, 91);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: left; /* garante que o conteúdo fique à esquerda */
+}
+
+.minha-conta h2 {
+  text-align: center; /* só o título centralizado */
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.minha-conta p {
+  font-size: 18px;
+  margin: 10px 0;
+  border-bottom: 1px solid #2e3650;
+  padding-bottom: 8px;
+  margin-left: 10px; /* pequeno recuo à esquerda */
+}
+
+.minha-conta strong {
+  color: #c7e6ff; /* azul claro para destacar os títulos */
+}
