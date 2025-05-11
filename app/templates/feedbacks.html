@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Enviar Feedback</title>
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedbacks.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
    
 </head>
 <body>
@@ -31,7 +31,6 @@
 
    
       <form id="form-feedback" action="{{ url_for('feedbacks') }}" method="POST">
-      <input type="hidden" name="usuario_id" value="1">  <!-- Exemplo de usuário_id -->
       <div class="stars" id="stars">
         <span class="star" data-value="5">&#9733;</span>
         <span class="star" data-value="4">&#9733;</span>
@@ -74,10 +73,7 @@
   <script src="static/js/feedbacks.js">
   </script>
   
-  <script>
-    // Isso cria a variável 'feedbacksUrl' com a URL gerada automaticamente pelo Flask
-    const feedbacksUrl = "{{ url_for('feedbacks') }}"; 
-  </script>
 
+  
 </body>
 </html>

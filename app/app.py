@@ -567,31 +567,47 @@ def feedbacks():
         return render_template("feedbacks.html", feedbacks=feedbacks)
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
-@app.route('/relatorios', methods=["GET"])
+@app.route('/relatorios')
 def relatorios():
-    connection = get_db_connection()
-    cursor = connection.cursor()
+    # Conectar ao banco de dados
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
+    # Consulta para calcular as porcentagens de cada estrela (1-5)
     cursor.execute("""
-        SELECT idfeedback, nota_user, Comentario, id_user_feedback
+        SELECT 
+            (SUM(CASE WHEN nota_user = 5 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `5 estrelas`,
+            (SUM(CASE WHEN nota_user = 4 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `4 estrelas`,
+            (SUM(CASE WHEN nota_user = 3 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `3 estrelas`,
+            (SUM(CASE WHEN nota_user = 2 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `2 estrelas`,
+            (SUM(CASE WHEN nota_user  = 1 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `1 estrela`
         FROM feedback
-        ORDER BY nota_user
+    """)
+    porcentagens = cursor.fetchone()
+
+    # Consulta para pegar a quantidade de feedbacks por unidade e região
+    cursor.execute("""
+        SELECT 
+            u.ID_Unidades AS id_unidade,  # Ajustado para o nome correto
+            r.ID_Regiao AS id_regiao,  # Ajustado para o nome correto
+            COUNT(*) AS quantidade
+        FROM feedback f
+        JOIN unidades u ON f.id_unidade = u.ID_Unidades  # Ajustado para o nome correto
+        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao  # Ajustado para o nome correto
+        GROUP BY u.ID_Unidades, r.ID_Regiao
+        ORDER BY u.ID_Unidades, r.ID_Regiao
     """)
     feedbacks = cursor.fetchall()
 
-    connection.close()
+    # Fechar a conexão
+    cursor.close()
+    conn.close()
 
-    return render_template("relatorios.html", feedbacks=feedbacks)
-
+    # Enviar para o template
+    return render_template('relatorios.html', porcentagens=porcentagens, feedbacks=feedbacks)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-
-
 
 
 
