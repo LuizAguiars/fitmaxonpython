@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "correcao data de nascimento e melhor organizacao do flash.js %DATAHORA%"
+git commit -m "validaçao de nome e email %DATAHORA%"
 
 
 

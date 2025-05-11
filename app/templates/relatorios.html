@@ -14,7 +14,7 @@
     </div>
       
 
-
+    
     <h1>Relatório de Avaliações</h1>
 
     <form action="/logout" method="POST">
@@ -36,31 +36,53 @@
     <section class="bloco-avaliacao estrelas">
       <h3>Porcentagem por Estrelas</h3>
       <ul>
-        <li><span>⭐ 5 Estrelas:</span> {{ porcentagens['5 estrelas'] }}%</li>
-        <li><span>⭐ 4 Estrelas:</span> {{ porcentagens['4 estrelas'] }}%</li>
-        <li><span>⭐ 3 Estrelas:</span> {{ porcentagens['3 estrelas'] }}%</li>
-        <li><span>⭐ 2 Estrelas:</span> {{ porcentagens['2 estrelas'] }}%</li>
-        <li><span>⭐ 1 Estrela:</span> {{ porcentagens['1 estrela'] }}%</li>
+        <li><span>⭐ 5 Estrelas:</span> {{ porcentagens['5 estrelas'] | round(1) }}%</li>
+        <li><span>⭐ 4 Estrelas:</span> {{ porcentagens['4 estrelas'] | round(1) }}%</li>
+        <li><span>⭐ 3 Estrelas:</span> {{ porcentagens['3 estrelas'] | round(1) }}%</li>
+        <li><span>⭐ 2 Estrelas:</span> {{ porcentagens['2 estrelas'] | round(1) }}%</li>
+        <li><span>⭐ 1 Estrela:</span>  {{ porcentagens['1 estrela']  | round(1) }}%</li>
       </ul>
     </section>
     
-    <section class="bloco-avaliacao unidades">
+    <!-- <section class="bloco-avaliacao unidades">
       <h3>Avaliações por Unidade</h3>
       <ul>
-        {% for feedback in feedbacks %}
-          <li><span>Unidade {{ feedback['id_unidade'] }}:</span> {{ feedback['quantidade'] }} feedbacks</li>
+        {% set unidades = {} %}
+        {% for f in feedbacks %}
+          {% set _ = unidades.update({f['id_unidade']: (unidades.get(f['id_unidade'], 0) + f['quantidade'])}) %}
+        {% endfor %}
+        {% for id, qtd in unidades.items() %}
+          <li><span>Unidade {{ id }}:</span> {{ qtd }} feedbacks</li>
         {% endfor %}
       </ul>
     </section>
     
     <section class="bloco-avaliacao regioes">
-      <h3>Avaliações por Região</h3>
-      <ul>
-        {% for feedback in feedbacks %}
-          <li><span>Região {{ feedback['id_regiao'] }}:</span> {{ feedback['quantidade'] }} feedbacks</li>
-        {% endfor %}
-      </ul>
-    </section>
+  <h3>Avaliações por Região</h3>
+  <ul>
+    {% set regioes = {} %}
+    {% for f in feedbacks %}
+      {% set _ = regioes.update({f['id_regiao']: (regioes.get(f['id_regiao'], 0) + f['quantidade'])}) %}
+    {% endfor %}
+    {% for id, qtd in regioes.items() %}
+      <li><span>Região {{ id }}:</span> {{ qtd }} feedbacks</li>
+    {% endfor %}
+  </ul>
+</section> -->
+
+<section class="bloco-avaliacao comentarios">
+  <h3>Comentários dos Usuários</h3>
+  <ul>
+    {% for c in comentarios %}
+      <li>
+        <p><strong>⭐ {{ c['nota_user'] }}</strong> — {{ c['nome_unidade'] }} ({{ c['nome_regiao'] }})</p>
+        <p><em>{{ c['Comentario'] }}</em></p>
+        <hr>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
   </main>
 
   <footer>

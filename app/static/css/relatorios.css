@@ -189,6 +189,10 @@ section{
   background: linear-gradient(135deg, #2196f3, #1565c0);
 }
 
+.bloco-avaliacao.comentarios {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+}
+
 
 
 /* Lista */

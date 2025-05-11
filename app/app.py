@@ -4,7 +4,7 @@ import traceback
 from mysql.connector import Error
 from db import get_db_connection
 
-from validacoes import validar_cpf
+from validacoes import validar_cpf, validar_nome, nome_nao_comeca_com_numero, validar_email
 
 
 app = Flask(__name__)
@@ -103,6 +103,13 @@ def cadastro():
                 cur.close()
                 conn.close()
                 return redirect(url_for('cadastro'))
+
+
+            # Verifica se nome esta com o formato correto
+            if not validar_nome(nome):
+                flash("Nome inválido. O nome deve conter apenas letras.", "error")
+                return redirect(url_for('cadastro'))
+
 
             # Insere novo usuário (Data_Cadastro_user será preenchido automaticamente)
             cur.execute("""
@@ -637,7 +644,11 @@ def feedbacks():
             if 'connection' in locals():
                 connection.close()
 
+        
+
         return render_template("feedbacks.html", feedbacks=feedbacks)
+        print(comentarios)  # Verifica se comentários estão sendo retornados corretamente
+
         
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
@@ -661,28 +672,14 @@ def relatorios():
     """)
     porcentagens = cursor.fetchone()
 
-    # Consulta: quantidade por unidade e região
+    # Nova consulta: comentários com nota, id_user, nome da unidade e nome da região
     cursor.execute("""
         SELECT 
-            u.ID_Unidades AS id_unidade,
-            r.ID_Regiao AS id_regiao,
-            COUNT(*) AS quantidade
-        FROM feedback f
-        JOIN unidades u ON f.id_unidade = u.ID_Unidades
-        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
-        GROUP BY u.ID_Unidades, r.ID_Regiao
-        ORDER BY u.ID_Unidades, r.ID_Regiao
-    """)
-    feedbacks = cursor.fetchall()
-
-    # ✅ Nova consulta: comentários com nota, id_user, nome da unidade e nome da região
-    cursor.execute("""
-        SELECT 
-            f.nota_user,
-            f.Comentario,
-            f.id_user_feedback,
-            u.Nome_Unidade AS nome_unidade,
-            r.Nome_Regiao AS nome_regiao
+        f.nota_user,
+        f.Comentario,
+        f.id_user_feedback,
+        u.Nome_Unidade AS nome_unidade,
+        r.Nome_Regiao AS nome_regiao
         FROM feedback f
         JOIN unidades u ON f.id_unidade = u.ID_Unidades
         JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
@@ -694,13 +691,11 @@ def relatorios():
     # Fechar conexão
     cursor.close()
     conn.close()
-
-    # Renderizar template
+    print(type(comentarios))
+    # Renderizar template e passar os comentários
     return render_template('relatorios.html',
                            porcentagens=porcentagens,
-                           feedbacks=feedbacks,
                            comentarios=comentarios)
-
 
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
