@@ -151,7 +151,24 @@ def minha_conta():
     if 'usuario' not in session:
         flash("Você precisa estar logado para acessar sua conta.", "error")
         return redirect(url_for('login'))
-    return render_template('minhaconta.html')
+
+    user_id = session['usuario']  # ID_User armazenado na sessão
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT Nome_User, Email_user, Data_Cadastro_user, cpf_user, endereco_user,
+               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        FROM usuario
+        WHERE ID_User = %s
+    """, (user_id,))
+    
+    usuario = cursor.fetchone()
+    db.close()
+
+    return render_template('minhaconta.html', usuario=usuario)
+
 
 # -------------------- Rotas de tela de gestão dos personais  -------------------- #
 
@@ -511,78 +528,85 @@ def treinos_padrao():
         return redirect(url_for('login'))
     return render_template('treinos_padrao.html')
 
-# -------------------- Rotas de tela de relatorios  -------------------- #
+# -------------------- Rotas de tela de feedback  -------------------- #
 
 
-@app.route('/relatorios')
-def relatorios():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar os relatórios.", "error")
-        return redirect(url_for('login'))
-    return render_template('relatorios.html')
-
-
-@app.route('/feedbacks')
+@app.route('/feedbacks', methods=["POST", "GET"])
 def feedbacks():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para realizar o feedback", "error")
-        return redirect(url_for('login'))
-    return render_template('feedbacks.html')
+    if request.method == "POST":
+        try:
+            nota = request.form["nota"]
+            comentario = request.form["comentario"]
+            # Certifique-se de que este campo esteja no formulário!
+            usuario_id = request.form["usuario_id"]
+
+            # Log de debug para verificar se os dados estão chegando corretamente
+            print(
+                f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
+
+            # Usando a função para obter a conexão com o banco
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                INSERT INTO feedback (nota_user, Comentario, id_user_feedback)
+                VALUES (%s, %s, %s)
+            """, (nota, comentario, usuario_id))
+
+            connection.commit()
+
+        except Exception as e:
+            return f"Erro ao salvar no banco: {e}", 500
+
+        finally:
+            if 'connection' in locals():
+                connection.close()
+
+        # Após a inserção, redireciona para evitar reenvio do formulário
+        return redirect(url_for('feedbacks'))
+
+    else:
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+                SELECT idfeedback, nota_user, Comentario, id_user_feedback
+                FROM feedback
+                ORDER BY nota_user
+            """)
+            feedbacks = cursor.fetchall()
+
+        except Exception as e:
+            return f"Erro ao buscar feedbacks do banco: {e}", 500
+
+        finally:
+            if 'connection' in locals():
+                connection.close()
+
+        return render_template("feedbacks.html", feedbacks=feedbacks)
+# -------------------- Rotas de tela de relatorio  -------------------- #
 
 
+@app.route('/relatorios', methods=["GET"])
+def relatorios():
+    connection = get_db_connection()
+    cursor = connection.cursor()
 
+    cursor.execute("""
+        SELECT idfeedback, nota_user, Comentario, id_user_feedback
+        FROM feedback
+        ORDER BY nota_user
+    """)
+    feedbacks = cursor.fetchall()
 
+    connection.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return render_template("relatorios.html", feedbacks=feedbacks)
 
 
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-from flask import Flask, render_template, request, jsonify
-
-app = Flask(__name__)
 
 # -------------------- Não mexer -------------------- #
-
-

@@ -91,12 +91,29 @@ form.addEventListener('submit', (e) => {
   console.log('Motivos:', motivos);
   console.log('Elogios:', elogios);
 
-  // Exibe a mensagem de sucesso após o envio
-  exibirMensagemEnvio();
-
-  // Limpar o formulário
-  form.reset();
-  updateStars();  // Isso garante que as estrelas sejam resetadas
-  atualizarFeedbackCampos(0); // Reseta a visibilidade dos campos de feedback
-  selectedRating = 0; // Reseta o rating
+  // Enviar os dados via AJAX para o Flask
+  fetch(feedbacksUrl, {
+    method: 'POST',
+    body: new FormData(form),  // Envia os dados do formulário
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Erro ao enviar os dados');
+    }
+    return response.text(); // Ou response.json() se o servidor retornar JSON
+  })
+  .then(data => {
+    // Exibe a mensagem de sucesso após o envio
+    exibirMensagemEnvio();
+    
+    // Limpar o formulário
+    form.reset();
+    updateStars();  // Isso garante que as estrelas sejam resetadas
+    atualizarFeedbackCampos(0); // Reseta a visibilidade dos campos de feedback
+    selectedRating = 0; // Reseta o rating
+  })
+  .catch(error => {
+    console.error('Erro ao enviar os dados:', error);
+    exibirMensagemEnvio();  // Se houver erro, ainda pode exibir a mensagem de falha
+  });
 });

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Feedbacks</title>
+</head>
+<body>
+  <h2>Relatório de Feedbacks</h2>
+  
+  <table border="1">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Usuário</th>
+        <th>Nota</th>
+        <th>Comentário</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for feedback in feedbacks %}
+        <tr>
+          <td>{{ feedback[0] }}</td>
+          <td>{{ feedback[3] }}</td>
+          <td>{{ feedback[1] }}</td>
+          <td>{{ feedback[2] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
