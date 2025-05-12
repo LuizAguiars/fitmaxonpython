@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "tirando force do push %DATAHORA%"
+git commit -m "update nos feedbakcs com correcoes e ajuste no relatorio de feedback %DATAHORA%"
 
 
 

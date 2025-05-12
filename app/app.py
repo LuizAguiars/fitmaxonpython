@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
-import traceback 
+import traceback
 from mysql.connector import Error
 from db import get_db_connection
 
@@ -104,12 +104,10 @@ def cadastro():
                 conn.close()
                 return redirect(url_for('cadastro'))
 
-
             # Verifica se nome esta com o formato correto
             if not validar_nome(nome):
                 flash("Nome inválido. O nome deve conter apenas letras.", "error")
                 return redirect(url_for('cadastro'))
-
 
             # Insere novo usuário (Data_Cadastro_user será preenchido automaticamente)
             cur.execute("""
@@ -355,7 +353,6 @@ def gestao_usuarios():
 
     return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
-
     # Listar usuários com join
     cursor.execute("""
         SELECT u.*, un.Nome_Unidade, p.nome_plano
@@ -593,65 +590,66 @@ def treinos_padrao():
 
 @app.route('/feedbacks', methods=["POST", "GET"])
 def feedbacks():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
     if request.method == "POST":
         try:
             nota = request.form["nota"]
             comentario = request.form["comentario"]
-            # Certifique-se de que este campo esteja no formulário!
             usuario_id = request.form["usuario_id"]
+            unidade_id = request.form["unidade_id"]
 
-            # Log de debug para verificar se os dados estão chegando corretamente
+            elogios = request.form.getlist("elogios[]")
+            motivos = request.form.getlist("motivos[]")
+
+            # Junta todas as opções selecionadas (elogios ou críticas)
+            opcoes_selecionadas = elogios + motivos
+            outro = ", ".join(
+                opcoes_selecionadas) if opcoes_selecionadas else None
+
             print(
-                f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
-
-            # Usando a função para obter a conexão com o banco
-            connection = get_db_connection()
-            cursor = connection.cursor()
+                f"Nota: {nota}, Comentário: {comentario}, Outro: {outro}, Usuario ID: {usuario_id}, Unidade ID: {unidade_id}"
+            )
 
             cursor.execute("""
-                INSERT INTO feedback (nota_user, Comentario, id_user_feedback)
-                VALUES (%s, %s, %s)
-            """, (nota, comentario, usuario_id))
-
+                INSERT INTO feedback (nota_user, Comentario, id_user_feedback, id_unidade, Outro)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (nota, comentario, usuario_id, unidade_id, outro))
             connection.commit()
 
+            flash("Feedback enviado com sucesso!", "success")
+            return redirect(url_for('feedbacks'))
+
         except Exception as e:
+            connection.rollback()
+            print(f"Erro ao salvar feedback: {e}")
+            flash("Erro ao enviar feedback.", "error")
             return f"Erro ao salvar no banco: {e}", 500
 
         finally:
-            if 'connection' in locals():
-                connection.close()
-
-        # Após a inserção, redireciona para evitar reenvio do formulário
-        return redirect(url_for('feedbacks'))
+            cursor.close()
+            connection.close()
 
     else:
         try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-
             cursor.execute("""
-                SELECT idfeedback, nota_user, Comentario, id_user_feedback
-                FROM feedback
-                ORDER BY nota_user
+                SELECT ID_Unidades, Nome_Unidade FROM unidades
             """)
-            feedbacks = cursor.fetchall()
+            unidades = cursor.fetchall()
 
         except Exception as e:
-            return f"Erro ao buscar feedbacks do banco: {e}", 500
+            print(f"Erro ao buscar unidades: {e}")
+            return f"Erro ao buscar unidades: {e}", 500
 
         finally:
-            if 'connection' in locals():
-                connection.close()
+            cursor.close()
+            connection.close()
 
-        
+        return render_template("feedbacks.html", unidades=unidades)
 
-        return render_template("feedbacks.html", feedbacks=feedbacks)
-        print(comentarios)  # Verifica se comentários estão sendo retornados corretamente
 
-        
 # -------------------- Rotas de tela de relatorio  -------------------- #
-
 
 
 @app.route('/relatorios', methods=["GET"])
@@ -674,17 +672,17 @@ def relatorios():
 
     # Nova consulta: comentários com nota, id_user, nome da unidade e nome da região
     cursor.execute("""
-        SELECT 
+         SELECT 
         f.nota_user,
         f.Comentario,
         f.id_user_feedback,
         u.Nome_Unidade AS nome_unidade,
         r.Nome_Regiao AS nome_regiao
         FROM feedback f
-        JOIN unidades u ON f.id_unidade = u.ID_Unidades
-        JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
+        LEFT JOIN unidades u ON f.id_unidade = u.ID_Unidades
+        LEFT JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
         WHERE f.Comentario IS NOT NULL AND f.Comentario != ''
-        ORDER BY f.nota_user
+        ORDER BY f.nota_user;
     """)
     comentarios = cursor.fetchall()
 
@@ -696,6 +694,7 @@ def relatorios():
     return render_template('relatorios.html',
                            porcentagens=porcentagens,
                            comentarios=comentarios)
+
 
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
