@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Usuários - Fitmax Gym</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios1.css') }}">
+</head>
+
+<body>
+
+
+   <header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    </div>
+
+    <div class="search-container">
+        <input type="text" placeholder="Pesquisar..." />
+        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+    </div>
+
+    <div class="usuario-logado">
+        <p>Olá, {{ nome }} 👋</p>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit">Sair</button>
+        </form>
+    </div>
+
+    <!-- Aqui vem o horário, abaixo da busca -->
+    <nav class="menu-logado">
+      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
+      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
+      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
+      <a  href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+  </nav>
+  
+</header>
+
+<body>
+  <div class="wrapper-centralizado">
+  <div class="dashboard-card">
+    <div class="unidade-select">
+      <label for="unidade">Selecione a Unidade:</label>
+      <select id="unidade-select">
+        {% for unidade in unidades %}
+          <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="grafico-section">
+      <canvas id="graficoEstrelas"></canvas>
+    </div>
+  </div>
+  </div>
+</body>
+
+
+</body>
+ 
+  <script src="{{ url_for('static', filename='js/relatoriofeedback.js') }}"></script>
+
+</html>

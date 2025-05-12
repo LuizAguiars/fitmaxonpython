@@ -3,6 +3,8 @@ import mysql.connector
 import traceback
 from mysql.connector import Error
 from db import get_db_connection
+from flask import jsonify
+import traceback
 
 from validacoes import validar_cpf, validar_nome, nome_nao_comeca_com_numero, validar_email
 
@@ -696,6 +698,72 @@ def relatorios():
                            comentarios=comentarios)
 
 
+# -------------------- relatorio de estrelas por unidade  API -------------------- #
+
+@app.route("/api/feedback_porcentagem/<int:id_unidade>")
+def feedback_porcentagem(id_unidade):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT
+                SUM(CASE WHEN nota_user = 5 THEN 1 ELSE 0 END) AS cinco,
+                SUM(CASE WHEN nota_user = 4 THEN 1 ELSE 0 END) AS quatro,
+                SUM(CASE WHEN nota_user = 3 THEN 1 ELSE 0 END) AS tres,
+                SUM(CASE WHEN nota_user = 2 THEN 1 ELSE 0 END) AS dois,
+                SUM(CASE WHEN nota_user = 1 THEN 1 ELSE 0 END) AS um,
+                COUNT(*) AS total
+            FROM feedback
+            WHERE id_unidade = %s AND nota_user BETWEEN 1 AND 5
+        """, (id_unidade,))
+        row = cursor.fetchone()
+
+        total = row["total"] or 1
+
+        porcentagens = {
+            "5 estrelas": round((row["cinco"] / total) * 100, 1),
+            "4 estrelas": round((row["quatro"] / total) * 100, 1),
+            "3 estrelas": round((row["tres"] / total) * 100, 1),
+            "2 estrelas": round((row["dois"] / total) * 100, 1),
+            "1 estrela": round((row["um"] / total) * 100, 1)
+        }
+
+        return jsonify(porcentagens)
+
+    except Exception as e:
+        print("Erro ao consultar dados:")
+        traceback.print_exc()
+        return jsonify({"erro": "Erro ao consultar dados"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------- relatorio de estrelas por unidade  API -------------------- #
+
+# -------------------- relatorio de estrelas por unidade -------------------- #
+@app.route("/feedbackstar")
+def feedbackstar():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
+        unidades = cursor.fetchall()
+        return render_template("feedbackstar.html", unidades=unidades)
+
+    except Exception as e:
+        print("Erro ao carregar unidades:", e)
+        return "Erro ao carregar página", 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------- relatorio de estrelas por unidade -------------------- #
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

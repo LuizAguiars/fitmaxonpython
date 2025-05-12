@@ -2,15 +2,15 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  min-height: 100vh;
   background: url(../IMG/fundo.jpg) no-repeat center center fixed;
   background-size: cover;
-  background-position: center;
   background-attachment: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 
 .logofeedback {
   background-color: rgba(0, 31, 91);
