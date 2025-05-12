@@ -12,3 +12,6 @@ MODIFY Data_Cadastro_user DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 ALTER TABLE usuario
 ADD COLUMN Data_Nascimento DATE AFTER Data_Cadastro_user;
+
+alter table usuario
+add telefone VARCHAR(20)

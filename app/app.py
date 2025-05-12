@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
+import traceback
 from mysql.connector import Error
 from db import get_db_connection
+from flask import jsonify
+import traceback
 
-from validacoes import validar_cpf
+from validacoes import validar_cpf, validar_nome, nome_nao_comeca_com_numero, validar_email
 
 
 app = Flask(__name__)
@@ -101,6 +104,11 @@ def cadastro():
                 flash("E-mail já cadastrado!", "error")
                 cur.close()
                 conn.close()
+                return redirect(url_for('cadastro'))
+
+            # Verifica se nome esta com o formato correto
+            if not validar_nome(nome):
+                flash("Nome inválido. O nome deve conter apenas letras.", "error")
                 return redirect(url_for('cadastro'))
 
             # Insere novo usuário (Data_Cadastro_user será preenchido automaticamente)
@@ -347,7 +355,6 @@ def gestao_usuarios():
 
     return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
-
     # Listar usuários com join
     cursor.execute("""
         SELECT u.*, un.Nome_Unidade, p.nome_plano
@@ -585,78 +592,178 @@ def treinos_padrao():
 
 @app.route('/feedbacks', methods=["POST", "GET"])
 def feedbacks():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
     if request.method == "POST":
         try:
             nota = request.form["nota"]
             comentario = request.form["comentario"]
-            # Certifique-se de que este campo esteja no formulário!
             usuario_id = request.form["usuario_id"]
+            unidade_id = request.form["unidade_id"]
 
-            # Log de debug para verificar se os dados estão chegando corretamente
+            elogios = request.form.getlist("elogios[]")
+            motivos = request.form.getlist("motivos[]")
+
+            # Junta todas as opções selecionadas (elogios ou críticas)
+            opcoes_selecionadas = elogios + motivos
+            outro = ", ".join(
+                opcoes_selecionadas) if opcoes_selecionadas else None
+
             print(
-                f"Nota: {nota}, Comentário: {comentario}, Usuario ID: {usuario_id}")
-
-            # Usando a função para obter a conexão com o banco
-            connection = get_db_connection()
-            cursor = connection.cursor()
+                f"Nota: {nota}, Comentário: {comentario}, Outro: {outro}, Usuario ID: {usuario_id}, Unidade ID: {unidade_id}"
+            )
 
             cursor.execute("""
-                INSERT INTO feedback (nota_user, Comentario, id_user_feedback)
-                VALUES (%s, %s, %s)
-            """, (nota, comentario, usuario_id))
-
+                INSERT INTO feedback (nota_user, Comentario, id_user_feedback, id_unidade, Outro)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (nota, comentario, usuario_id, unidade_id, outro))
             connection.commit()
 
+            flash("Feedback enviado com sucesso!", "success")
+            return redirect(url_for('feedbacks'))
+
         except Exception as e:
+            connection.rollback()
+            print(f"Erro ao salvar feedback: {e}")
+            flash("Erro ao enviar feedback.", "error")
             return f"Erro ao salvar no banco: {e}", 500
 
         finally:
-            if 'connection' in locals():
-                connection.close()
-
-        # Após a inserção, redireciona para evitar reenvio do formulário
-        return redirect(url_for('feedbacks'))
+            cursor.close()
+            connection.close()
 
     else:
         try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-
             cursor.execute("""
-                SELECT idfeedback, nota_user, Comentario, id_user_feedback
-                FROM feedback
-                ORDER BY nota_user
+                SELECT ID_Unidades, Nome_Unidade FROM unidades
             """)
-            feedbacks = cursor.fetchall()
+            unidades = cursor.fetchall()
 
         except Exception as e:
-            return f"Erro ao buscar feedbacks do banco: {e}", 500
+            print(f"Erro ao buscar unidades: {e}")
+            return f"Erro ao buscar unidades: {e}", 500
 
         finally:
-            if 'connection' in locals():
-                connection.close()
+            cursor.close()
+            connection.close()
 
-        return render_template("feedbacks.html", feedbacks=feedbacks)
+        return render_template("feedbacks.html", unidades=unidades)
+
+
 # -------------------- Rotas de tela de relatorio  -------------------- #
 
 
 @app.route('/relatorios', methods=["GET"])
 def relatorios():
-    connection = get_db_connection()
-    cursor = connection.cursor()
+    # Conectar ao banco de dados
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
+    # Consulta: porcentagem por nota
     cursor.execute("""
-        SELECT idfeedback, nota_user, Comentario, id_user_feedback
+        SELECT 
+            (SUM(CASE WHEN nota_user = 5 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `5 estrelas`,
+            (SUM(CASE WHEN nota_user = 4 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `4 estrelas`,
+            (SUM(CASE WHEN nota_user = 3 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `3 estrelas`,
+            (SUM(CASE WHEN nota_user = 2 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `2 estrelas`,
+            (SUM(CASE WHEN nota_user = 1 THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS `1 estrela`
         FROM feedback
-        ORDER BY nota_user
     """)
-    feedbacks = cursor.fetchall()
+    porcentagens = cursor.fetchone()
 
-    connection.close()
+    # Nova consulta: comentários com nota, id_user, nome da unidade e nome da região
+    cursor.execute("""
+         SELECT 
+        f.nota_user,
+        f.Comentario,
+        f.id_user_feedback,
+        u.Nome_Unidade AS nome_unidade,
+        r.Nome_Regiao AS nome_regiao
+        FROM feedback f
+        LEFT JOIN unidades u ON f.id_unidade = u.ID_Unidades
+        LEFT JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
+        WHERE f.Comentario IS NOT NULL AND f.Comentario != ''
+        ORDER BY f.nota_user;
+    """)
+    comentarios = cursor.fetchall()
 
-    return render_template("relatorios.html", feedbacks=feedbacks)
+    # Fechar conexão
+    cursor.close()
+    conn.close()
+    print(type(comentarios))
+    # Renderizar template e passar os comentários
+    return render_template('relatorios.html',
+                           porcentagens=porcentagens,
+                           comentarios=comentarios)
 
 
+# -------------------- relatorio de estrelas por unidade  API -------------------- #
+
+@app.route("/api/feedback_porcentagem/<int:id_unidade>")
+def feedback_porcentagem(id_unidade):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT
+                SUM(CASE WHEN nota_user = 5 THEN 1 ELSE 0 END) AS cinco,
+                SUM(CASE WHEN nota_user = 4 THEN 1 ELSE 0 END) AS quatro,
+                SUM(CASE WHEN nota_user = 3 THEN 1 ELSE 0 END) AS tres,
+                SUM(CASE WHEN nota_user = 2 THEN 1 ELSE 0 END) AS dois,
+                SUM(CASE WHEN nota_user = 1 THEN 1 ELSE 0 END) AS um,
+                COUNT(*) AS total
+            FROM feedback
+            WHERE id_unidade = %s AND nota_user BETWEEN 1 AND 5
+        """, (id_unidade,))
+        row = cursor.fetchone()
+
+        total = row["total"] or 1
+
+        porcentagens = {
+            "5 estrelas": round((row["cinco"] / total) * 100, 1),
+            "4 estrelas": round((row["quatro"] / total) * 100, 1),
+            "3 estrelas": round((row["tres"] / total) * 100, 1),
+            "2 estrelas": round((row["dois"] / total) * 100, 1),
+            "1 estrela": round((row["um"] / total) * 100, 1)
+        }
+
+        return jsonify(porcentagens)
+
+    except Exception as e:
+        print("Erro ao consultar dados:")
+        traceback.print_exc()
+        return jsonify({"erro": "Erro ao consultar dados"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------- relatorio de estrelas por unidade  API -------------------- #
+
+# -------------------- relatorio de estrelas por unidade -------------------- #
+@app.route("/feedbackstar")
+def feedbackstar():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
+        unidades = cursor.fetchall()
+        return render_template("feedbackstar.html", unidades=unidades)
+
+    except Exception as e:
+        print("Erro ao carregar unidades:", e)
+        return "Erro ao carregar página", 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# -------------------- relatorio de estrelas por unidade -------------------- #
 # -------------------- Não mexer -------------------- #
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

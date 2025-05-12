@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automática com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "correcao data de nascimento e melhor organizacao do flash.js %DATAHORA%"
+git commit -m "relatorio de feedback fitmax porcetagem de estrelas separado por unidade %DATAHORA%"
 
 
 
@@ -28,7 +28,7 @@ IF %ERRORLEVEL% EQU 1 (
 )
 
 REM Envia para a branch develop no remoto
-git push origin develop --force
+git push origin develop 
 
 echo [SUCESSO] Push realizado na branch DEVELOP com sucesso!
 pause

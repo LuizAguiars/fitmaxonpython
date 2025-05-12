@@ -16,4 +16,23 @@ def validar_cpf(cpf):
             return False
 
     return True
-#----------------------validação de cpf
+
+
+#----------------------validação de nome
+
+def validar_nome(nome):
+    nome_regex = re.compile(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$')
+    return bool(nome_regex.match(nome))
+
+#----------------------validação de nome ????
+
+def nome_nao_comeca_com_numero(nome):
+    return bool(nome) and not nome[0].isdigit()
+
+
+#----------------------validação de email
+
+def validar_email(email):  
+    email_regex = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?$')
+    return bool(email_regex.match(email))
+
