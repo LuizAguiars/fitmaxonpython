@@ -6,7 +6,7 @@ from db import get_db_connection
 from flask import jsonify
 import traceback
 
-from validacoes import validar_cpf, validar_nome, nome_nao_comeca_com_numero, validar_email
+from validacoes import validar_cpf, validar_nome, validar_email, validar_telefone, formatar_telefone
 
 
 app = Flask(__name__)
