@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "validaçoes de telefone e alguma outra que esqueci %DATAHORA%"
+git commit -m "Reevio da alteração dos botoes de editar e remover  %DATAHORA%"
 
 
 
