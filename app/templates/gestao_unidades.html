@@ -125,10 +125,10 @@
         <input type="text" name="nome" id="editNome" placeholder="Nome da Unidade">
         <input type="text" name="endereco" id="editEndereco" placeholder="Endereço">
         <input type="number" name="capacidade" id="editCapacidade" placeholder="Capacidade">
-        <input type="tel" name="fone" id="editFone" placeholder="Fone">
+        <input type="tel" name="fone" id="editFone" placeholder="Fone" maxlength="15">
         <input type="text" name="cidade" id="editCidade" placeholder="Cidade">
         <input type="text" name="estado" id="editEstado" placeholder="Estado">
-        <input type="text" name="cep" id="editCep" placeholder="CEP">
+        <input type="text" name="cep" id="editCep" placeholder="CEP" maxlength="9">
         <select name="id_regiao" id="editRegiao" required>
           <option value="">Selecione a Região</option>
           {% for regiao in regioes %}
@@ -151,10 +151,10 @@
         <input type="text" name="nome" placeholder="Nome da Unidade" required>
         <input type="text" name="endereco" placeholder="Endereço" required>
         <input type="number" name="capacidade" placeholder="Capacidade" min="1">
-        <input type="tel" name="fone" placeholder="Fone">
+        <input type="tel" name="fone" id="incluirFone" placeholder="Fone" maxlength="15">
         <input type="text" name="cidade" placeholder="Cidade">
         <input type="text" name="estado" placeholder="Estado">
-        <input type="text" name="cep" placeholder="CEP">
+        <input type="text" name="cep" placeholder="CEP" maxlength="9">
         <select name="id_regiao" required>
           <option value="">Selecione a Região</option>
           {% for regiao in regioes %}
@@ -174,5 +174,7 @@
   </footer>
 
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
+
 </body>
 </html>
