@@ -8,84 +8,15 @@ setTimeout(() => {
   });
 }, 4000); // 4 segundos
 
-
 // ---------------------- MODAIS GENÉRICOS ---------------------- //
 function abrirModal(id) {
+  document.getElementById(id).classList.add('active');
   document.getElementById(id).classList.add('active');
 }
 
 function fecharModal(id) {
   document.getElementById(id).classList.remove('active');
 }
-
-
-// ---------------------- MODAIS DE EDIÇÃO ---------------------- //
-
-// Usuário
-function preencherCamposEditarUsuario() {
-  const select = document.getElementById('selectEditarUsuario');
-  const option = select.options[select.selectedIndex];
-  if (!option) return;
-
-  document.getElementById('editNome').value = option.dataset.nome || '';
-  document.getElementById('editEmail').value = option.dataset.email || '';
-  document.getElementById('editEndereco').value = option.dataset.endereco || '';
-  document.getElementById('editCEP').value = option.dataset.cep || '';
-  document.getElementById('editNascimento').value = option.dataset.nascimento || '';
-  document.getElementById("editNascimento").value = usuarioSelecionado.dataset.nascimento || '';
-
-  document.getElementById('editSexo').value = option.dataset.sexo || '';
-  document.getElementById('editStatus').value = option.dataset.status || '';
-  document.getElementById('editPlano').value = option.dataset.plano || '';
-  document.getElementById('editUnidade').value = option.dataset.unidade || '';
-  document.getElementById('editPagamento').value = option.dataset.pagamento || '0';
-}
-
-// Personal
-function preencherCamposEditarPersonal() {
-  const select = document.getElementById('selectEditar');
-  const option = select.options[select.selectedIndex];
-  if (!option) return;
-
-  document.getElementById('editNome').value = option.dataset.nome || '';
-  document.getElementById('editEmail').value = option.dataset.email || '';
-  document.getElementById('editEspecialidade').value = option.dataset.especialidade || '';
-  document.getElementById('editUnidade').value = option.dataset.unidade || '';
-}
-
-// Equipamento
-function preencherCamposEditarEquipamento() {
-  const select = document.getElementById('selectEditarEquipamento');
-  const option = select.options[select.selectedIndex];
-  if (!option) return;
-
-  document.getElementById('editNome').value = option.dataset.nome || '';
-  document.getElementById('editDescricao').value = option.dataset.descricao || '';
-  
-  if (option.dataset.data) {
-    const data = new Date(option.dataset.data);
-    if (!isNaN(data)) {
-      document.getElementById('editDataCompra').value = data.toISOString().split('T')[0];
-    }
-  }
-
-  document.getElementById('editUnidade').value = option.dataset.unidade || '';
-  document.getElementById('editStatus').value = option.dataset.status || '';
-  document.getElementById('editTipo').value = option.dataset.tipo || '';
-}
-
-// Plano
-function preencherCamposEditarPlano() {
-  const select = document.getElementById('selectEditarPlano');
-  const option = select.options[select.selectedIndex];
-  if (!option) return;
-
-  document.getElementById('editNome').value = option.dataset.nome || '';
-  document.getElementById('editDescricao').value = option.dataset.descricao || '';
-  document.getElementById('editDuracao').value = option.dataset.duracao || '';
-  document.getElementById('editValor').value = option.dataset.valor || '';
-}
-
 
 // ---------------------- MODAIS COM INFORMAÇÕES DIRETAS ---------------------- //
 
@@ -122,6 +53,129 @@ function abrirModalRemover(id) {
   document.getElementById('removerEndereco').textContent = linha.dataset.endereco || '';
 
   abrirModal('modalRemover');
+}
+
+function abrirModalEditarPersonal(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('editId').value = id;
+    document.getElementById('editNome').value = linha.dataset.nome || '';
+    document.getElementById('editEmail').value = linha.dataset.email || '';
+    document.getElementById('editEspecialidade').value = linha.dataset.especialidade || '';
+    document.getElementById('editUnidade').value = linha.dataset.unidade || '';
+
+    document.getElementById('infoId').textContent = id;
+    document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+
+    abrirModal('modalEditar');
+}
+
+function abrirModalRemoverPersonal(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('removerIdInput').value = id;
+    document.getElementById('removerId').textContent = id;
+    document.getElementById('removerNome').textContent = linha.dataset.nome || '';
+
+    abrirModal('modalRemover');
+}
+
+function abrirModalEditarUsuario(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('editId').value = id;
+    document.getElementById('editNome').value = linha.dataset.nome || '';
+    document.getElementById('editEmail').value = linha.dataset.email || '';
+    document.getElementById('editEndereco').value = linha.dataset.endereco || '';
+    document.getElementById('editCEP').value = linha.dataset.cep || '';
+    document.getElementById('editSexo').value = linha.dataset.sexo || '';
+    document.getElementById('editStatus').value = linha.dataset.status || '';
+    document.getElementById('editPagamento').value = linha.dataset.pagamento || '0'; // Valor padrão caso não exista
+    document.getElementById('editUnidade').value = linha.dataset.unidade || '';
+    document.getElementById('editPlano').value = linha.dataset.plano || '';
+
+    document.getElementById('infoId').textContent = id;
+    document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+    document.getElementById('infoEmail').textContent = linha.dataset.email || '';
+
+    abrirModal('modalEditar');
+}
+
+function abrirModalRemoverUsuario(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('removerIdInput').value = id;
+    document.getElementById('removerId').textContent = id;
+    document.getElementById('removerNome').textContent = linha.dataset.nome || '';
+
+    abrirModal('modalRemover');
+}
+
+function abrirModalEditarEquipamento(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('editId').value = id;
+    document.getElementById('editNome').value = linha.dataset.nome || '';
+    document.getElementById('editDescricao').value = linha.dataset.descricao || '';
+
+    // Formatar a data para o input type="date" (YYYY-MM-DD)
+    const dataCompra = linha.dataset.compra;
+    if (dataCompra) {
+        const partesData = dataCompra.split('/');
+        if (partesData.length === 3) {
+            const dataFormatada = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
+            document.getElementById('editDataCompra').value = dataFormatada;
+        }
+    } else {
+        document.getElementById('editDataCompra').value = '';
+    }
+
+    document.getElementById('editUnidade').value = linha.dataset.nomeunidade || ''; // Usando nome da unidade aqui, ajuste se precisar do ID
+    document.getElementById('editStatus').value = linha.dataset.statusequipamento || '';
+    document.getElementById('editTipo').value = linha.dataset.tipoequipamento || '';
+
+    document.getElementById('infoId').textContent = id;
+    document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+
+    abrirModal('modalEditar');
+}
+
+function abrirModalRemoverEquipamento(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('removerIdInput').value = id;
+    document.getElementById('removerId').textContent = id;
+    document.getElementById('removerNome').textContent = linha.dataset.nome || '';
+
+    abrirModal('modalRemover');
+}
+
+function abrirModalEditarPlano(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('editNome').value = linha.dataset.nomeplano || '';
+    document.getElementById('editDescricao').value = linha.dataset.descricao || '';
+    document.getElementById('editDuracao').value = linha.dataset.duracao || '';
+    document.getElementById('editValor').value = linha.dataset.valorplano || '';
+
+    abrirModal('modalEditar');
+}
+
+function abrirModalRemoverPlano(id) {
+    const linha = document.querySelector(`tr[data-id='${id}']`);
+    if (!linha) return;
+
+    document.getElementById('removerIdInput').value = id;
+    document.getElementById('removerNomePlano').textContent = linha.dataset.nomeplano || '';
+
+    abrirModal('modalRemover');
 }
 
 
