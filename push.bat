@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "ajuste no cep autocomplete, e na tabela usuarios e cadastro e alteracoes  %DATAHORA%"
+git commit -m "criacao de tela d feedback parte gabriel  %DATAHORA%"
 
 
 

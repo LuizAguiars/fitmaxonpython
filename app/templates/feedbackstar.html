@@ -55,11 +55,39 @@
     </div>
   </div>
   </div>
+
+<main class="relatorio-avaliacoes">
+    
+
+
+
+<section class="bloco-avaliacao comentarios">
+  <h3>Comentários dos Usuários</h3>
+  <ul>
+    {% for c in comentarios %}
+      <li>
+        <p><strong>⭐ {{ c['nota_user'] }}</strong> — {{ c['nome_unidade'] }} ({{ c['nome_regiao'] }})</p>
+        <p><em>{{ c['Comentario'] }}</em></p>
+        <hr>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+  </main>
+
+
+
+
+
+
+
 </body>
 
 
 </body>
  
   <script src="{{ url_for('static', filename='js/relatoriofeedback.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
 
 </html>
