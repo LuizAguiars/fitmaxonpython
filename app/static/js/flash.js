@@ -83,25 +83,31 @@ function abrirModalRemoverPersonal(id) {
 }
 
 function abrirModalEditarUsuario(id) {
-    const linha = document.querySelector(`tr[data-id='${id}']`);
-    if (!linha) return;
+  const linha = document.querySelector(`tr[data-id='${id}']`);
+  if (!linha) return;
 
-    document.getElementById('editId').value = id;
-    document.getElementById('editNome').value = linha.dataset.nome || '';
-    document.getElementById('editEmail').value = linha.dataset.email || '';
-    document.getElementById('editEndereco').value = linha.dataset.endereco || '';
-    document.getElementById('editCEP').value = linha.dataset.cep || '';
-    document.getElementById('editSexo').value = linha.dataset.sexo || '';
-    document.getElementById('editStatus').value = linha.dataset.status || '';
-    document.getElementById('editPagamento').value = linha.dataset.pagamento || '0'; // Valor padrão caso não exista
-    document.getElementById('editUnidade').value = linha.dataset.unidade || '';
-    document.getElementById('editPlano').value = linha.dataset.plano || '';
+  document.getElementById('editId').value = id;
+  document.getElementById('editNome').value = linha.dataset.nome || '';
+  document.getElementById('editEmail').value = linha.dataset.email || '';
+  document.getElementById('editTelefone').value = linha.dataset.telefone || '';
+  document.getElementById('editLogradouro').value = linha.dataset.logradouro || '';
+  document.getElementById('editNumero').value = linha.dataset.numero || '';
+  document.getElementById('editBairro').value = linha.dataset.bairro || '';
+  document.getElementById('editCidade').value = linha.dataset.cidade || '';
+  document.getElementById('editEstado').value = linha.dataset.estado || '';
+  document.getElementById('editCEP').value = linha.dataset.cep || '';
+  document.getElementById('editSexo').value = linha.dataset.sexo || '';
+  document.getElementById('editStatus').value = linha.dataset.status || '';
+  document.getElementById('editPagamento').value = linha.dataset.pagamento || '0';
+  document.getElementById('editUnidade').value = linha.dataset.unidade || '';
+  document.getElementById('editPlano').value = linha.dataset.plano || '';
+  document.getElementById('editNascimento').value = linha.dataset.nascimento || '';
 
-    document.getElementById('infoId').textContent = id;
-    document.getElementById('infoNome').textContent = linha.dataset.nome || '';
-    document.getElementById('infoEmail').textContent = linha.dataset.email || '';
+  document.getElementById('infoId').textContent = id;
+  document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+  document.getElementById('infoEmail').textContent = linha.dataset.email || '';
 
-    abrirModal('modalEditar');
+  abrirModal('modalEditar');
 }
 
 function abrirModalRemoverUsuario(id) {
@@ -202,3 +208,6 @@ botoesImagem.forEach(btn => {
   btn.addEventListener('mouseenter', () => overlay.classList.add('active'));
   btn.addEventListener('mouseleave', () => overlay.classList.remove('active'));
 });
+
+
+

@@ -12,13 +12,13 @@
       <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
     </div>
     <h1>GESTÃO DE USUÁRIOS</h1>
-    
+
     <div class="usuario-logado">
-        <form method="GET" action="{{ url_for('inicial_logado') }}">
-            <button type="submit">Sair</button>
-        </form>
+      <form method="GET" action="{{ url_for('inicial_logado') }}">
+        <button type="submit">Sair</button>
+      </form>
     </div>
-    
+
     <nav class="menu-logado">
       <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
       <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
@@ -27,15 +27,6 @@
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="flash-container">
-      {% for category, message in messages %}
-        <div class="flash-message {{ category }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
-  {% endwith %}
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     <div class="flash-container">
@@ -57,7 +48,13 @@
           <th>ID</th>
           <th>Nome</th>
           <th>Email</th>
+          <th>Telefone</th>
           <th>CPF</th>
+          <th>Rua</th>
+          <th>Número</th>
+          <th>Bairro</th>
+          <th>Cidade</th>
+          <th>Estado</th>
           <th>Unidade</th>
           <th>Plano</th>
           <th>Status</th>
@@ -71,17 +68,30 @@
           data-id="{{ usuario.ID_User }}"
           data-nome="{{ usuario.Nome_User }}"
           data-email="{{ usuario.Email_user }}"
-          data-endereco="{{ usuario.endereco_user }}"
+          data-telefone="{{ usuario.telefone_user }}"
+          data-logradouro="{{ usuario.logradouro_user }}"
+          data-numero="{{ usuario.numero_user }}"
+          data-bairro="{{ usuario.bairro_user }}"
+          data-cidade="{{ usuario.cidade_user }}"
+          data-estado="{{ usuario.estado_user }}"
           data-cep="{{ usuario.CEP_USER }}"
           data-sexo="{{ usuario.sexo_user }}"
           data-status="{{ usuario.status_cliente }}"
+          data-pagamento="{{ usuario.pagou_mes_atual }}"
           data-unidade="{{ usuario.Unidade_Prox_ID }}"
           data-plano="{{ usuario.ID_PLANO }}"
-          data-pagamento="{{ usuario.pagou_mes_atual }}">
+          data-nascimento="{{ usuario.Data_Nascimento }}"
+        >
           <td>{{ usuario.ID_User }}</td>
           <td>{{ usuario.Nome_User }}</td>
           <td>{{ usuario.Email_user }}</td>
+          <td>{{ usuario.telefone_user }}</td>
           <td>{{ usuario.cpf_user }}</td>
+          <td>{{ usuario.logradouro_user }}</td>
+          <td>{{ usuario.numero_user }}</td>
+          <td>{{ usuario.bairro_user }}</td>
+          <td>{{ usuario.cidade_user }}</td>
+          <td>{{ usuario.estado_user }}</td>
           <td>{{ usuario.Nome_Unidade }}</td>
           <td>{{ usuario.nome_plano }}</td>
           <td>{{ usuario.status_cliente }}</td>
@@ -105,9 +115,15 @@
         <input type="text" name="nome" placeholder="Nome" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="senha" placeholder="Senha" required>
+        <input type="text" name="telefone" placeholder="Telefone" required>
         <input type="text" name="cpf" placeholder="CPF" required>
-        <input type="text" name="endereco" placeholder="Endereço">
+        <input type="text" name="logradouro" placeholder="Rua" required>
+        <input type="text" name="numero" placeholder="Número" required>
+        <input type="text" name="bairro" placeholder="Bairro" required>
+        <input type="text" name="cidade" placeholder="Cidade" required>
+        <input type="text" name="estado" placeholder="UF" maxlength="2" required>
         <input type="text" name="cep" placeholder="CEP" maxlength="9">
+        <input type="date" name="data_nascimento">
         <select name="sexo" required>
           <option value="">Sexo</option>
           <option value="M">Masculino</option>
@@ -154,9 +170,16 @@
         <input type="hidden" name="id" id="editId">
         <input type="text" name="nome" id="editNome" placeholder="Nome">
         <input type="email" name="email" id="editEmail" placeholder="Email">
-        <input type="text" name="endereco" id="editEndereco" placeholder="Endereço">
+        <input type="text" name="telefone" id="editTelefone" placeholder="Telefone">
+        <input type="text" name="logradouro" id="editLogradouro" placeholder="Rua">
+        <input type="text" name="numero" id="editNumero" placeholder="Número">
+        <input type="text" name="bairro" id="editBairro" placeholder="Bairro">
+        <input type="text" name="cidade" id="editCidade" placeholder="Cidade">
+        <input type="text" name="estado" id="editEstado" placeholder="UF" maxlength="2">
         <input type="text" name="cep" id="editCEP" placeholder="CEP" maxlength="9">
+        <input type="date" name="data_nascimento" id="editNascimento">
         <select name="sexo" id="editSexo">
+          <option value="">Sexo</option>
           <option value="M">Masculino</option>
           <option value="F">Feminino</option>
           <option value="O">Outro</option>
@@ -212,7 +235,5 @@
 
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
-  
 </body>
 </html>
-

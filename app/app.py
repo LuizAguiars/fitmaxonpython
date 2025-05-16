@@ -1,3 +1,4 @@
+from validacoes import validar_cpf, validar_nome, validar_email, validar_telefone, formatar_telefone
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import mysql.connector
 import traceback
@@ -5,8 +6,6 @@ from mysql.connector import Error
 from db import get_db_connection
 from flask import jsonify
 import traceback
-
-from validacoes import validar_cpf, validar_nome, validar_email, validar_telefone, formatar_telefone
 
 
 app = Flask(__name__)
@@ -55,7 +54,6 @@ def login():
 
 # -------------------- Rotas de tela de cadastro -------------------- #
 
-
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     conn = get_db_connection()
@@ -69,20 +67,32 @@ def cadastro():
         nome = request.form['nome']
         email = request.form['email']
         senha = request.form['senha']
+        telefone = request.form['telefone']
         cpf = request.form['cpf']
         data_nascimento = request.form['data_nascimento']
         sexo = request.form['sexo']
-        endereco = request.form['endereco']
         cep = request.form['cep']
+        logradouro = request.form['logradouro']
+        numero = request.form['numero']
+        bairro = request.form['bairro']
+        cidade = request.form['cidade']
+        estado = request.form['estado']
         id_plano = request.form['plano']
 
-        # Validações de CPF
+        # Validação de CPF
         if len(cpf) > 14:
             flash("CPF inválido. Deve ter no máximo 14 caracteres.", "error")
             return redirect(url_for('cadastro'))
 
         if not validar_cpf(cpf):
             flash("CPF inválido. Digite um CPF real e válido.", "error")
+            return redirect(url_for('cadastro'))
+
+        # Validação de telefone (somente números e tamanho)
+        import re
+        telefone_numerico = re.sub(r'\D', '', telefone)
+        if not telefone_numerico.isdigit() or len(telefone_numerico) not in [10, 11]:
+            flash("Telefone inválido. Use um número válido com DDD.", "error")
             return redirect(url_for('cadastro'))
 
         try:
@@ -106,7 +116,7 @@ def cadastro():
                 conn.close()
                 return redirect(url_for('cadastro'))
 
-            # Verifica se nome esta com o formato correto
+            # Verifica se nome está com o formato correto
             if not validar_nome(nome):
                 flash("Nome inválido. O nome deve conter apenas letras.", "error")
                 return redirect(url_for('cadastro'))
@@ -115,9 +125,14 @@ def cadastro():
             cur.execute("""
                 INSERT INTO USUARIO
                 (Nome_User, Email_user, Senha_User, cpf_user, Data_Nascimento,
-                 sexo_user, endereco_user, CEP_USER, ID_PLANO, status_cliente)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (nome, email, senha, cpf, data_nascimento, sexo, endereco, cep, id_plano, 'Ativo'))
+                 sexo_user, CEP_USER, logradouro_user, numero_user,
+                 bairro_user, cidade_user, estado_user, telefone_user, ID_PLANO, status_cliente)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                nome, email, senha, cpf, data_nascimento, sexo, cep,
+                logradouro, numero, bairro, cidade, estado, telefone,
+                id_plano, 'Ativo'
+            ))
 
             conn.commit()
             cur.close()
@@ -130,6 +145,7 @@ def cadastro():
             return redirect(url_for('cadastro'))
 
     return render_template('cadastro.html', planos=planos)
+
 
 # -------------------- Rotas de tela inicial logado  -------------------- #
 
@@ -286,9 +302,14 @@ def gestao_usuarios():
         id = request.form.get('id')
         nome = request.form.get('nome')
         email = request.form.get('email')
-        senha = request.form.get('senha')  # só usado ao incluir
+        senha = request.form.get('senha')
+        telefone = request.form.get('telefone')
         cpf = request.form.get('cpf')
-        endereco = request.form.get('endereco')
+        logradouro = request.form.get('logradouro')
+        numero = request.form.get('numero')
+        bairro = request.form.get('bairro')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
         cep = request.form.get('cep')
         sexo = request.form.get('sexo')
         status = request.form.get('status_cliente')
@@ -300,12 +321,16 @@ def gestao_usuarios():
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO USUARIO
-                    (Nome_User, Email_user, Senha_User, Unidade_Prox_ID,
-                     cpf_user, endereco_user, CEP_USER, ID_PLANO,
-                     sexo_user, status_cliente, pagou_mes_atual, Data_Nascimento)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (nome, email, senha, unidade_id, cpf, endereco, cep, plano_id, sexo, status, pagou, data_nascimento))
+                    INSERT INTO USUARIO (
+                        Nome_User, Email_user, Senha_User, telefone_user,
+                        Unidade_Prox_ID, cpf_user, logradouro_user, numero_user,
+                        bairro_user, cidade_user, estado_user, CEP_USER,
+                        ID_PLANO, sexo_user, status_cliente, pagou_mes_atual, Data_Nascimento
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    nome, email, senha, telefone, unidade_id, cpf, logradouro, numero,
+                    bairro, cidade, estado, cep, plano_id, sexo, status, pagou, data_nascimento
+                ))
                 flash("Usuário incluído com sucesso!", "success")
 
             elif acao == 'editar':
@@ -313,7 +338,12 @@ def gestao_usuarios():
                     UPDATE USUARIO SET
                         Nome_User=%s,
                         Email_user=%s,
-                        endereco_user=%s,
+                        telefone_user=%s,
+                        logradouro_user=%s,
+                        numero_user=%s,
+                        bairro_user=%s,
+                        cidade_user=%s,
+                        estado_user=%s,
                         CEP_USER=%s,
                         sexo_user=%s,
                         status_cliente=%s,
@@ -322,7 +352,10 @@ def gestao_usuarios():
                         ID_PLANO=%s,
                         Data_Nascimento=%s
                     WHERE ID_User=%s
-                """, (nome, email, endereco, cep, sexo, status, pagou, unidade_id, plano_id, data_nascimento, id))
+                """, (
+                    nome, email, telefone, logradouro, numero, bairro, cidade, estado, cep,
+                    sexo, status, pagou, unidade_id, plano_id, data_nascimento, id
+                ))
                 flash("Usuário atualizado com sucesso!", "warning")
 
             elif acao == 'remover':
@@ -335,7 +368,7 @@ def gestao_usuarios():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    # Listar usuários com JOIN
+    # Consulta
     cursor.execute("""
         SELECT u.*, un.Nome_Unidade, p.nome_plano
         FROM USUARIO u
@@ -355,25 +388,6 @@ def gestao_usuarios():
 
     return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
-    # Listar usuários com join
-    cursor.execute("""
-        SELECT u.*, un.Nome_Unidade, p.nome_plano
-        FROM USUARIO u
-        LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
-        LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
-    """)
-    usuarios = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM UNIDADES")
-    unidades = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM PLANO")
-    planos = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
 # -------------------- Rotas de tela de gestão dos equipamentos  -------------------- #
 

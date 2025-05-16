@@ -303,3 +303,99 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 });
+// validação de CEP 
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const cepInput = document.querySelector('input[name="cep"]');
+    const logradouroInput = document.querySelector('input[name="logradouro"]');
+    const bairroInput = document.querySelector('input[name="bairro"]');
+    const cidadeInput = document.querySelector('input[name="cidade"]');
+    const estadoInput = document.querySelector('input[name="estado"]');
+
+    let ultimoCepInvalido = '';
+    let tentativasCepInvalido = 0;
+
+    function limparCampos() {
+        logradouroInput.value = '';
+        bairroInput.value = '';
+        cidadeInput.value = '';
+        estadoInput.value = '';
+    }
+
+    cepInput.addEventListener('blur', async () => {
+        const cep = cepInput.value.replace(/\D/g, '');
+
+        if (cep.length !== 8) {
+            // Caso CEP incompleto ou inválido
+            if (ultimoCepInvalido === cep) {
+                tentativasCepInvalido++;
+            } else {
+                tentativasCepInvalido = 1;
+                ultimoCepInvalido = cep;
+            }
+
+            if (tentativasCepInvalido === 1) {
+                alert("⚠️ CEP inválido. Verifique e tente novamente.");
+                limparCampos();
+            }
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (data.erro) {
+                if (ultimoCepInvalido === cep) {
+                    tentativasCepInvalido++;
+                } else {
+                    tentativasCepInvalido = 1;
+                    ultimoCepInvalido = cep;
+                }
+
+                if (tentativasCepInvalido === 1) {
+                    alert("❌ CEP não encontrado. Verifique o número digitado.");
+                    limparCampos();
+                }
+                return;
+            }
+
+            // Reset se CEP for válido
+            ultimoCepInvalido = '';
+            tentativasCepInvalido = 0;
+
+            // Preenche os campos
+            logradouroInput.value = data.logradouro;
+            bairroInput.value = data.bairro;
+            cidadeInput.value = data.localidade;
+            estadoInput.value = data.uf;
+        } catch (error) {
+            alert("⚠️ Erro ao buscar o CEP. Verifique sua conexão.");
+            limparCampos();
+            console.error("Erro:", error);
+        }
+    });
+});
+// validação de CEP 
+
+// validação de Numero de telefone
+document.addEventListener('DOMContentLoaded', () => {
+    const telInput = document.getElementById('telefone');
+
+    telInput.addEventListener('input', () => {
+        let valor = telInput.value.replace(/\D/g, ''); // Remove tudo que não for número
+
+        if (valor.length > 11) valor = valor.slice(0, 11); // Limita a 11 dígitos
+
+        if (valor.length <= 10) {
+            // Formato: (99) 9999-9999
+            valor = valor.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else {
+            // Formato: (99) 99999-9999
+            valor = valor.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+        }
+
+        telInput.value = valor;
+    });
+});
