@@ -60,10 +60,13 @@
           data-id="{{ equipamento.ID_equipamentos }}"
           data-nome="{{ equipamento.Nome_Equipamento }}"
           data-descricao="{{ equipamento.descricao_equipamentos }}"
-          data-compra="{{ equipamento.data_de_compra.strftime('%d/%m/%Y') if equipamento.data_de_compra else '' }}"
+          data-compra="..."
           data-nomeunidade="{{ equipamento.Nome_Unidade }}"
+          data-idunidade="{{ equipamento.Unidade_Prox_ID }}"
           data-statusequipamento="{{ equipamento.status_do_Equipamento }}"
+          data-idstatus="{{ equipamento.idstatus_dos_Equipamentos }}"
           data-tipoequipamento="{{ equipamento.nome_tipo_equipamento }}"
+          data-idtipo="{{ equipamento.idtipo_equipamento }}"
           >
           <td>{{ equipamento.ID_equipamentos }}</td>
           <td>{{ equipamento.Nome_Equipamento }}</td>

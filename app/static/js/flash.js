@@ -123,21 +123,37 @@ function abrirModalEditarEquipamento(id) {
     document.getElementById('editNome').value = linha.dataset.nome || '';
     document.getElementById('editDescricao').value = linha.dataset.descricao || '';
 
-    // Formatar a data para o input type="date" (YYYY-MM-DD)
+    // Formatar a data de compra (DD/MM/YYYY para YYYY-MM-DD)
     const dataCompra = linha.dataset.compra;
     if (dataCompra) {
         const partesData = dataCompra.split('/');
         if (partesData.length === 3) {
-            const dataFormatada = `${partesData[2]}-${partesData[1]}-${partesData[0]}`;
-            document.getElementById('editDataCompra').value = dataFormatada;
+            const ano = partesData[2];
+            const mes = partesData[1].padStart(2, '0');
+            const dia = partesData[0].padStart(2, '0');
+            document.getElementById('editDataCompra').value = `${ano}-${mes}-${dia}`;
+        } else {
+            document.getElementById('editDataCompra').value = '';
         }
     } else {
         document.getElementById('editDataCompra').value = '';
     }
 
-    document.getElementById('editUnidade').value = linha.dataset.nomeunidade || ''; // Usando nome da unidade aqui, ajuste se precisar do ID
-    document.getElementById('editStatus').value = linha.dataset.statusequipamento || '';
-    document.getElementById('editTipo').value = linha.dataset.tipoequipamento || '';
+    // Preencher os selects com os IDs
+    const unidadeSelect = document.getElementById('editUnidade');
+    if (unidadeSelect) {
+        unidadeSelect.value = linha.dataset.idunidade || '';
+    }
+
+    const statusSelect = document.getElementById('editStatus');
+    if (statusSelect) {
+        statusSelect.value = linha.dataset.idstatus || '';
+    }
+
+    const tipoSelect = document.getElementById('editTipo');
+    if (tipoSelect) {
+        tipoSelect.value = linha.dataset.idtipo || '';
+    }
 
     document.getElementById('infoId').textContent = id;
     document.getElementById('infoNome').textContent = linha.dataset.nome || '';
