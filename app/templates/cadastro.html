@@ -4,35 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitmax Gym</title>
-    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
- 
-
 </head>
 <body>
     <header>
         <div class="logo1">
-            
             <a href="{{ url_for('inicial_logado') }}">
                 <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
-             </a>
+            </a>
         </div>
-        
     </header>
-
 
     <div class="cadastro-container">
         <h2>Cadastro</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class="flash-messages">
-      {% for category, message in messages %}
-        <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
         <form method="POST">
             <input type="text" name="nome" placeholder="Nome completo" required>
@@ -43,19 +37,26 @@
             </div>
 
             <input type="text" name="cpf" placeholder="CPF" required maxlength="14">
+            <input type="text" name="telefone" id="telefone" placeholder="Telefone" required maxlength="15">
 
 
             <div class="form-row">
-                <input type="text" name="endereco" placeholder="Endereço completo" required>
                 <input type="text" name="cep" placeholder="CEP" required>
+                <input type="text" name="logradouro" placeholder="Rua" required>
+            </div>
+
+            <div class="form-row">
+                <input type="text" name="numero" placeholder="Número" required>
+                <input type="text" name="bairro" placeholder="Bairro" required>
+            </div>
+
+            <div class="form-row">
+                <input type="text" name="cidade" placeholder="Cidade" required>
+                <input type="text" name="estado" placeholder="UF" maxlength="2" required>
             </div>
 
             <label for="data_nascimento" style="color: #8d8c8c; margin-left: 2px;">Data de Nascimento:</label>
             <input type="date" name="data_nascimento" id="data_nascimento" required>
-
-
-
-
 
             <div class="form-row">
                 <select name="sexo" required>
@@ -77,10 +78,9 @@
         </form>
         <p class="login-link"><a href="/login">Já tem conta? Faça login</a></p>
     </div>
-    
+
     <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
     <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
     
-
 </body>
 </html>

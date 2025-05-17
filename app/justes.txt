@@ -1,0 +1,4 @@
+- dropdown de estado, cidades e bairros para evitar erros de relatorios
+- melhorias no campo onde "Imprime os valores" no painel do gestor
+- 
+

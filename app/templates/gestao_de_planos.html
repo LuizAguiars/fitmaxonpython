@@ -12,9 +12,11 @@
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
     <h1>GESTÃO DE PLANOS</h1>
-        
-            <button type="submit">Sair</button>
-        </form>
+      
+    <div class="usuario-logado">
+      <form method="GET" action="{{ url_for('inicial_logado') }}">
+        <button type="submit">Sair</button>
+      </form>
     </div>
     
     <nav class="menu-logado">
@@ -37,33 +39,42 @@
 
 <div class="botoes-acoes">
   <button class="btn verde" onclick="abrirModal('modalIncluir')">➕ Incluir</button>
-  <button class="btn amarelo" onclick="abrirModal('modalEditar')">✏️ Editar</button>
-  <button class="btn vermelho" onclick="abrirModal('modalRemover')">🗑️ Remover</button>
 </div>
 
 <div class="tabela-unidades-container">
-  <table class="tabela-unidades">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Descrição</th>
-        <th>Duração (meses)</th>
-        <th>Valor</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for plano in planos %}
-      <tr>
-        <td>{{ plano.ID_PLANO }}</td>
-        <td>{{ plano.nome_plano }}</td>
-        <td>{{ plano.descricao }}</td>
-        <td>{{ plano.duracao_meses }}</td>
-        <td>R$ {{ '%.2f'|format(plano.valor_plano) }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <table class="tabela-unidades">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Duração (meses)</th>
+                <th>Valor</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plano in planos %}
+            <tr
+                data-id="{{ plano.ID_PLANO }}"
+                data-nomeplano="{{ plano.nome_plano }}"
+                data-descricao="{{ plano.descricao }}"
+                data-duracao="{{ plano.duracao_meses }}"
+                data-valorplano="{{ plano.valor_plano }}"
+            >
+                <td>{{ plano.ID_PLANO }}</td>
+                <td>{{ plano.nome_plano }}</td>
+                <td>{{ plano.descricao }}</td>
+                <td>{{ plano.duracao_meses }}</td>
+                <td>R$ {{ '%.2f'|format(plano.valor_plano) }}</td>
+                <td>
+                    <button class="btn-acao editar" onclick="abrirModalEditarPlano('{{ plano.ID_PLANO }}')" title="Editar">✏️</button>
+                    <button class="btn-acao remover" onclick="abrirModalRemoverPlano('{{ plano.ID_PLANO }}')" title="Remover">🗑️</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 <!-- MODAL INCLUIR PLANO -->
@@ -112,20 +123,18 @@
 
 <!-- MODAL REMOVER PLANO -->
 <div id="modalRemover" class="modal-overlay">
-  <div class="modal-box">
-    <h2>Remover Plano</h2>
-    <form method="POST" action="{{ url_for('gestao_planos') }}">
-      <input type="hidden" name="acao" value="remover">
-      <select name="id" required>
-        <option value="">Selecione o Plano</option>
-        {% for plano in planos %}
-        <option value="{{ plano.ID_PLANO }}">{{ plano.ID_PLANO }} - {{ plano.nome_plano }}</option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="confirmar">Remover</button>
-      <button type="button" class="cancelar" onclick="fecharModal('modalRemover')">Cancelar</button>
-    </form>
-  </div>
+    <div class="modal-box">
+        <h2>Remover Plano</h2>
+        <div id="infoRemoverPlano" style="margin-bottom: 10px; font-weight: bold;">
+            Deseja remover o plano: <span id="removerNomePlano" style="font-weight: bold;"></span>?
+        </div>
+        <form method="POST" action="{{ url_for('gestao_planos') }}">
+            <input type="hidden" name="acao" value="remover">
+            <input type="hidden" name="id" id="removerIdInput">
+            <button type="submit" class="confirmar">Remover</button>
+            <button type="button" class="cancelar" onclick="fecharModal('modalRemover')">Cancelar</button>
+        </form>
+    </div>
 </div>
 
 <footer>
