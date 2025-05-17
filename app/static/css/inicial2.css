@@ -623,3 +623,10 @@ button:hover {
 
 
 
+.modal-box {
+  max-height: 90vh;        /* Altura máxima: 90% da tela */
+  overflow-y: auto;        /* Scroll vertical quando necessário */
+  overflow-x: hidden;      /* Evita scroll lateral */
+}
+
+

@@ -14,16 +14,16 @@
     <h1>GESTÃO DE UNIDADES</h1>
 
     <div class="usuario-logado">
-        <form method="GET" action="{{ url_for('inicial_logado') }}">
+        <form method="GET" action="{{ url_for('home.inicial_logado') }}">
             <button type="submit">Sair</button>
         </form>
     </div>
     
     <nav class="menu-logado">
-        <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-        <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-        <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
-        <a href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+        <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+        <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+        <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+        <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
     </nav>
   </header>
 
@@ -98,7 +98,7 @@
       Deseja remover a unidade: <span id="removerId"></span> - <span id="removerNome"></span>, <span id="removerEndereco"></span>?
     </div>
 
-    <form method="POST" action="{{ url_for('gerenciar_unidade') }}">
+    <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
       <input type="hidden" name="acao" value="remover">
       <input type="hidden" name="id" id="removerIdInput">
 
@@ -118,7 +118,7 @@
         Unidade Selecionada: <span id="infoId"></span> - <span id="infoNome"></span>, <span id="infoEndereco"></span>
       </div>
 
-      <form method="POST" action="{{ url_for('gerenciar_unidade') }}">
+      <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
         <input type="hidden" name="acao" value="editar">
         <input type="hidden" name="id" id="editId">
 
@@ -146,7 +146,7 @@
   <div id="modalIncluir" class="modal-overlay">
     <div class="modal-box">
       <h2>Incluir Unidade</h2>
-      <form method="POST" action="{{ url_for('gerenciar_unidade') }}">
+      <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
         <input type="hidden" name="acao" value="incluir">
         <input type="text" name="nome" placeholder="Nome da Unidade" required>
         <input type="text" name="endereco" placeholder="Endereço" required>

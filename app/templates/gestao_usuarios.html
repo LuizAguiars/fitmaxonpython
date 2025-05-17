@@ -14,16 +14,16 @@
     <h1>GESTÃO DE USUÁRIOS</h1>
 
     <div class="usuario-logado">
-      <form method="GET" action="{{ url_for('inicial_logado') }}">
+      <form method="GET" action="{{ url_for('home.inicial_logado') }}">
         <button type="submit">Sair</button>
       </form>
     </div>
 
     <nav class="menu-logado">
-      <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
-      <a href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+      <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+      <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
     </nav>
   </header>
 
@@ -110,7 +110,7 @@
   <div id="modalIncluir" class="modal-overlay">
     <div class="modal-box">
       <h2>Incluir Usuário</h2>
-      <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <form method="POST" action="{{ url_for('usuarios.gestao_usuarios') }}">
         <input type="hidden" name="acao" value="incluir">
         <input type="text" name="nome" placeholder="Nome" required>
         <input type="email" name="email" placeholder="Email" required>
@@ -165,7 +165,7 @@
       <div id="infoUsuarioSelecionado" style="margin-bottom: 10px; font-weight: bold;">
         Usuário Selecionado: <span id="infoId"></span> - <span id="infoNome"></span>, <span id="infoEmail"></span>
       </div>
-      <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <form method="POST" action="{{ url_for('usuarios.gestao_usuarios') }}">
         <input type="hidden" name="acao" value="editar">
         <input type="hidden" name="id" id="editId">
         <input type="text" name="nome" id="editNome" placeholder="Nome">
@@ -218,7 +218,7 @@
       <div id="infoRemoverUsuario" style="margin-bottom: 10px; font-weight: bold;">
         Deseja remover o usuário: <span id="removerId"></span> - <span id="removerNome"></span>?
       </div>
-      <form method="POST" action="{{ url_for('gestao_usuarios') }}">
+      <form method="POST" action="{{ url_for('usuarios.gestao_usuarios') }}">
         <input type="hidden" name="acao" value="remover">
         <input type="hidden" name="id" id="removerIdInput">
         <button type="submit" class="confirmar">Remover</button>

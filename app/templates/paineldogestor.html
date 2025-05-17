@@ -21,17 +21,17 @@
 
     <div class="usuario-logado">
         <p>Olá, {{ nome }} 👋</p>
-        <form method="POST" action="{{ url_for('logout') }}">
+        <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>
     </div>
 
     <!-- Aqui vem o horário, abaixo da busca -->
     <nav class="menu-logado">
-      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
-      <a  href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+      <a  href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a  href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a  href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+      <a  href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
   </nav>
   
 </header>
@@ -41,21 +41,21 @@
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/fitmaxlocal.png') }}" alt="Unidades">
       </div>
-      <a href="{{ url_for('gerenciar_unidade') }}" class="btn grande">Gestão das Unidades</a>
+      <a href="{{ url_for('unidades.gerenciar_unidade') }}" class="btn grande">Gestão das Unidades</a>
     </div>
   
     <div class="botao-imagem">
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/personal1.jfif') }}" alt="Personais">
       </div>
-      <a href="{{ url_for('gestao_personal') }}" class="btn grande">Gestão dos Personais</a>
+      <a href="{{ url_for('personais.gestao_personal') }}" class="btn grande">Gestão dos Personais</a>
     </div>
   
     <div class="botao-imagem">
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/user.jpeg') }}" alt="Usuários">
       </div>
-      <a href="{{ url_for('gestao_usuarios') }}" class="btn grande">Gestão dos Usuários</a>
+      <a href="{{ url_for('usuarios.gestao_usuarios') }}" class="btn grande">Gestão dos Usuários</a>
     </div>
   
     <span class="quebra-linha"></span>
@@ -64,21 +64,21 @@
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/equipamentos.jpg') }}" alt="Equipamentos">
       </div>
-      <a href="{{ url_for('gestao_equipamentos') }}" class="btn grande">Gestão de Equipamentos</a>
+      <a href="{{ url_for('equipamentos.gestao_equipamentos') }}" class="btn grande">Gestão de Equipamentos</a>
     </div>
   
     <div class="botao-imagem">
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/planos.png') }}" alt="Planos">
       </div>
-      <a href="{{ url_for('gestao_planos') }}" class="btn grande">Gestão de Planos</a>
+      <a href="{{ url_for('planos.gestao_planos') }}" class="btn grande">Gestão de Planos</a>
     </div>
   
     <div class="botao-imagem">
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/treinos.png') }}" alt="Treinos">
       </div>
-      <a href="{{ url_for('treinos_padrao') }}" class="btn grande">Treinos Padrão</a>
+      <a href="{{ url_for('home.treinos_padrao') }}" class="btn grande">Treinos Padrão</a>
     </div>
   
     <span class="quebra-linha"></span>
@@ -87,7 +87,7 @@
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/relatorio.webp') }}" alt="Relatórios">
       </div>
-      <a href="{{ url_for('relatorios') }}" class="btn grande">Relatórios</a>
+      <a href="{{ url_for('feedbacks.relatorios') }}" class="btn grande">Relatórios</a>
     </div>
   </div>
   
