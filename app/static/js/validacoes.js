@@ -399,3 +399,30 @@ document.addEventListener('DOMContentLoaded', () => {
         telInput.value = valor;
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const menu = document.querySelector('.menu-responsivo');
+  const overlay = document.querySelector('.menu-overlay');
+  const btnAbrir = document.getElementById('btn-abrir-menu');
+  const btnFechar = document.getElementById('btn-fechar-menu');
+
+  if (btnAbrir && menu && overlay) {
+    btnAbrir.addEventListener('click', function() {
+      menu.classList.add('ativo');
+      overlay.classList.add('ativo');
+    });
+  }
+  if (btnFechar && menu && overlay) {
+    btnFechar.addEventListener('click', function() {
+      menu.classList.remove('ativo');
+      overlay.classList.remove('ativo');
+    });
+  }
+  if (overlay && menu) {
+    overlay.addEventListener('click', function() {
+      menu.classList.remove('ativo');
+      overlay.classList.remove('ativo');
+    });
+  }
+});

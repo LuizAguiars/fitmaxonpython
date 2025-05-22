@@ -3,6 +3,7 @@ from db import get_db_connection
 
 unidades_bp = Blueprint('unidades', __name__)
 
+
 @unidades_bp.route('/gestao-unidades', methods=['GET', 'POST'])
 def gerenciar_unidade():
     if 'usuario' not in session:
@@ -51,11 +52,23 @@ def gerenciar_unidade():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
+    # Filtro de itens por página
+    itens_por_pagina = int(request.args.get('itensPorPagina', 25))
+    pagina = int(request.args.get('pagina', 1))
+    offset = (pagina - 1) * itens_por_pagina
+
+    cursor.execute("""
+        SELECT COUNT(*) as total FROM UNIDADES
+    """)
+    total_unidades = cursor.fetchone()['total']
+    total_paginas = (total_unidades + itens_por_pagina - 1) // itens_por_pagina
+
     cursor.execute("""
         SELECT u.*, r.Nome_Regiao 
         FROM UNIDADES u
         JOIN REGIAO r ON u.ID_Regiao = r.ID_Regiao
-    """)
+        LIMIT %s OFFSET %s
+    """, (itens_por_pagina, offset))
     unidades = cursor.fetchall()
 
     cursor.execute("SELECT * FROM REGIAO")
@@ -63,4 +76,11 @@ def gerenciar_unidade():
 
     cursor.close()
     conn.close()
-    return render_template('gestao_unidades.html', unidades=unidades, regioes=regioes) 
+    return render_template(
+        'gestao_unidades.html',
+        unidades=unidades,
+        regioes=regioes,
+        total_paginas=total_paginas,
+        pagina=pagina,
+        itens_por_pagina=itens_por_pagina
+    )

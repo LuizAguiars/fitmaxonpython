@@ -1,8 +1,59 @@
 # 🏋️‍♂️ Fitmax - Sistema de Gestão para Academia
 
 Sistema desenvolvido em Python com Flask para controle e gerenciamento de academias, com foco em unidades, clientes, colaboradores e agendamentos. Ideal para o dia a dia administrativo da Fitmax.
+## NOVA FUNCIONALIDADE ROUTES 
+## 📂 Organização das Rotas
 
----
+### 🔗 Sobre a pasta `routes`
+
+Anteriormente, todas as rotas do sistema estavam centralizadas no arquivo `app.py`. Agora, para melhorar a organização, manutenção e escalabilidade do projeto, as rotas foram movidas para a pasta `routes`.
+
+Cada arquivo dentro da pasta `routes` representa um conjunto de funcionalidades específicas (ex.: usuários, unidades, equipamentos, etc.).
+
+### 🚀 Como funciona
+
+- O arquivo `app.py` é responsável apenas por inicializar a aplicação Flask e registrar as rotas que estão dentro da pasta `routes`.
+- Todas as rotas estão divididas em arquivos separados dentro da pasta `routes`, o que torna o código mais organizado e fácil de manter.
+
+### 🔥 Exemplo de funcionamento
+
+**No `app.py`:**
+```python
+from flask import Flask
+from routes.usuarios import usuarios_bp
+from routes.unidades import unidades_bp
+
+app = Flask(__name__)
+
+# Registro dos Blueprints
+app.register_blueprint(usuarios_bp)
+app.register_blueprint(unidades_bp)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+Dentro da pasta /routes/usuarios.py:
+
+from flask import Blueprint, render_template
+
+usuarios_bp = Blueprint('usuarios', __name__)
+
+@usuarios_bp.route("/usuarios")
+def listar_usuarios():
+    return render_template("usuarios.html")
+
+
+✔️ Como adicionar novas rotas
+Crie um novo arquivo dentro da pasta routes (ex.: equipamentos.py).
+
+No arquivo, crie um Blueprint e defina suas rotas.
+
+No app.py, importe o blueprint e registre ele usando app.register_blueprint().
+
+
+
+
+
 
 ## 📋 Funcionalidades principais
 
