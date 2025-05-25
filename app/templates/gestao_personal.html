@@ -14,16 +14,16 @@
     <h1>GESTÃO DE PERSONAIS</h1>
     
     <div class="usuario-logado">
-        <form method="GET" action="{{ url_for('inicial_logado') }}">
+        <form method="GET" action="{{ url_for('home.inicial_logado') }}">
             <button type="submit">Sair</button>
         </form>
     </div>
     
     <nav class="menu-logado">
-      <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
-      <a href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+      <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+      <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
     </nav>
   </header>
 
@@ -85,7 +85,7 @@
         Deseja remover o personal: <span id="removerId"></span> - <span id="removerNome"></span>?
       </div>
 
-      <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <form method="POST" action="{{ url_for('personais.gestao_personal') }}">
         <input type="hidden" name="acao" value="remover">
         <input type="hidden" name="id" id="removerIdInput">
         <button type="submit" class="confirmar">Remover</button>
@@ -103,7 +103,7 @@
         Personal Selecionado: <span id="infoId"></span> - <span id="infoNome"></span>
       </div>
 
-      <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <form method="POST" action="{{ url_for('personais.gestao_personal') }}">
         <input type="hidden" name="acao" value="editar">
         <input type="hidden" name="id" id="editId">
         <input type="text" name="nome" id="editNome" placeholder="Nome do Personal">
@@ -128,7 +128,7 @@
     <div class="modal-box">
       <h2>Incluir Personal</h2>
 
-      <form method="POST" action="{{ url_for('gestao_personal') }}">
+      <form method="POST" action="{{ url_for('personais.gestao_personal') }}">
         <input type="hidden" name="acao" value="incluir">
         <input type="text" name="nome" placeholder="Nome do Personal" required>
         <input type="email" name="email" placeholder="Email" required>
