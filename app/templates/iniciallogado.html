@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitmax Gym</title>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/iniciallogado.css') }}">
 
 </head>
 <body>
@@ -21,16 +21,16 @@
 
     <div class="usuario-logado">
         <p>Olá, {{ nome }} 👋</p>
-        <form method="POST" action="{{ url_for('logout') }}">
+        <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>
     </div>
 
     <!-- Aqui vem o horário, abaixo da busca -->
     <nav class="menu-logado">
-      <a  href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a  href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a  href="{{ url_for('minha_conta') }}">Minha Conta</a>
+      <a  href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a  href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a  href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
   </nav>
   
 </header>

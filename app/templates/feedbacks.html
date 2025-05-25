@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<form id="form-feedback" action="{{ url_for('feedbacks') }}" method="POST">
+<form id="form-feedback" action="{{ url_for('feedbacks.feedbacks') }}" method="POST">
   <input type="hidden" name="usuario_id" value="1">
 
   <div class="unidade-dropdown">
@@ -21,7 +21,7 @@
   </div>
 
   <div class="logofeedback">
-    <a href="{{ url_for('inicial_logado') }}" class="voltar">Voltar</a>
+    <a href="{{ url_for('home.inicial_logado') }}" class="voltar">Voltar</a>
     <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" class="logo-img">
   </div>
 
@@ -78,7 +78,7 @@
 
 <script src="{{ url_for('static', filename='js/feedbacks.js') }}"></script>
 <script>
-  const feedbacksUrl = "{{ url_for('feedbacks') }}";
+  const feedbacksUrl = "{{ url_for('feedbacks.feedbacks') }}";
 </script>
 
 </body>

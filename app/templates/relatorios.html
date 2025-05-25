@@ -22,10 +22,10 @@
     </form>
 
     <nav class="menu-logado">
-      <a href="{{ url_for('painel_gestor') }}">Painel do Gestor</a>
-      <a href="{{ url_for('painel_personal') }}">Painel do Personal</a>
-      <a href="{{ url_for('minha_conta') }}">Minha Conta</a>
-      <a href="{{ url_for('inicial_logado') }}">Voltar a Tela Inicial</a>
+      <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+      <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
     </nav>
   </header>
 
@@ -33,7 +33,7 @@
       <div class="imagem-overlay">
         <img src="" alt="Usuários">
       </div>
-      <a href="{{ url_for('feedbackstar') }}" class="btn grande">Relatorios de Feedbacks</a>
+      <a href="{{ url_for('feedbacks.feedbackstar') }}" class="btn grande">Relatorios de Feedbacks</a>
     </div>
 
 
