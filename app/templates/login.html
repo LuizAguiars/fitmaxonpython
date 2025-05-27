@@ -32,6 +32,10 @@
 {% endwith %}
 
       <form method="POST">
+          <select name="tipo" required style="margin-bottom: 10px; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+            <option value="aluno">Aluno</option>
+            <option value="personal">Personal</option>
+          </select>
           <input type="email" name="email" placeholder="E-mail" required>
           <input type="password" name="senha" placeholder="Senha" required>
           <button type="submit">Entrar</button>

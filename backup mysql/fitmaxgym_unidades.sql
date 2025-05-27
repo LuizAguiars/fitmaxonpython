@@ -44,7 +44,7 @@ CREATE TABLE `unidades` (
 
 LOCK TABLES `unidades` WRITE;
 /*!40000 ALTER TABLE `unidades` DISABLE KEYS */;
-INSERT INTO `unidades` VALUES (5,'Unidade - Cascavel','Rua cascavel, 0000',2,150,'41 9999-9999','santa cartarina','PR','83410-270'),(6,'Unidade - Portão','Rua Itajuba, 673',1,309,'41 8888-8888','Curitiba','PR','81050-610'),(7,'Unidade - Portão','Rua Itajuba, 673',2,300,'41 8888-8888','Curitiba','PR','81050-610');
+INSERT INTO `unidades` VALUES (5,'Unidade  Guaraituba','Rua cascavel, 1223',1,48,'(41) 99999-9999','Colombo','PR','83410-270'),(6,'Unidade Portão','15021',1,44,'(41) 88888-8888','Curitiba','231313','81050-610'),(7,'Unidade Portão 2','Rua Itajuba, 673',2,300,'(41) 77777-7777','Curitiba','PR','81050-610');
 /*!40000 ALTER TABLE `unidades` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-03 15:07:31
+-- Dump completed on 2025-05-26 22:27:11

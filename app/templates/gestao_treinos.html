@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão de Treinos - FITMAX</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
+    </div>
+    <h1>GESTÃO TREINOS</h1>
+    <div class="usuario-logado">
+      <form method="GET" action="{{ url_for('home.inicial_logado') }}">
+        <button type="submit">Sair</button>
+      </form>
+    </div>
+    <nav class="menu-logado">
+      <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+      <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+      <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+      <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
+    </nav>
+  </header>
+
+  <main class="container" style="margin-top: 32px;">
+    <div class="tabela-unidades-container" style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); padding: 32px 32px 24px 32px; max-width: 950px; margin: 0 auto;">
+      <h2 class="titulo-pagina" style="margin-bottom: 24px; color: #001f5b;">Gestão de Treinos Padrão</h2>
+
+      <section class="formulario" style="margin-bottom: 32px;">
+        <form method="POST" class="form-cadastro">
+          <input type="hidden" name="acao" value="incluir">
+
+          <div class="campo-form" style="margin-bottom: 16px;">
+            <label for="nome" style="font-weight: 500;">Nome do Treino:</label>
+            <input type="text" id="nome" name="nome" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite o nome do treino">
+          </div>
+
+          <div class="campo-form" style="margin-bottom: 16px;">
+            <label for="descricao" style="font-weight: 500;">Descrição:</label>
+            <input type="text" id="descricao" name="descricao" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite uma descrição (opcional)">
+          </div>
+
+          <div class="campo-form" style="margin-bottom: 16px;">
+            <label style="font-weight: 500;">Equipamentos e Tempo</label>
+            <div id="equipamentos-container">
+              <div class="equipamento-item linha-flex" style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
+                <select name="equipamentos[]" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+                  {% for equip in equipamentos %}
+                    <option value="{{ equip.ID_equipamentos }}">{{ equip.Nome_Equipamento }}</option>
+                  {% endfor %}
+                </select>
+                <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+                <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
+              </div>
+            </div>
+            <button type="button" class="btn-adicionar" onclick="adicionarEquipamento()" style="background: #232b4a; color: #fff; border: none; border-radius: 6px; padding: 6px 16px; margin-top: 6px; cursor: pointer;">Adicionar Equipamento</button>
+          </div>
+
+          <div class="campo-form" style="text-align: right;">
+            <button type="submit" class="btn-salvar" style="background: #009966; color: #fff; border: none; border-radius: 8px; padding: 10px 28px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">Salvar Treino</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="tabela">
+        <h3 style="color: #001f5b; margin-bottom: 12px;">Treinos Cadastrados</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #232b4a; color: #fff;">
+              <th style="padding: 8px; color: #111;">ID</th>
+              <th style="padding: 8px; color: #111;">Nome</th>
+              <th style="padding: 8px; color: #111;">Descrição</th>
+              <th style="padding: 8px; color: #111;">Equipamentos</th>
+              <th style="padding: 8px; color: #111;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for treino in treinos %}
+            <tr style="border-bottom: 1px solid #e0e0e0; color: #111;">
+              <td style="padding: 8px; color: #111;">{{ treino.ID_Tipo_Treino }}</td>
+              <td style="padding: 8px; color: #111;">{{ treino.Nome_Treino }}</td>
+              <td style="padding: 8px; color: #111;">{{ treino.Descricao }}</td>
+              <td style="padding: 8px; color: #111;">{{ treino.equipamentos }}</td>
+              <td style="padding: 8px;">
+                <form method="POST" style="display:inline;">
+                  <input type="hidden" name="acao" value="remover">
+                  <input type="hidden" name="id" value="{{ treino.ID_Tipo_Treino }}">
+                  <button type="submit" class="btn-remover" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    function adicionarEquipamento() {
+      const container = document.getElementById('equipamentos-container');
+      const div = document.createElement('div');
+      div.classList.add('equipamento-item', 'linha-flex');
+      div.style.display = "flex";
+      div.style.gap = "12px";
+      div.style.alignItems = "center";
+      div.style.marginBottom = "8px";
+      div.innerHTML = `
+        <select name="equipamentos[]" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+          {% for equip in equipamentos %}
+            <option value="{{ equip.ID_equipamentos }}">{{ equip.Nome_Equipamento }}</option>
+          {% endfor %}
+        </select>
+        <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+        <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removerEquipamento(button) {
+      button.parentElement.remove();
+    }
+  </script>
+
+  <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
+</body>
+</html>

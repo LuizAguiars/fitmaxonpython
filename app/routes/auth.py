@@ -4,41 +4,63 @@ from validacoes import validar_cpf, validar_nome
 
 auth_bp = Blueprint('auth', __name__)
 
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         senha = request.form['senha']
+        tipo = request.form.get('tipo', 'aluno')
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute(
-            "SELECT ID_User, Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
-        resultado = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if resultado is None:
-            flash("E-mail não cadastrado!", "error")
-            return redirect(url_for('auth.login'))
-
-        id_user, senha_correta, nome = resultado
-        if senha != senha_correta:
-            flash("Senha incorreta!", "error")
-            return redirect(url_for('auth.login'))
-
-        session['usuario'] = id_user
-        session['nome'] = nome
-
-        return redirect(url_for('home.inicial_logado'))
-
+        if tipo == 'personal':
+            cur.execute(
+                "SELECT ID_Personal, Senha_Personal, Nome_Personal FROM PERSONAL WHERE Email_Personal = %s", (email,))
+            resultado = cur.fetchone()
+            if resultado is None:
+                flash("E-mail não cadastrado para personal!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('auth.login'))
+            id_personal, senha_correta, nome = resultado
+            if senha != senha_correta:
+                flash("Senha incorreta!", "error")
+                cur.close()
+                conn.close()
+                return redirect(url_for('auth.login'))
+            session['usuario'] = id_personal
+            session['nome'] = nome
+            session['tipo'] = 'personal'
+            cur.close()
+            conn.close()
+            return redirect(url_for('home.painel_personal'))
+        else:
+            cur.execute(
+                "SELECT ID_User, Senha_User, Nome_User FROM USUARIO WHERE Email_user = %s", (email,))
+            resultado = cur.fetchone()
+            cur.close()
+            conn.close()
+            if resultado is None:
+                flash("E-mail não cadastrado!", "error")
+                return redirect(url_for('auth.login'))
+            id_user, senha_correta, nome = resultado
+            if senha != senha_correta:
+                flash("Senha incorreta!", "error")
+                return redirect(url_for('auth.login'))
+            session['usuario'] = id_user
+            session['nome'] = nome
+            session['tipo'] = 'aluno'
+            return redirect(url_for('home.inicial_logado'))
     return render_template('login.html')
+
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     flash("Você saiu da sua conta com sucesso!", "success")
     return redirect(url_for('auth.login'))
+
 
 @auth_bp.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -124,4 +146,4 @@ def cadastro():
             flash(f"Erro ao cadastrar: {str(e)}", "error")
             return redirect(url_for('auth.cadastro'))
 
-    return render_template('cadastro.html', planos=planos) 
+    return render_template('cadastro.html', planos=planos)
