@@ -11,7 +11,7 @@
     <div class="logo">
       <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
     </div>
-    <h1>CRIAÇÃO DE TREINOS PADRÃO</h1>
+    <h1>teste</h1>
 
     <div class="usuario-logado">
       <form method="GET" action="{{ url_for('home.inicial_logado') }}">
@@ -27,13 +27,7 @@
     </nav>
   </header>
 
-  <div class="botoes-acoes" style="margin: 30px 0 0 0; display: flex; flex-wrap: wrap; gap: 16px; justify-content:center;">
-    <a class="btn azul" href="{{ url_for('equipamentos.gestao_equipamentos') }}">Gestão de Equipamentos</a>
-    <a class="btn azul" href="{{ url_for('treino.gerenciar_treinos') }}">Gestão de Treinos</a>
-    <a class="btn azul" href="{{ url_for('agendar.agendar') }}">Agendar Aula</a>
-    <a class="btn azul" href="{{ url_for('concluir.concluir_aula') }}">Concluir Aula</a>
-  </div>
-
+  
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
 </body>

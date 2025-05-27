@@ -1,12 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from db import get_db_connection
+from datetime import datetime, timedelta, time
 
 usuarios_bp = Blueprint('usuarios', __name__)
 
+
 @usuarios_bp.route('/minha-conta')
 def minha_conta():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar sua conta.", "error")
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para acessar sua conta.", "error")
         return redirect(url_for('auth.login'))
 
     user_id = session['usuario']
@@ -19,13 +21,25 @@ def minha_conta():
         WHERE ID_User = %s
     """, (user_id,))
     usuario = cursor.fetchone()
+
+    # Buscar aulas agendadas e concluídas
+    cursor.execute("""
+        SELECT a.idAgendar_Treino, a.DataTreino, a.HoraTreino, t.nome_tipo_treino, p.Nome_Personal, a.status
+        FROM agendar_treino a
+        JOIN tipo_de_treino t ON a.ID_Tipodetreino = t.idtipo_de_treino
+        JOIN personal p ON a.ID_Personal = p.ID_Personal
+        WHERE a.ID_usuario = %s
+        ORDER BY a.DataTreino DESC, a.HoraTreino DESC
+    """, (user_id,))
+    aulas = cursor.fetchall()
     db.close()
-    return render_template('minhaconta.html', usuario=usuario)
+    return render_template('minhaconta.html', usuario=usuario, aulas=aulas)
+
 
 @usuarios_bp.route('/gestao-usuarios', methods=['GET', 'POST'])
 def gestao_usuarios():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar a gestão de usuários.", "error")
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para acessar a gestão de usuários.", "error")
         return redirect(url_for('auth.login'))
 
     conn = get_db_connection()
@@ -119,4 +133,72 @@ def gestao_usuarios():
     cursor.close()
     conn.close()
 
-    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos) 
+    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
+
+
+@usuarios_bp.route('/minhas-aulas')
+def minhas_aulas():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para acessar suas aulas.", "error")
+        return redirect(url_for('auth.login'))
+
+    user_id = session['usuario']
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT a.idAgendar_Treino, a.DataTreino, a.HoraTreino, t.nome_tipo_treino, p.Nome_Personal, a.status
+        FROM agendar_treino a
+        JOIN tipo_de_treino t ON a.ID_Tipodetreino = t.idtipo_de_treino
+        JOIN personal p ON a.ID_Personal = p.ID_Personal
+        WHERE a.ID_usuario = %s
+        ORDER BY a.DataTreino DESC, a.HoraTreino DESC
+    """, (user_id,))
+    aulas = cursor.fetchall()
+    db.close()
+    return render_template('minhas_aulas.html', aulas=aulas)
+
+
+@usuarios_bp.route('/cancelar-aula', methods=['POST'])
+def cancelar_aula():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para cancelar uma aula.", "error")
+        return redirect(url_for('auth.login'))
+    user_id = session['usuario']
+    id_agenda = request.form.get('id_agenda')
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT ID_usuario, DataTreino, HoraTreino, status FROM agendar_treino WHERE idAgendar_Treino = %s
+    """, (id_agenda,))
+    aula = cursor.fetchone()
+    if not aula or aula['ID_usuario'] != user_id:
+        db.close()
+        flash('Aula não encontrada ou não pertence a você.', 'error')
+        return redirect(url_for('usuarios.minhas_aulas'))
+    if aula['status'] != 'Agendado':
+        db.close()
+        flash('Só é possível cancelar aulas agendadas.', 'error')
+        return redirect(url_for('usuarios.minhas_aulas'))
+    # Verifica se está no prazo (até 1h antes do início)
+    data_treino = aula['DataTreino']
+    hora_treino = aula['HoraTreino']
+    if isinstance(hora_treino, str):
+        hora_treino = datetime.strptime(hora_treino, '%H:%M:%S').time() if len(
+            hora_treino) > 5 else datetime.strptime(hora_treino, '%H:%M').time()
+    elif hasattr(hora_treino, 'seconds'):
+        total_seconds = hora_treino.seconds
+        horas = total_seconds // 3600
+        minutos = (total_seconds // 60) % 60
+        hora_treino = time(hour=horas, minute=minutos)
+    datahora_treino = datetime.combine(data_treino, hora_treino)
+    agora = datetime.now()
+    if agora > datahora_treino - timedelta(hours=1):
+        db.close()
+        flash('Só é possível cancelar aulas até 1 hora antes do início.', 'error')
+        return redirect(url_for('usuarios.minhas_aulas'))
+    cursor.execute(
+        "UPDATE agendar_treino SET status = 'Cancelado' WHERE idAgendar_Treino = %s", (id_agenda,))
+    db.commit()
+    db.close()
+    flash('Aula cancelada com sucesso!', 'success')
+    return redirect(url_for('usuarios.minhas_aulas'))

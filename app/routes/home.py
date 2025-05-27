@@ -2,9 +2,11 @@ from flask import Blueprint, render_template, session, redirect, url_for, flash,
 
 home_bp = Blueprint('home', __name__)
 
+
 @home_bp.route('/')
 def home():
     return render_template('inicial.html')
+
 
 @home_bp.route('/inicial-logado')
 def inicial_logado():
@@ -22,6 +24,7 @@ def inicial_logado():
     response.headers["Expires"] = "0"
     return response
 
+
 @home_bp.route('/painel-gestor')
 def painel_gestor():
     if 'usuario' not in session:
@@ -29,16 +32,18 @@ def painel_gestor():
         return redirect(url_for('auth.login'))
     return render_template('paineldogestor.html')
 
+
 @home_bp.route('/painel-personal')
 def painel_personal():
-    if 'usuario' not in session:
-        flash("Você precisa estar logado para acessar o painel do personal.", "error")
+    if 'usuario' not in session or session.get('tipo') != 'personal':
+        flash("Você precisa estar logado como personal para acessar o painel do personal.", "error")
         return redirect(url_for('auth.login'))
     return render_template('paineldopersonal.html')
+
 
 @home_bp.route('/treinos-padrao')
 def treinos_padrao():
     if 'usuario' not in session:
         flash("Você precisa estar logado para acessar os treinos padrão.", "error")
         return redirect(url_for('auth.login'))
-    return render_template('treinos_padrao.html') 
+    return render_template('treinos_padrao.html')

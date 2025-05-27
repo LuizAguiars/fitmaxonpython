@@ -1,0 +1,128 @@
+<!-- filepath: app/templates/minhas_aulas.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Aulas - Fitmax Gym</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/minhaconta.css') }}">
+    <style>
+      .minhas-aulas-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        justify-content: center;
+        margin-top: 18px;
+      }
+      .aula-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+        padding: 22px 28px;
+        min-width: 260px;
+        max-width: 340px;
+        width: 100%;
+        border-left: 6px solid #2980b9;
+        margin-bottom: 10px;
+        color: #232b4a;
+      }
+      .aula-card.concluído { border-left-color: #2ecc40; }
+      .aula-card.agendado { border-left-color: #2980b9; }
+      .aula-card.cancelado { border-left-color: #e74c3c; }
+      .aula-card h3 { color: #001f5b; margin-bottom: 8px; font-size: 1.15rem; }
+      .aula-card .status {
+        font-weight: bold;
+        color: #fff;
+        padding: 2px 10px;
+        border-radius: 8px;
+        font-size: 0.98em;
+        background: #2980b9;
+        display: inline-block;
+      }
+      .aula-card .status.concluído { background: #2ecc40; }
+      .aula-card .status.cancelado { background: #e74c3c; }
+      .aula-card .status.agendado { background: #2980b9; }
+      .cancel-btn {
+        background: #e74c3c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 18px;
+        font-size: 1em;
+        font-weight: bold;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .cancel-btn:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    </div>
+    <nav class="menu-logado">
+      <a href="{{ url_for('home.inicial_logado') }}">Voltar à Tela Inicial</a>
+      <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+    </nav>
+  </header>
+  <main>
+    <h2 style="margin-top: 36px; color: #001f5b; text-align: center;">Minhas Aulas</h2>
+    {% if aulas %}
+      <div class="minhas-aulas-cards">
+        {% for aula in aulas %}
+          <div class="aula-card {{ aula.status|lower }}">
+            <h3>{{ aula.nome_tipo_treino }}</h3>
+            <p style="color:#232b4a;"><b>Personal:</b> {{ aula.Nome_Personal }}</p>
+            <p style="color:#232b4a;"><b>Data:</b> {{ aula.DataTreino.strftime('%d/%m/%Y') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino }} | <b>Hora:</b> {% if aula.HoraTreino.__class__.__name__ == 'time' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}{{ "%02d" % (aula.HoraTreino.seconds // 3600) }}:{{ "%02d" % ((aula.HoraTreino.seconds // 60) % 60) }}{% else %}{{ aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino }}{% endif %}</p>
+            <p style="color:#232b4a;"><b>Status:</b> <span class="status {{ aula.status|lower }}">{{ aula.status }}</span></p>
+            {% if aula.status == 'Agendado' %}
+              {% set data_str = aula.DataTreino.strftime('%Y-%m-%d') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino %}
+              {% if aula.HoraTreino.__class__.__name__ == 'time' %}
+                {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
+              {% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}
+                {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
+              {% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}
+                {% set hora_str = ("%02d" % (aula.HoraTreino.seconds // 3600)) ~ ':' ~ ("%02d" % ((aula.HoraTreino.seconds // 60) % 60)) %}
+              {% else %}
+                {% set hora_str = aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino %}
+              {% endif %}
+              <form method="POST" action="{{ url_for('usuarios.cancelar_aula') }}" style="margin-top: 8px; display:inline;" onsubmit="return podeCancelarAula('{{ data_str }}', '{{ hora_str }}')">
+                <input type="hidden" name="id_agenda" value="{{ aula.idAgendar_Treino }}">
+                <button type="submit" class="cancel-btn" id="cancel-btn-{{ loop.index }}">Cancelar Aula</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <script>
+        function podeCancelarAula(data, hora) {
+          // data: yyyy-mm-dd, hora: HH:MM
+          var dataParts = data.split('-');
+          var horaParts = hora.split(':');
+          var dataAula = new Date(dataParts[0], dataParts[1]-1, dataParts[2], horaParts[0], horaParts[1]);
+          var agora = new Date();
+          var diffMs = dataAula - agora;
+          var diffH = diffMs / (1000*60*60);
+          if (diffH < 1) {
+            alert('Só é possível cancelar aulas até 1 hora antes do início.');
+            return false;
+          }
+          return true;
+        }
+      </script>
+    {% else %}
+      <div style="background: #fff; color: #232b4a; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.10); padding: 32px; max-width: 420px; margin: 40px auto; text-align: center;">
+        <h3 style="color: #001f5b;">Nenhuma aula encontrada.</h3>
+        <p style="color: #555;">Quando você agendar ou concluir aulas, elas aparecerão aqui.</p>
+      </div>
+    {% endif %}
+  </main>
+  <footer>
+      <p><strong>SEDE</strong></p>
+      <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
+      <p>FONE: (41) 99999-8888</p>
+  </footer>
+</body>
+</html>
