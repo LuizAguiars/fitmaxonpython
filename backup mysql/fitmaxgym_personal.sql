@@ -33,7 +33,7 @@ CREATE TABLE `personal` (
   UNIQUE KEY `Email_Personal` (`Email_Personal`),
   KEY `ID_Unidade` (`ID_Unidade`),
   CONSTRAINT `personal_ibfk_1` FOREIGN KEY (`ID_Unidade`) REFERENCES `unidades` (`ID_Unidades`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `personal` (
 
 LOCK TABLES `personal` WRITE;
 /*!40000 ALTER TABLE `personal` DISABLE KEYS */;
-INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6,'1'),(3,'ALEXANDRE  BENTO','alexandre.bento@unicesumar.com','Musculação',7,'1'),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5,'1');
+INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6,'1'),(3,'Alexandre Bento','alexandre.bento@unicesumar.com','Musculação',7,'1'),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5,'1'),(6,'Paulo Gomes','paulogomes@gmail.com','treinamento funcional',5,'1');
 /*!40000 ALTER TABLE `personal` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-27  1:49:47
+-- Dump completed on 2025-05-27 20:54:52

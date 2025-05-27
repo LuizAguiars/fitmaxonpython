@@ -7,19 +7,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+  <header style="background: #001f5b; color: #fff; padding: 24px 40px 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); border-bottom: 1px solid rgba(255,255,255,0.07);">
+    <div class="logo" style="display: flex; align-items: center;">
+      <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" style="height: 70px; width: auto; margin-right: 32px;">
     </div>
-    <h1>GESTÃO DE PERSONAIS</h1>
-    
-    <div class="usuario-logado">
-        <form method="GET" action="{{ url_for('home.inicial_logado') }}">
-            <button type="submit">Sair</button>
-        </form>
+    <h1 style="flex: 1; text-align: center; font-size: 2.2rem; font-weight: 700; letter-spacing: 1.5px; margin: 0;">GESTÃO DE PERSONAIS</h1>
+    <div class="usuario-logado" style="display: flex; align-items: center; gap: 18px; margin-left: 32px;">
+      <form method="GET" action="{{ url_for('home.inicial_logado') }}" style="margin: 0;">
+        <button type="submit" style="background: #232b4a; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s;">Sair</button>
+      </form>
     </div>
-    
-    <nav class="menu-logado">
+    <nav class="menu-logado" style="display: flex; gap: 18px; margin-left: 32px;">
       <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
       <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
       <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
@@ -37,7 +35,7 @@
   {% endif %}
   {% endwith %}
 
-  <div class="botoes-acoes">
+  <div class="botoes-acoes" style="margin: 24px 0 0 0; display: flex; align-items: center; gap: 12px;">
     <button class="btn verde" onclick="abrirModal('modalIncluir')">➕ Incluir</button>
   </div>
 
@@ -109,7 +107,7 @@
         <input type="text" name="nome" id="editNome" placeholder="Nome do Personal">
         <input type="email" name="email" id="editEmail" placeholder="Email">
         <input type="text" name="especialidade" id="editEspecialidade" placeholder="Especialidade">
-
+        <input type="password" name="senha" id="editSenha" placeholder="Senha (deixe em branco para não alterar)">
         <select name="id_unidade" id="editUnidade" required>
           <option value="">Selecione a Unidade</option>
           {% for unidade in unidades %}
@@ -133,7 +131,7 @@
         <input type="text" name="nome" placeholder="Nome do Personal" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="text" name="especialidade" placeholder="Especialidade" required>
-
+        <input type="password" name="senha" placeholder="Senha" required>
         <select name="id_unidade" required>
           <option value="">Selecione a Unidade</option>
           {% for unidade in unidades %}
@@ -147,11 +145,7 @@
     </div>
   </div>
 
-  <footer>
-    <p><strong>SEDE</strong></p>
-    <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
-    <p>FONE: (41) 99999-8888</p>
-  </footer>
+
 
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>

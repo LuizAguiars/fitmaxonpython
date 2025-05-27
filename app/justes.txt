@@ -2,3 +2,5 @@
 - melhorias no campo onde "Imprime os valores" no painel do gestor
 - todas validações
 
+deve ser possivel apenas agendar com personal da academia
+quando marcar aulas devem aparecer apenas os personais e equipamento da academia

@@ -32,7 +32,7 @@ CREATE TABLE `equipamentos_por_tipo_treino` (
   KEY `id_equipamento` (`id_equipamento`),
   CONSTRAINT `equipamentos_por_tipo_treino_ibfk_1` FOREIGN KEY (`idtipo_de_treino`) REFERENCES `tipo_de_treino` (`idtipo_de_treino`),
   CONSTRAINT `equipamentos_por_tipo_treino_ibfk_2` FOREIGN KEY (`id_equipamento`) REFERENCES `equipamentos` (`ID_equipamentos`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `equipamentos_por_tipo_treino` (
 
 LOCK TABLES `equipamentos_por_tipo_treino` WRITE;
 /*!40000 ALTER TABLE `equipamentos_por_tipo_treino` DISABLE KEYS */;
-INSERT INTO `equipamentos_por_tipo_treino` VALUES (1,1,1,10),(2,1,2,10),(3,1,3,10),(4,1,4,10),(5,2,1,20),(6,2,2,20),(7,2,3,20),(8,2,4,20);
+INSERT INTO `equipamentos_por_tipo_treino` VALUES (1,1,1,10),(2,1,2,10),(3,1,3,10),(4,1,4,10),(5,2,1,20),(6,2,2,20),(7,2,3,20),(8,2,4,20),(9,3,1,30),(10,3,2,30),(11,3,4,30),(12,3,3,30),(13,4,1,60),(14,4,2,60),(15,4,3,60),(16,4,4,60),(17,5,1,60),(18,5,2,60),(19,5,3,60),(20,5,4,60);
 /*!40000 ALTER TABLE `equipamentos_por_tipo_treino` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-27  1:49:47
+-- Dump completed on 2025-05-27 20:54:52

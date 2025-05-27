@@ -3,6 +3,7 @@ from db import get_db_connection
 
 personais_bp = Blueprint('personais', __name__)
 
+
 @personais_bp.route('/gestao-personal', methods=['GET', 'POST'])
 def gestao_personal():
     if 'usuario' not in session:
@@ -19,21 +20,29 @@ def gestao_personal():
         email = request.form.get('email')
         especialidade = request.form.get('especialidade')
         id_unidade = request.form.get('id_unidade')
+        senha = request.form.get('senha')  # Novo campo senha
 
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO PERSONAL (Nome_Personal, Email_Personal, Especialidade, ID_Unidade)
-                    VALUES (%s, %s, %s, %s)
-                """, (nome, email, especialidade, id_unidade))
+                    INSERT INTO PERSONAL (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (nome, email, especialidade, id_unidade, senha))
                 flash("Personal incluído com sucesso!", "success")
 
             elif acao == 'editar':
-                cursor.execute("""
-                    UPDATE PERSONAL
-                    SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
-                    WHERE ID_Personal=%s
-                """, (nome, email, especialidade, id_unidade, id))
+                if senha:
+                    cursor.execute("""
+                        UPDATE PERSONAL
+                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, Senha_Personal=%s
+                        WHERE ID_Personal=%s
+                    """, (nome, email, especialidade, id_unidade, senha, id))
+                else:
+                    cursor.execute("""
+                        UPDATE PERSONAL
+                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
+                        WHERE ID_Personal=%s
+                    """, (nome, email, especialidade, id_unidade, id))
                 flash("Personal alterado com sucesso!", "warning")
 
             elif acao == 'remover':
@@ -59,4 +68,4 @@ def gestao_personal():
     cursor.close()
     conn.close()
 
-    return render_template("gestao_personal.html", personais=personais, unidades=unidades) 
+    return render_template("gestao_personal.html", personais=personais, unidades=unidades)
