@@ -27,7 +27,7 @@ CREATE TABLE `tipo_de_treino` (
   `nome_tipo_treino` varchar(100) DEFAULT NULL,
   `descricao` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`idtipo_de_treino`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,6 +36,7 @@ CREATE TABLE `tipo_de_treino` (
 
 LOCK TABLES `tipo_de_treino` WRITE;
 /*!40000 ALTER TABLE `tipo_de_treino` DISABLE KEYS */;
+INSERT INTO `tipo_de_treino` VALUES (1,'Treino Leve ','Treino Leve 10 minutos'),(2,'Treino Medio','Treino de 20 minutos');
 /*!40000 ALTER TABLE `tipo_de_treino` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:10
+-- Dump completed on 2025-05-27  1:49:47

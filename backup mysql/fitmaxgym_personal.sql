@@ -28,6 +28,7 @@ CREATE TABLE `personal` (
   `Email_Personal` varchar(115) NOT NULL,
   `Especialidade` varchar(100) DEFAULT NULL,
   `ID_Unidade` int DEFAULT NULL,
+  `Senha_Personal` varchar(100) NOT NULL DEFAULT '1',
   PRIMARY KEY (`ID_Personal`),
   UNIQUE KEY `Email_Personal` (`Email_Personal`),
   KEY `ID_Unidade` (`ID_Unidade`),
@@ -41,7 +42,7 @@ CREATE TABLE `personal` (
 
 LOCK TABLES `personal` WRITE;
 /*!40000 ALTER TABLE `personal` DISABLE KEYS */;
-INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6),(3,'ALEXANDRE  BENTO','alexandre.bento@unicesumar.com','Musculação',7),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5);
+INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6,'1'),(3,'ALEXANDRE  BENTO','alexandre.bento@unicesumar.com','Musculação',7,'1'),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5,'1');
 /*!40000 ALTER TABLE `personal` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:11
+-- Dump completed on 2025-05-27  1:49:47

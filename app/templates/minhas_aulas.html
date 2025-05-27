@@ -29,6 +29,7 @@
       .aula-card.concluído { border-left-color: #2ecc40; }
       .aula-card.agendado { border-left-color: #2980b9; }
       .aula-card.cancelado { border-left-color: #e74c3c; }
+      .aula-card.ausente, .aula-card.falta { border-left-color: #e74c3c; }
       .aula-card h3 { color: #001f5b; margin-bottom: 8px; font-size: 1.15rem; }
       .aula-card .status {
         font-weight: bold;
@@ -42,6 +43,9 @@
       .aula-card .status.concluído { background: #2ecc40; }
       .aula-card .status.cancelado { background: #e74c3c; }
       .aula-card .status.agendado { background: #2980b9; }
+      .aula-card .status.ausente, .aula-card .status.falta {
+        background: #e74c3c;
+      }
       .cancel-btn {
         background: #e74c3c;
         color: #fff;
@@ -69,6 +73,15 @@
   </header>
   <main>
     <h2 style="margin-top: 36px; color: #001f5b; text-align: center;">Minhas Aulas</h2>
+    <div id="aviso-falta" style="max-width: 520px; margin: 0 auto 18px auto; background: #fffbe9; color: #b85c00; border-radius: 12px; box-shadow: 0 2px 8px rgba(255,200,0,0.08); padding: 16px 24px; text-align: center; font-size: 1.08em; font-weight: 500;">
+      <span style="font-size:1.2em; font-weight:bold; color:#e74c3c;">Atenção:</span> evite faltar suas aulas/treinos! Faltas prejudicam seu progresso e podem limitar novos agendamentos.
+    </div>
+    <script>
+      setTimeout(function() {
+        var aviso = document.getElementById('aviso-falta');
+        if(aviso) { aviso.style.transition = 'opacity 0.7s'; aviso.style.opacity = 0; setTimeout(function(){ aviso.remove(); }, 800); }
+      }, 10000);
+    </script>
     {% if aulas %}
       <div class="minhas-aulas-cards">
         {% for aula in aulas %}
@@ -76,7 +89,7 @@
             <h3>{{ aula.nome_tipo_treino }}</h3>
             <p style="color:#232b4a;"><b>Personal:</b> {{ aula.Nome_Personal }}</p>
             <p style="color:#232b4a;"><b>Data:</b> {{ aula.DataTreino.strftime('%d/%m/%Y') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino }} | <b>Hora:</b> {% if aula.HoraTreino.__class__.__name__ == 'time' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}{{ "%02d" % (aula.HoraTreino.seconds // 3600) }}:{{ "%02d" % ((aula.HoraTreino.seconds // 60) % 60) }}{% else %}{{ aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino }}{% endif %}</p>
-            <p style="color:#232b4a;"><b>Status:</b> <span class="status {{ aula.status|lower }}">{{ aula.status }}</span></p>
+            <p style="color:#232b4a;"><b>Status:</b> <span class="status {{ aula.status|lower }}">{{ 'Falta' if aula.status in ['Ausente','Falta','Não Concluído'] else aula.status }}</span></p>
             {% if aula.status == 'Agendado' %}
               {% set data_str = aula.DataTreino.strftime('%Y-%m-%d') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino %}
               {% if aula.HoraTreino.__class__.__name__ == 'time' %}

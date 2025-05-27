@@ -1,0 +1,1 @@
+gestor ver o historico de aulas, ajustar o cadastro de gestores
