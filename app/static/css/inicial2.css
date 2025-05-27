@@ -443,6 +443,8 @@ nav.menu-logado a:hover {
   margin-bottom: 20px;
   display: flex;
   gap: 10px;
+  justify-content: center !important;
+  text-align: center !important;
 }
 
 /* FLASH MESSAGES (antigo) */
@@ -532,5 +534,34 @@ nav.menu-logado a:hover {
   .menu-logo-fitmax {
     padding: 18px 0 14px 0;
   }
+}
+.btn.azul {
+  background: #001f5b !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 1.08em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,31,91,0.08);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  display: inline-block;
+  min-width: 180px;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.btn.azul:hover {
+  background: #003080 !important;
+  box-shadow: 0 4px 18px rgba(0,31,91,0.13);
+}
+.botoes-acoes {
+  justify-content: center !important;
+  text-align: center !important;
 }
 

@@ -29,7 +29,9 @@ CREATE TABLE `agendar_treino` (
   `ID_Personal` int DEFAULT NULL,
   `DataTreino` date NOT NULL,
   `HoraTreino` time NOT NULL,
+  `DuracaoAula` int NOT NULL DEFAULT '0',
   `ID_Unidade_Treino` int DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'Agendado',
   PRIMARY KEY (`idAgendar_Treino`),
   KEY `ID_usuario` (`ID_usuario`),
   KEY `ID_Tipodetreino` (`ID_Tipodetreino`),
@@ -39,7 +41,7 @@ CREATE TABLE `agendar_treino` (
   CONSTRAINT `agendar_treino_ibfk_2` FOREIGN KEY (`ID_Tipodetreino`) REFERENCES `tipo_de_treino` (`idtipo_de_treino`),
   CONSTRAINT `agendar_treino_ibfk_3` FOREIGN KEY (`ID_Unidade_Treino`) REFERENCES `unidades` (`ID_Unidades`),
   CONSTRAINT `agendar_treino_ibfk_4` FOREIGN KEY (`ID_Personal`) REFERENCES `personal` (`ID_Personal`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -48,6 +50,7 @@ CREATE TABLE `agendar_treino` (
 
 LOCK TABLES `agendar_treino` WRITE;
 /*!40000 ALTER TABLE `agendar_treino` DISABLE KEYS */;
+INSERT INTO `agendar_treino` VALUES (1,NULL,1,2,'2025-05-27','06:25:00',0,NULL,'Agendado'),(2,1,1,2,'2025-05-27','00:35:00',0,5,'Concluído'),(3,1,1,2,'2025-05-27','00:44:00',0,5,'Concluído'),(4,1,1,3,'2025-05-27','04:45:00',0,5,'Cancelado'),(5,1,1,2,'2025-05-27','01:12:00',0,5,'Concluído'),(6,1,1,2,'2025-05-27','01:18:00',0,5,'Concluído'),(7,1,1,2,'2025-05-27','01:22:00',0,5,'Concluído'),(8,1,1,2,'2025-05-27','06:32:00',0,5,'Cancelado'),(9,1,2,2,'2025-05-27','00:00:00',0,5,'Ausente'),(10,1,2,2,'2025-05-27','07:01:00',0,5,'Concluído'),(11,1,4,5,'2025-05-27','20:39:00',240,5,'Agendado'),(12,4,4,5,'2025-05-27','21:12:00',240,5,'Agendado'),(13,4,1,5,'2025-05-28','01:13:00',40,5,'Cancelado'),(14,4,1,5,'2025-05-28','01:54:00',40,5,'Cancelado'),(15,4,1,6,'2025-05-28','01:24:00',40,5,'Cancelado'),(16,4,1,6,'2025-05-28','01:23:00',40,5,'Agendado');
 /*!40000 ALTER TABLE `agendar_treino` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -60,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:11
+-- Dump completed on 2025-05-27 20:54:52

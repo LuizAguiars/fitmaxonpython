@@ -50,21 +50,6 @@ def agendar():
             conn.close()
             return redirect(request.url)
 
-        # Verificar conflito de horário considerando DuracaoAula, ignorando aulas canceladas
-        cursor.execute("""
-            SELECT 1 FROM agendar_treino
-            WHERE ID_Personal = %s
-              AND DataTreino = %s
-              AND status IN ('Agendado', 'Concluído')
-              AND (
-                (ADDTIME(HoraTreino, SEC_TO_TIME(DuracaoAula*60)) > %s AND HoraTreino <= %s)
-              )
-        """, (id_personal, data_obj, hora, hora))
-        if cursor.fetchone():
-            flash('Já existe uma aula agendada para esse personal nesse horário ou sobrepondo a duração da aula.', 'error')
-            conn.close()
-            return redirect(request.url)
-
         # Validação de integridade referencial: personal deve pertencer à unidade
         cursor.execute(
             "SELECT 1 FROM personal WHERE ID_Personal = %s AND ID_Unidade = %s", (id_personal, id_unidade))
@@ -73,20 +58,11 @@ def agendar():
             conn.close()
             return redirect(request.url)
 
-        # Buscar duração total do treino (soma dos tempos dos equipamentos)
-        cursor.execute("""
-            SELECT COALESCE(SUM(tempo_minutos), 0) as duracao_total
-            FROM equipamentos_por_tipo_treino
-            WHERE idtipo_de_treino = %s
-        """, (id_treino,))
-        row = cursor.fetchone()
-        duracao_aula = row['duracao_total'] if row else 0
-
         try:
             cursor.execute("""
-                INSERT INTO agendar_treino (ID_usuario, ID_Personal, ID_Tipodetreino, DataTreino, HoraTreino, ID_Unidade_Treino, DuracaoAula, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (id_aluno, id_personal, id_treino, data, hora, id_unidade, duracao_aula, 'Agendado'))
+                INSERT INTO agendar_treino (ID_usuario, ID_Personal, ID_Tipodetreino, DataTreino, HoraTreino, ID_Unidade_Treino, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (id_aluno, id_personal, id_treino, data, hora, id_unidade, 'Agendado'))
             conn.commit()
             flash('Aula agendada com sucesso!', 'success')
         except Exception as e:
@@ -102,10 +78,55 @@ def agendar():
         "SELECT ID_Personal, Nome_Personal, ID_Unidade FROM personal")
     personais = cursor.fetchall()
 
-    # Buscar todos tipos de treino (com unidade)
+    # Buscar todos tipos de treino (sem unidade)
     cursor.execute(
-        "SELECT idtipo_de_treino, nome_tipo_treino, descricao, ID_Unidade FROM tipo_de_treino")
+        "SELECT idtipo_de_treino, nome_tipo_treino, descricao FROM tipo_de_treino")
     treinos = cursor.fetchall()
 
     conn.close()
     return render_template('agendar.html', personais=personais, treinos=treinos, unidades=unidades)
+
+
+@agendar_bp.route('/gestao_treinos', methods=['GET', 'POST'])
+def gestao_treinos():
+    if 'usuario' not in session or session.get('tipo') != 'gestor':
+        flash('Acesso negado.', 'error')
+        return redirect(url_for('auth.login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST' and request.form.get('acao') == 'incluir':
+        nome = request.form.get('nome')
+        descricao = request.form.get('descricao')
+        id_unidade = request.form.get('unidade')
+
+        # Validações
+        if not all([nome, id_unidade]):
+            flash('Preencha todos os campos obrigatórios.', 'error')
+        else:
+            try:
+                cursor.execute(
+                    "INSERT INTO tipo_de_treino (nome_tipo_treino, descricao, ID_Unidade) VALUES (%s, %s, %s)",
+                    (nome, descricao, id_unidade)
+                )
+                conn.commit()
+                flash('Treino cadastrado com sucesso!', 'success')
+            except Exception as e:
+                conn.rollback()
+                flash(f'Erro ao cadastrar treino: {str(e)}', 'error')
+
+    # Buscar treinos cadastrados
+    cursor.execute("""
+        SELECT tt.idtipo_de_treino, tt.nome_tipo_treino, tt.descricao, u.Nome_Unidade
+        FROM tipo_de_treino tt
+        JOIN UNIDADES u ON tt.ID_Unidade = u.ID_Unidades
+    """)
+    treinos = cursor.fetchall()
+
+    # Buscar unidades
+    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    unidades = cursor.fetchall()
+
+    conn.close()
+    return render_template('gestao_treinos.html', treinos=treinos, unidades=unidades)

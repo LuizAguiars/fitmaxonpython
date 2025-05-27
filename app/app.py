@@ -10,6 +10,8 @@ from routes.feedbacks import feedbacks_bp
 from routes.treino import treino_bp
 from routes.agendar import agendar_bp
 from routes.concluir_aula import concluir_bp
+from routes.relatorios import relatorios_bp
+
 
 
 app = Flask(__name__)
@@ -27,6 +29,7 @@ app.register_blueprint(feedbacks_bp)
 app.register_blueprint(treino_bp)
 app.register_blueprint(agendar_bp)
 app.register_blueprint(concluir_bp)
+app.register_blueprint(relatorios_bp)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

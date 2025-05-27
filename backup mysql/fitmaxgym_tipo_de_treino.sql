@@ -26,8 +26,11 @@ CREATE TABLE `tipo_de_treino` (
   `idtipo_de_treino` int NOT NULL AUTO_INCREMENT,
   `nome_tipo_treino` varchar(100) DEFAULT NULL,
   `descricao` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`idtipo_de_treino`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `ID_Unidade` int DEFAULT NULL,
+  PRIMARY KEY (`idtipo_de_treino`),
+  KEY `fk_tipo_de_treino_unidade` (`ID_Unidade`),
+  CONSTRAINT `fk_tipo_de_treino_unidade` FOREIGN KEY (`ID_Unidade`) REFERENCES `unidades` (`ID_Unidades`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,6 +39,7 @@ CREATE TABLE `tipo_de_treino` (
 
 LOCK TABLES `tipo_de_treino` WRITE;
 /*!40000 ALTER TABLE `tipo_de_treino` DISABLE KEYS */;
+INSERT INTO `tipo_de_treino` VALUES (1,'Treino Leve ','Treino Leve 10 minutos',5),(2,'Treino Medio','Treino de 20 minutos',5),(3,'Treino Pesado','Treino de 30 minutos',5),(4,'Ultra Pesado','Treino de 1 hora',5),(5,'Ultra Pesado','Treino de 1 hora',5);
 /*!40000 ALTER TABLE `tipo_de_treino` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:10
+-- Dump completed on 2025-05-27 20:54:53

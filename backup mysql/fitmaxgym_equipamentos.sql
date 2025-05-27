@@ -46,7 +46,7 @@ CREATE TABLE `equipamentos` (
 
 LOCK TABLES `equipamentos` WRITE;
 /*!40000 ALTER TABLE `equipamentos` DISABLE KEYS */;
-INSERT INTO `equipamentos` VALUES (1,'Esteira modelo 2929 ','2025-04-24 00:00:00',5,'Esteira',1,1),(2,'Bicicleta modelo 1010','2025-04-18 00:00:00',6,'Bicicleta Ergométrica',1,1),(3,'Modelo: 2025','2025-04-25 00:00:00',5,'Leg Press',1,2),(4,'modelo 2025','2025-04-25 00:00:00',5,'Supino',1,2);
+INSERT INTO `equipamentos` VALUES (1,'Esteira modelo 2929 ','2025-04-24 00:00:00',5,'Esteira',1,1),(2,'Bicicleta modelo 1010','2025-05-14 00:00:00',5,'Bicicleta Ergométrica',1,1),(3,'Modelo: 2025','2025-04-25 00:00:00',5,'Leg Press',1,2),(4,'modelo 2025','2025-04-25 00:00:00',5,'Supino',1,2);
 /*!40000 ALTER TABLE `equipamentos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:10
+-- Dump completed on 2025-05-27 20:54:51

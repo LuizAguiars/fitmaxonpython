@@ -31,6 +31,22 @@
       background: #e74c3c;
       color: #fff;
     }
+    .btn.vermelho, .ausente-btn {
+      background: #e74c3c !important;
+      color: #fff !important;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 0;
+      font-size: 1.08em;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px rgba(231,76,60,0.08);
+    }
+    .btn.vermelho:hover, .ausente-btn:hover {
+      background: #c0392b !important;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +138,25 @@
               </div>
               <button type="submit" class="btn verde" style="width: 100%; margin-top: 10px;">Concluir Aula</button>
             </form>
+            {% set data_treino = aula.DataTreino.strftime('%Y-%m-%d') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino %}
+            {% if aula.HoraTreino.__class__.__name__ == 'time' %}
+              {% set hora_treino = aula.HoraTreino.strftime('%H:%M') %}
+            {% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}
+              {% set hora_treino = aula.HoraTreino.strftime('%H:%M') %}
+            {% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}
+              {% set hora_treino = "%02d" % (aula.HoraTreino.seconds // 3600) ~ ':' ~ "%02d" % ((aula.HoraTreino.seconds // 60) % 60) %}
+            {% else %}
+              {% set hora_treino = aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino %}
+            {% endif %}
+            <form method="POST" style="margin-top: 8px;">
+              <input type="hidden" name="id_agenda" value="{{ aula.idAgendar_Treino }}">
+              <input type="hidden" name="marcar_ausente" value="1">
+              <button type="submit" class="btn vermelho ausente-btn" style="width: 100%; margin-top: 0px; font-weight:bold;"
+                onclick="return podeMarcarAusente('{{ data_treino }}', '{{ hora_treino }}');"
+                id="ausente-btn-{{ loop.index }}">
+                Aluno Ausente
+              </button>
+            </form>
           </div>
           {% endfor %}
         </div>
@@ -136,5 +171,21 @@
   
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
+  <script>
+    function podeMarcarAusente(data, hora) {
+      // data: yyyy-mm-dd, hora: HH:MM
+      var dataParts = data.split('-');
+      var horaParts = hora.split(':');
+      var dataAula = new Date(dataParts[0], dataParts[1]-1, dataParts[2], horaParts[0], horaParts[1]);
+      var agora = new Date();
+      var diffMs = agora - dataAula;
+      var diffH = diffMs / (1000*60*60);
+      if (diffH < 1) {
+        alert('Só é possível marcar ausência 1 hora após o horário agendado.');
+        return false;
+      }
+      return confirm('Tem certeza que deseja marcar o aluno como ausente?');
+    }
+  </script>
 </body>
 </html>

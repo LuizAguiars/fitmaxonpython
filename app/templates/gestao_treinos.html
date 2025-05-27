@@ -30,64 +30,79 @@
       <h2 class="titulo-pagina" style="margin-bottom: 24px; color: #001f5b;">Gestão de Treinos Padrão</h2>
 
       <section class="formulario" style="margin-bottom: 32px;">
-        <form method="POST" class="form-cadastro">
+        <form class="form-cadastro" id="form-treino" method="POST">
           <input type="hidden" name="acao" value="incluir">
-
+          <div class="campo-form" style="margin-bottom: 16px;">
+            <label for="unidade" style="font-weight: 500;">Unidade:</label>
+            <select id="unidade" name="unidade" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+              <option value="">Selecione a Unidade</option>
+              {% for unidade in unidades %}
+                <option value="{{ unidade.ID_Unidades }}" {% if unidade_selecionada == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+              {% endfor %}
+            </select>
+          </div>
           <div class="campo-form" style="margin-bottom: 16px;">
             <label for="nome" style="font-weight: 500;">Nome do Treino:</label>
-            <input type="text" id="nome" name="nome" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite o nome do treino">
+            <input type="text" id="nome" name="nome" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite o nome do treino" {% if not unidade_selecionada %}disabled{% endif %}>
           </div>
-
           <div class="campo-form" style="margin-bottom: 16px;">
             <label for="descricao" style="font-weight: 500;">Descrição:</label>
-            <input type="text" id="descricao" name="descricao" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite uma descrição (opcional)">
+            <input type="text" id="descricao" name="descricao" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;" placeholder="Digite uma descrição (opcional)" {% if not unidade_selecionada %}disabled{% endif %}>
           </div>
-
           <div class="campo-form" style="margin-bottom: 16px;">
             <label style="font-weight: 500;">Equipamentos e Tempo</label>
             <div id="equipamentos-container">
               <div class="equipamento-item linha-flex" style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
-                <select name="equipamentos[]" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+                <select name="equipamentos[]" class="equipamento-select" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;" {% if not unidade_selecionada %}disabled{% endif %}>
+                  <option value="">Selecione o Equipamento</option>
                   {% for equip in equipamentos %}
-                    <option value="{{ equip.ID_equipamentos }}">{{ equip.Nome_Equipamento }}</option>
+                    <option value="{{ equip.ID_equipamentos }}" data-unidade="{{ equip.ID_unidade_equipamento }}">{{ equip.Nome_Equipamento }}</option>
                   {% endfor %}
                 </select>
-                <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
-                <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
+                <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;" {% if not unidade_selecionada %}disabled{% endif %}>
+                <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;" {% if not unidade_selecionada %}disabled{% endif %}>Remover</button>
               </div>
             </div>
-            <button type="button" class="btn-adicionar" onclick="adicionarEquipamento()" style="background: #232b4a; color: #fff; border: none; border-radius: 6px; padding: 6px 16px; margin-top: 6px; cursor: pointer;">Adicionar Equipamento</button>
+            <button type="button" class="btn-adicionar" onclick="adicionarEquipamento()" style="background: #232b4a; color: #fff; border: none; border-radius: 6px; padding: 6px 16px; margin-top: 6px; cursor: pointer;" {% if not unidade_selecionada %}disabled{% endif %}>Adicionar Equipamento</button>
           </div>
-
-          <div class="campo-form" style="text-align: right;">
-            <button type="submit" class="btn-salvar" style="background: #009966; color: #fff; border: none; border-radius: 8px; padding: 10px 28px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">Salvar Treino</button>
+          <div class="campo-form" style="text-align: center;">
+            <button type="submit" class="btn-salvar" style="background: #009966; color: #fff; border: none; border-radius: 8px; padding: 10px 28px; font-size: 1.1rem; font-weight: 600; cursor: pointer;" {% if not unidade_selecionada %}disabled{% endif %}>Salvar Treino</button>
           </div>
         </form>
       </section>
 
       <section class="tabela">
         <h3 style="color: #001f5b; margin-bottom: 12px;">Treinos Cadastrados</h3>
-        <table style="width: 100%; border-collapse: collapse;">
+        <table id="tabela-treinos" style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #232b4a; color: #fff;">
               <th style="padding: 8px; color: #111;">ID</th>
               <th style="padding: 8px; color: #111;">Nome</th>
               <th style="padding: 8px; color: #111;">Descrição</th>
               <th style="padding: 8px; color: #111;">Equipamentos</th>
+              <th style="padding: 8px; color: #111;">Unidade</th>
               <th style="padding: 8px; color: #111;">Ações</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tbody-treinos">
             {% for treino in treinos %}
-            <tr style="border-bottom: 1px solid #e0e0e0; color: #111;">
+            <tr data-unidade="{{ treino.ID_Unidade }}" {% if not unidade_selecionada or treino.ID_Unidade != unidade_selecionada|int %}style="display:none"{% endif %}>
               <td style="padding: 8px; color: #111;">{{ treino.ID_Tipo_Treino }}</td>
               <td style="padding: 8px; color: #111;">{{ treino.Nome_Treino }}</td>
               <td style="padding: 8px; color: #111;">{{ treino.Descricao }}</td>
               <td style="padding: 8px; color: #111;">{{ treino.equipamentos }}</td>
+              <td style="padding: 8px; color: #111;">
+                {% for unidade in unidades %}
+                  {% if unidade.ID_Unidades == treino.ID_Unidade %}
+                    {{ unidade.Nome_Unidade }}
+                  {% endif %}
+                {% endfor %}
+              </td>
               <td style="padding: 8px;">
                 <form method="POST" style="display:inline;">
                   <input type="hidden" name="acao" value="remover">
                   <input type="hidden" name="id" value="{{ treino.ID_Tipo_Treino }}">
+                  <input type="hidden" name="unidade" value="{{ treino.ID_Unidade }}">
                   <button type="submit" class="btn-remover" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
                 </form>
               </td>
@@ -100,29 +115,112 @@
   </main>
 
   <script>
-    function adicionarEquipamento() {
-      const container = document.getElementById('equipamentos-container');
-      const div = document.createElement('div');
-      div.classList.add('equipamento-item', 'linha-flex');
-      div.style.display = "flex";
-      div.style.gap = "12px";
-      div.style.alignItems = "center";
-      div.style.marginBottom = "8px";
-      div.innerHTML = `
-        <select name="equipamentos[]" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
-          {% for equip in equipamentos %}
-            <option value="{{ equip.ID_equipamentos }}">{{ equip.Nome_Equipamento }}</option>
-          {% endfor %}
-        </select>
-        <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
-        <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
-      `;
-      container.appendChild(div);
+  function filtrarEquipamentosPorUnidade(unidadeId) {
+    document.querySelectorAll('.equipamento-select').forEach(function(select) {
+      Array.from(select.options).forEach(function(opt) {
+        if (!opt.value) {
+          opt.style.display = '';
+          return;
+        }
+        if (opt.getAttribute('data-unidade') === String(unidadeId)) {
+          opt.style.display = '';
+        } else {
+          opt.style.display = 'none';
+        }
+      });
+      // Não reseta a seleção do usuário
+    });
+  }
+
+  function filtrarTreinosPorUnidade(unidadeId) {
+    document.querySelectorAll('#tbody-treinos tr').forEach(function(row) {
+      if (!unidadeId) {
+        row.style.display = 'none';
+      } else if (row.getAttribute('data-unidade') === String(unidadeId)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var unidadeSelect = document.getElementById('unidade');
+    var unidadeId = unidadeSelect.value;
+    filtrarEquipamentosPorUnidade(unidadeId);
+    filtrarTreinosPorUnidade(unidadeId);
+
+    // Desabilitar campos se nenhuma unidade selecionada ao carregar
+    var disabled = !unidadeId;
+    document.querySelectorAll('#form-treino input:not([type=hidden]), #form-treino select.equipamento-select, #form-treino button.btn-adicionar, #form-treino button.btn-salvar, #form-treino button.btn-remover').forEach(function(el) {
+      el.disabled = disabled;
+    });
+
+    // Limpar selects de equipamentos se nenhuma unidade selecionada ao carregar
+    if (disabled) {
+      document.querySelectorAll('.equipamento-select').forEach(function(select) {
+        select.selectedIndex = 0;
+      });
+      document.querySelectorAll('#form-treino input[type="number"]').forEach(function(input) {
+        input.value = '';
+      });
     }
 
-    function removerEquipamento(button) {
-      button.parentElement.remove();
-    }
+    // Adicione o event listener aqui para garantir que funcione após o DOM estar pronto
+    unidadeSelect.addEventListener('change', function() {
+      filtrarEquipamentosPorUnidade(this.value);
+      filtrarTreinosPorUnidade(this.value);
+
+      // Desabilitar campos se nenhuma unidade selecionada
+      var disabled = !this.value;
+      document.querySelectorAll('#form-treino input:not([type=hidden]), #form-treino select.equipamento-select, #form-treino button.btn-adicionar, #form-treino button.btn-salvar, #form-treino button.btn-remover').forEach(function(el) {
+        el.disabled = disabled;
+      });
+
+      // Limpar selects de equipamentos se nenhuma unidade selecionada
+      if (disabled) {
+        document.querySelectorAll('.equipamento-select').forEach(function(select) {
+          select.selectedIndex = 0;
+        });
+        document.querySelectorAll('#form-treino input[type="number"]').forEach(function(input) {
+          input.value = '';
+        });
+      }
+    });
+  });
+
+  function adicionarEquipamento() {
+    const container = document.getElementById('equipamentos-container');
+    const div = document.createElement('div');
+    div.classList.add('equipamento-item', 'linha-flex');
+    div.style.display = "flex";
+    div.style.gap = "12px";
+    div.style.alignItems = "center";
+    div.style.marginBottom = "8px";
+    div.innerHTML = `
+      <select name="equipamentos[]" class="equipamento-select" required style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;">
+        <option value="">Selecione o Equipamento</option>
+        {% for equip in equipamentos %}
+          <option value="{{ equip.ID_equipamentos }}" data-unidade="{{ equip.ID_unidade_equipamento }}">{{ equip.Nome_Equipamento }}</option>
+        {% endfor %}
+      </select>
+      <input type="number" name="tempos[]" placeholder="Tempo (min)" min="1" required style="width: 120px; padding: 6px; border-radius: 6px; border: 1px solid #ccc;">
+      <button type="button" class="btn-remover" onclick="removerEquipamento(this)" style="background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">Remover</button>
+    `;
+    container.appendChild(div);
+    const unidadeId = document.getElementById('unidade').value;
+    // Filtra apenas o select recém-adicionado
+    filtrarEquipamentosPorUnidade(unidadeId);
+    // Desabilitar campos se nenhuma unidade selecionada
+    var disabled = !unidadeId;
+    div.querySelectorAll('select, input, button').forEach(function(el) {
+      el.disabled = disabled;
+    });
+  }
+
+  function removerEquipamento(button) {
+    button.parentElement.remove();
+  }
   </script>
 
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>

@@ -66,31 +66,35 @@
         {% endif %}
       {% endwith %}
       <form method="POST" style="display: flex; flex-direction: column; gap: 18px;">
-        <div>
-          <label for="personal" style="font-weight: 500;">Personal:</label>
-          <select id="personal" name="personal" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
-            <option value="">Selecione o Personal</option>
-            {% for p in personais %}
-              <option value="{{ p.ID_Personal }}">{{ p.Nome_Personal }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div>
-          <label for="tipo_treino" style="font-weight: 500;">Treino:</label>
-          <select id="tipo_treino" name="tipo_treino" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
-            <option value="">Selecione o Tipo de Treino</option>
-            {% for t in treinos %}
-              <option value="{{ t.idtipo_de_treino }}">{{ t.nome_tipo_treino }}{% if t.descricao %} - {{ t.descricao }}{% endif %}</option>
-            {% endfor %}
-          </select>
-        </div>
+        <!-- UNIDADE PRIMEIRO -->
         <div>
           <label for="unidade" style="font-weight: 500;">Unidade:</label>
           <select id="unidade" name="unidade" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
             <option value="">Selecione a Unidade</option>
             {% for unidade in unidades %}
               <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <!-- PERSONAL filtrado por unidade -->
+        <div>
+          <label for="personal" style="font-weight: 500;">Personal:</label>
+          <select id="personal" name="personal" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+            <option value="">Selecione o Personal</option>
+            {% for p in personais %}
+              <option value="{{ p.ID_Personal }}" data-unidade="{{ p.ID_Unidade }}">{{ p.Nome_Personal }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <!-- TIPO DE TREINO (não filtrado por unidade) -->
+        <div>
+          <label for="tipo_treino" style="font-weight: 500;">Treino:</label>
+          <select id="tipo_treino" name="tipo_treino" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+            <option value="">Selecione o Tipo de Treino</option>
+            {% for t in treinos %}
+              <option value="{{ t.idtipo_de_treino }}" data-unidade="{{ t.ID_Unidade }}">
+                {{ t.nome_tipo_treino }}{% if t.descricao %} - {{ t.descricao }}{% endif %}
+              </option>
             {% endfor %}
           </select>
         </div>
@@ -107,7 +111,7 @@
                  style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
         </div>
 
-        <div style="text-align: right;">
+        <div style="text-align: center;">
           <button type="submit" 
                   style="background: #009966; color: #fff; border: none; border-radius: 8px; padding: 10px 28px; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
             Agendar Aula
@@ -120,6 +124,7 @@
   <!-- Script para bloquear datas anteriores -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Bloquear datas anteriores
       const dataInput = document.getElementById('data');
       const hoje = new Date();
       const year = hoje.getFullYear();
@@ -127,6 +132,53 @@
       const day = String(hoje.getDate()).padStart(2, '0');
       const minDate = `${year}-${month}-${day}`;
       dataInput.setAttribute('min', minDate);
+
+      // Filtrar apenas Personal por Unidade
+      const unidadeSelect = document.getElementById('unidade');
+      const personalSelect = document.getElementById('personal');
+      const treinoSelect = document.getElementById('tipo_treino');
+
+      function filtrarPersonaisPorUnidade(select, unidadeId) {
+        Array.from(select.options).forEach(opt => {
+          if (!opt.value) {
+            opt.style.display = '';
+            return;
+          }
+          if (opt.getAttribute('data-unidade') === unidadeId) {
+            opt.style.display = '';
+          } else {
+            opt.style.display = 'none';
+          }
+        });
+        select.value = '';
+      }
+
+      function filtrarTreinosPorUnidade(select, unidadeId) {
+        Array.from(select.options).forEach(opt => {
+          if (!opt.value) {
+            opt.style.display = '';
+            return;
+          }
+          if (opt.getAttribute('data-unidade') === unidadeId) {
+            opt.style.display = '';
+          } else {
+            opt.style.display = 'none';
+          }
+        });
+        select.value = '';
+      }
+
+      unidadeSelect.addEventListener('change', function() {
+        const unidadeId = this.value;
+        filtrarPersonaisPorUnidade(personalSelect, unidadeId);
+        filtrarTreinosPorUnidade(treinoSelect, unidadeId);
+      });
+
+      // Inicializa selects filtrados se unidade já estiver selecionada
+      if (unidadeSelect.value) {
+        filtrarPersonaisPorUnidade(personalSelect, unidadeSelect.value);
+        filtrarTreinosPorUnidade(treinoSelect, unidadeSelect.value);
+      }
     });
   </script>
 

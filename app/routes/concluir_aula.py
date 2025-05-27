@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from db import get_db_connection
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 concluir_bp = Blueprint('concluir', __name__)
 
@@ -17,6 +17,7 @@ def concluir_aula():
 
     if request.method == 'POST':
         id_agenda = request.form.get('id_agenda')
+        marcar_ausente = request.form.get('marcar_ausente')
         equipamentos = request.form.getlist('equipamento[]')  # só os marcados
         tempos = request.form.getlist('tempo[]')
 
@@ -40,12 +41,23 @@ def concluir_aula():
                     horas = total_seconds // 3600
                     minutos = (total_seconds // 60) % 60
                     hora_treino = time(hour=horas, minute=minutos)
-                # Se já for time, segue normalmente
                 datahora_treino = datetime.combine(data_treino, hora_treino)
             except Exception:
                 flash('Erro: o horário da aula está em formato inválido. Contate o gestor para corrigir o cadastro do treino.', 'error')
                 return redirect(url_for('concluir.concluir_aula'))
             agora = datetime.now()
+
+            if marcar_ausente == '1':
+                if agora < datahora_treino + timedelta(hours=1):
+                    flash(
+                        'Só é possível marcar ausência 1 hora após o horário agendado.', 'error')
+                    return redirect(url_for('concluir.concluir_aula'))
+                cursor.execute(
+                    "UPDATE agendar_treino SET status = 'Ausente' WHERE idAgendar_Treino = %s", (id_agenda,))
+                conn.commit()
+                flash('Aula marcada como ausente.', 'success')
+                return redirect(url_for('concluir.concluir_aula'))
+
             if agora < datahora_treino:
                 flash(
                     'Essa aula ainda não pode ser concluída. Só é possível concluir após a data e hora agendada.', 'error')

@@ -54,7 +54,7 @@ CREATE TABLE `usuario` (
   CONSTRAINT `usuario_chk_1` CHECK ((`sexo_user` in (_utf8mb4'M',_utf8mb4'F',_utf8mb4'O'))),
   CONSTRAINT `usuario_chk_2` CHECK ((`status_cliente` in (_utf8mb4'Ativo',_utf8mb4'Inativo',_utf8mb4'Inadimplente'))),
   CONSTRAINT `usuario_chk_3` CHECK ((`Tipo` in (0,1,2)))
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'Luiz Felipe Aguiar de Souza','felipeonlinex@gmail.com','Luiz8474','1998-12-28 00:00:00','1998-12-28',5,'10907746993','Rua Cascavel','83410-270',2,'M','Ativo',1,0,'(41) 99999-9999','Cascavel','1221','Guaraituba','Colombo','PR'),(4,'Juliane Freitas dos Santos','julianefreitasst@gmail.com','1','2025-05-10 23:34:08','2000-01-17',5,'12427269930','Rua Castro','83410-270',1,'F','Ativo',0,0,'(41) 777777-7777','Castro','987','Guaraituba','Colombo','PR'),(5,'Luiz Felipe aguiar de souza','felipeonlinex1@gmail.com','1','2025-05-16 17:22:49','1998-12-28',NULL,'109.077.469-93',NULL,'83410-270',1,'M','Ativo',0,0,NULL,'Rua Cascavel','1221','Guaraituba','Colombo','PR'),(6,'Adilson Pereira','adilson@gmail.com','1','2025-05-16 17:43:51','2006-11-16',5,'019.750.669-01',NULL,'81070-190',1,'M','Ativo',0,0,'(11) 11111-1111','Rua Itajubá','673','Portão','Curitiba','PR'),(7,'Luiz Gustavo','luizgustavo@gmail.com','1','2025-05-16 19:43:55','2019-11-16',NULL,'117.152.019-06',NULL,'81020-010',2,'M','Ativo',0,0,'(41) 99999-9999','Avenida Brasília','5560','Novo Mundo','Curitiba','PR'),(8,'Teste user','teste@gmail.com','1','2025-05-16 21:53:23','2015-06-16',NULL,'128.726.729-74',NULL,'81070-090',1,'M','Ativo',0,0,'(41) 99999-9999','Rua Frei Gaspar da Madre de Deus','-10  ','Portão','Curitiba','PR');
+INSERT INTO `usuario` VALUES (1,'Luiz Felipe Aguiar de Souza','felipeonlinex@gmail.com','Luiz8474','1998-12-28 00:00:00','1998-12-28',5,'10907746993','Rua Cascavel','83410-270',2,'M','Ativo',1,0,'(41) 99999-9999','Cascavel','1221','Guaraituba','Colombo','PR'),(4,'Juliane Freitas dos Santos','julianefreitasst@gmail.com','1','2025-05-10 23:34:08','2000-01-17',5,'12427269930','Rua Castro','83410-270',1,'F','Ativo',0,0,'(41) 777777-7777','Castro','987','Guaraituba','Colombo','PR'),(5,'Luiz Felipe aguiar de souza','felipeonlinex1@gmail.com','1','2025-05-16 17:22:49','1998-12-28',NULL,'109.077.469-93',NULL,'83410-270',1,'M','Ativo',0,0,NULL,'Rua Cascavel','1221','Guaraituba','Colombo','PR'),(6,'Adilson Pereira','adilson@gmail.com','1','2025-05-16 17:43:51','2006-11-16',5,'019.750.669-01',NULL,'81070-190',1,'M','Ativo',0,0,'(11) 11111-1111','Rua Itajubá','673','Portão','Curitiba','PR'),(7,'Luiz Gustavo','luizgustavo@gmail.com','1','2025-05-16 19:43:55','2019-11-16',NULL,'117.152.019-06',NULL,'81020-010',2,'M','Ativo',0,0,'(41) 99999-9999','Avenida Brasília','5560','Novo Mundo','Curitiba','PR'),(8,'Teste user','teste@gmail.com','1','2025-05-16 21:53:23','2015-06-16',NULL,'128.726.729-74',NULL,'83410-270',1,'M','Ativo',0,0,'(41) 99999-9999','Rua Frei Gaspar da Madre de Deus','-20','Portão','Curitiba','PR'),(9,'Admin Root','admin@fitmax.com.br','1','2025-05-27 20:54:41','1999-12-16',NULL,'123.456.789-09',NULL,'83410-270',2,'M','Ativo',0,0,'(88) 88888-8888','Rua Cascavel','1234','Guaraituba','Colombo','PR');
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -76,4 +76,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-26 22:27:11
+-- Dump completed on 2025-05-27 20:54:53
