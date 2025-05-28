@@ -22,12 +22,10 @@ def agendar():
         id_unidade = request.form.get('unidade')
         id_aluno = session['usuario']
 
-        # Verificar se todos os campos estão preenchidos
         if not all([id_personal, id_treino, data, hora, id_unidade]):
             flash('Preencha todos os campos para agendar a aula.', 'error')
             return redirect(request.url)
 
-        # Validação da data
         try:
             data_obj = datetime.strptime(data, "%Y-%m-%d").date()
         except ValueError:
@@ -38,7 +36,7 @@ def agendar():
             flash('A data deve ser igual ou posterior à data atual.', 'error')
             return redirect(request.url)
 
-        # Verificar conflito de horário
+        # Verificar conflito de horário exato
         cursor.execute("""
             SELECT 1 FROM agendar_treino
             WHERE ID_Personal = %s AND DataTreino = %s AND HoraTreino = %s
@@ -50,30 +48,34 @@ def agendar():
             conn.close()
             return redirect(request.url)
 
-        # Verificar conflito de horário considerando DuracaoAula, ignorando aulas canceladas
+        # Verificar conflito considerando duração
         cursor.execute("""
             SELECT 1 FROM agendar_treino
             WHERE ID_Personal = %s
               AND DataTreino = %s
               AND status IN ('Agendado', 'Concluído')
               AND (
-                (ADDTIME(HoraTreino, SEC_TO_TIME(DuracaoAula*60)) > %s AND HoraTreino <= %s)
+                (ADDTIME(HoraTreino, SEC_TO_TIME(DuracaoAula * 60)) > %s AND HoraTreino <= %s)
               )
         """, (id_personal, data_obj, hora, hora))
+
         if cursor.fetchone():
-            flash('Já existe uma aula agendada para esse personal nesse horário ou sobrepondo a duração da aula.', 'error')
+            flash('Já existe uma aula nesse horário ou sobrepondo outra.', 'error')
             conn.close()
             return redirect(request.url)
 
-        # Validação de integridade referencial: personal deve pertencer à unidade
-        cursor.execute(
-            "SELECT 1 FROM personal WHERE ID_Personal = %s AND ID_Unidade = %s", (id_personal, id_unidade))
+        # Verificar se o personal pertence à unidade
+        cursor.execute("""
+            SELECT 1 FROM personal
+            WHERE ID_Personal = %s AND ID_Unidade = %s
+        """, (id_personal, id_unidade))
+
         if not cursor.fetchone():
             flash('O personal selecionado não pertence à unidade escolhida.', 'error')
             conn.close()
             return redirect(request.url)
 
-        # Buscar duração total do treino (soma dos tempos dos equipamentos)
+        # Buscar duração da aula
         cursor.execute("""
             SELECT COALESCE(SUM(tempo_minutos), 0) as duracao_total
             FROM equipamentos_por_tipo_treino
@@ -83,29 +85,91 @@ def agendar():
         duracao_aula = row['duracao_total'] if row else 0
 
         try:
+            # Inserir agendamento
             cursor.execute("""
-                INSERT INTO agendar_treino (ID_usuario, ID_Personal, ID_Tipodetreino, DataTreino, HoraTreino, ID_Unidade_Treino, DuracaoAula, status)
+                INSERT INTO agendar_treino
+                (ID_usuario, ID_Personal, ID_Tipodetreino, DataTreino, HoraTreino, ID_Unidade_Treino, DuracaoAula, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """, (id_aluno, id_personal, id_treino, data, hora, id_unidade, duracao_aula, 'Agendado'))
             conn.commit()
             flash('Aula agendada com sucesso!', 'success')
+
+            # Enviar e-mail de confirmação
+            cursor.execute("""
+                SELECT u.Email_user, u.Nome_User, p.Nome_Personal, un.Nome_Unidade,
+                       CONCAT(un.Endereco_Unidade, ', ', un.Cidade, ' - ', un.Estado, ', CEP: ', un.CEP) AS endereco_unidade
+                FROM usuario u
+                JOIN personal p ON p.ID_Personal = %s
+                JOIN unidades un ON un.ID_Unidades = %s
+                WHERE u.ID_User = %s
+            """, (id_personal, id_unidade, id_aluno))
+
+            info = cursor.fetchone()
+
+            if info:
+                from notifica_aulas import enviar_email
+
+                endereco_formatado = info['endereco_unidade'].replace(' ', '+')
+
+                corpo = f"""
+                <html>
+                  <body>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; color: #002147; font-family: Arial, sans-serif;">
+                      <div style="text-align: left; max-width: 70%;">
+                        <h2 style="color: #002147;">Olá {info['Nome_User']},</h2>
+                        <p style="color: #002147;">Sua aula foi agendada com sucesso!</p>
+
+                        <p style="color: #002147;">
+                          <b>Data:</b> {data}<br>
+                          <b>Hora:</b> {hora}<br>
+                          <b>Personal:</b> {info['Nome_Personal']}<br>
+                          <b>Unidade:</b> {info['Nome_Unidade']}<br>
+                          <b>Endereço:</b> {info['endereco_unidade']}<br><br>
+
+                          👉 <a href="https://www.google.com/maps/search/?api=1&query={endereco_formatado}" 
+                          target="_blank" style="color: #002147; text-decoration: underline;">
+                          📍 Ver no Google Maps
+                          </a><br><br>
+
+                          Desejamos um ótimo treino! 💪<br><br>
+                          <span style="color: #002147;">Qualquer dúvida, entre em contato com a equipe Fitmax.</span>
+                        </p>
+                      </div>
+
+                      <div style="text-align: right;">
+                        <img src="cid:logo1" alt="Logo Fitmax" width="150">
+                      </div>
+                    </div>
+                  </body>
+                </html>
+                """
+
+                enviar_email(
+                    info['Email_user'],
+                    'Confirmação de Agendamento - Fitmax',
+                    corpo
+                )
         except Exception as e:
             conn.rollback()
             flash(f'Erro ao agendar aula: {str(e)}', 'error')
 
-    # Listar dados para o formulário
+    # Carregar dados para o formulário
     cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
     unidades = cursor.fetchall()
 
-    # Buscar todos personais com sua unidade
     cursor.execute(
         "SELECT ID_Personal, Nome_Personal, ID_Unidade FROM personal")
     personais = cursor.fetchall()
 
-    # Buscar todos tipos de treino (com unidade)
     cursor.execute(
         "SELECT idtipo_de_treino, nome_tipo_treino, descricao, ID_Unidade FROM tipo_de_treino")
     treinos = cursor.fetchall()
 
     conn.close()
-    return render_template('agendar.html', personais=personais, treinos=treinos, unidades=unidades)
+
+    return render_template(
+        'agendar.html',
+        personais=personais,
+        treinos=treinos,
+        unidades=unidades
+    )

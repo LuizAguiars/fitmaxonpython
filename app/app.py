@@ -11,7 +11,9 @@ from routes.treino import treino_bp
 from routes.agendar import agendar_bp
 from routes.concluir_aula import concluir_bp
 from routes.relatorios import relatorios_bp
-
+import threading
+import time
+from notifica_aulas import notificar_aulas
 
 
 app = Flask(__name__)
@@ -31,5 +33,17 @@ app.register_blueprint(agendar_bp)
 app.register_blueprint(concluir_bp)
 app.register_blueprint(relatorios_bp)
 
+
+def notificacao_background():
+    while True:
+        try:
+            notificar_aulas()
+        except Exception as e:
+            print(f'Erro no serviço de notificação: {e}')
+        time.sleep(60)
+
+
 if __name__ == '__main__':
+    t = threading.Thread(target=notificacao_background, daemon=True)
+    t.start()
     app.run(host="0.0.0.0", port=5000, debug=True)

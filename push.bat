@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "regras de negocio no agendamento de aulas e novo banco de dados  %DATAHORA%"
+git commit -m "notificação via e-mail  %DATAHORA%"
 
 
 
