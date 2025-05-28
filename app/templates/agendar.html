@@ -30,6 +30,18 @@
       max-width: 400px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
+    .loader-fitmax {
+      border: 8px solid #ff9800;
+      border-top: 8px solid #1976d2;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      animation: spinfitmax 1s linear infinite;
+    }
+    @keyframes spinfitmax {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -65,7 +77,7 @@
           </ul>
         {% endif %}
       {% endwith %}
-      <form method="POST" style="display: flex; flex-direction: column; gap: 18px;">
+      <form method="POST" style="display: flex; flex-direction: column; gap: 18px;" id="form-agendar">
         <!-- UNIDADE PRIMEIRO -->
         <div>
           <label for="unidade" style="font-weight: 500;">Unidade:</label>
@@ -118,6 +130,12 @@
           </button>
         </div>
       </form>
+      <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,255,255,0.85); z-index:9999; align-items:center; justify-content:center;">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+          <div class="loader-fitmax"></div>
+          <span style="margin-top:18px; color:#002147; font-size:1.2rem; font-weight:600;">Processando agendamento...</span>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -179,6 +197,12 @@
         filtrarPersonaisPorUnidade(personalSelect, unidadeSelect.value);
         filtrarTreinosPorUnidade(treinoSelect, unidadeSelect.value);
       }
+    });
+  </script>
+
+  <script>
+    document.getElementById('form-agendar').addEventListener('submit', function() {
+      document.getElementById('loading-overlay').style.display = 'flex';
     });
   </script>
 

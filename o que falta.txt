@@ -1,3 +1,3 @@
-gestor ver o historico de aulas, ajustar o cadastro de gestores
+aluno ele mesmo não pode reservar mais de uma aula com base nas deles marcada
 
 
