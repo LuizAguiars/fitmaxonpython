@@ -633,7 +633,7 @@ button:hover {
 .tabela-unidades th, .tabela-unidades td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 0px solid #ddd;
 }
 
 .tabela-unidades-container {
@@ -670,7 +670,7 @@ button:hover {
   padding: 20px 22px;
   font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 2px solid #263159;
+  border-bottom: 0px solid #263159;
 }
 
 .tabela-unidades th:nth-child(2),
@@ -723,4 +723,5 @@ button:hover {
 .tabela-unidades td:last-child {
   padding: 12px 10px;
 }
+
 

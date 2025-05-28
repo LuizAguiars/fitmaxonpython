@@ -12,9 +12,7 @@
       <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
 
-
-    
-    <h1>Relatório de Avaliações</h1>
+    <h1>Relatórios de Estatísticas</h1>
 
     <form action="/logout" method="POST">
       <button type="submit">Sair</button>
@@ -28,51 +26,32 @@
     </nav>
   </header>
 
-    <div class="botao-imagem">
-      <div class="imagem-overlay">
-        <img src="" alt="Usuários">
-      </div>
-      <a href="{{ url_for('feedbacks.feedbackstar') }}" class="btn grande">Relatorios de Feedbacks</a>
-    </div>
-
+  <main>
     <div class="tabela-unidades-container">
-      <table class="tabela-unidades" border="1" cellspacing="0" cellpadding="5">
+      <table class="tabela-unidades" cellspacing="0" cellpadding="5">
         <thead>
           <tr>
-            <th>ID Uso</th>
-            <th>Equipamento</th>
-            <th>Usuário</th>
-            <th>Personal</th>
-            <th>Data Treino</th>
-            <th>Hora Treino</th>
-            <th>Unidade</th>
-            <th>Tempo de Uso (min)</th>
+            {% for reg in registros %}
+            <th>{{ reg.descricao }}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
-          {% if registros %}
+          <tr>
             {% for reg in registros %}
-            <tr>
-              <td>{{ reg.id_uso }}</td>
-              <td>{{ reg.Nome_Equipamento }}</td>
-              <td>{{ reg.Nome_User }}</td>
-              <td>{{ reg.Nome_Personal }}</td>
-              <td>{{ reg.DataTreino }}</td>
-              <td>{{ reg.HoraTreino }}</td>
-              <td>{{ reg.Nome_Unidade }}</td>
-              <td>{{ reg.tempo_utilizado_minutos }}</td>
-            </tr>
+            <td>
+              {% if reg.descricao == "Tempo total de uso dos equipamentos" or reg.descricao == "Tempo total de treino dos personal trainers" %}
+                {{ (reg.valor / 60) | round }} horas
+              {% else %}
+                {{ reg.valor }}
+              {% endif %}
+            </td>
             {% endfor %}
-          {% else %}
-            <tr><td colspan="8">Nenhum registro encontrado</td></tr>
-          {% endif %}
+          </tr>
         </tbody>
       </table>
     </div>
-    
-
-
-  
+  </main>
 
   <footer>
     <p><strong>SEDE</strong></p>
