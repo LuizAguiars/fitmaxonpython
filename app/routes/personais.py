@@ -4,6 +4,7 @@ from db import get_db_connection
 personais_bp = Blueprint('personais', __name__)
 
 
+# Ajustando a lógica para aplicar o filtro por unidade corretamente
 @personais_bp.route('/gestao-personal', methods=['GET', 'POST'])
 def gestao_personal():
     if 'usuario' not in session:
@@ -55,17 +56,35 @@ def gestao_personal():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    cursor.execute("""
+    unidade_filtro = request.args.get('unidade', '')
+    especialidade_filtro = request.args.get('especialidade', '')
+
+    query = """
         SELECT p.*, u.Nome_Unidade
         FROM PERSONAL p
         LEFT JOIN UNIDADES u ON p.ID_Unidade = u.ID_Unidades
-    """)
+        WHERE 1=1
+    """
+    params = []
+
+    if unidade_filtro:
+        query += " AND u.ID_Unidades = %s"
+        params.append(unidade_filtro)
+
+    if especialidade_filtro:
+        query += " AND p.Especialidade = %s"
+        params.append(especialidade_filtro)
+
+    cursor.execute(query, params)
     personais = cursor.fetchall()
 
+    cursor.execute("SELECT DISTINCT Especialidade FROM PERSONAL")
+    especialidades = cursor.fetchall()
+
     cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
-    unidades = cursor.fetchall()
+    unidades_disponiveis = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template("gestao_personal.html", personais=personais, unidades=unidades)
+    return render_template("gestao_personal.html", personais=personais, unidades_disponiveis=unidades_disponiveis, especialidades=especialidades, unidade_filtro=unidade_filtro, especialidade_filtro=especialidade_filtro)

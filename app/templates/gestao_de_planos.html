@@ -63,16 +63,16 @@
 </nav>
 <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
-<div class="tabela-unidades-container">
+<div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Descrição</th>
-                <th>Duração (meses)</th>
-                <th>Valor</th>
-                <th>Ações</th>
+                <th id="th-id">ID</th>
+                <th id="th-nome">Nome</th>
+                <th id="th-descricao">Descrição</th>
+                <th id="th-duracao">Duração (meses)</th>
+                <th id="th-valor">Valor</th>
+                <th id="th-acoes">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -177,6 +177,13 @@
     let sortDirection = {};
 
     headers.forEach((header, index) => {
+      const headerText = header.textContent.trim();
+      const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
       let icon = header.querySelector('span');
       if (!icon) {
         icon = document.createElement('span');
@@ -185,10 +192,6 @@
       }
 
       header.addEventListener('click', () => {
-        if (header.textContent.trim() === 'Ações') {
-          return; // Não aplicar ordenação no campo "Ações"
-        }
-
         const rows = Array.from(table.querySelectorAll('tbody tr'));
         const isAscending = sortDirection[index] === 'asc';
 
@@ -215,9 +218,7 @@
       });
 
       header.addEventListener('mouseenter', () => {
-        if (header.textContent.trim() !== 'Ações') {
-          icon.style.visibility = 'visible';
-        }
+        icon.style.visibility = 'visible';
       });
 
       header.addEventListener('mouseleave', () => {

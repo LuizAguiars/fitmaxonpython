@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestão de Usuários - Fitmax Gym</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+  <!-- Ajustando o estilo para evitar scroll horizontal -->
+  <style>
+    body {
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
   <header style="background: #001f5b; color: #fff; padding: 24px 40px 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); border-bottom: 1px solid rgba(255,255,255,0.07);">
@@ -61,7 +70,30 @@
   </nav>
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
-  <div class="tabela-unidades-container" style="max-height: 400px; overflow-y: auto;">
+  <!-- Adicionando filtros por plano e status na gestão de usuários -->
+  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 20px;">
+    <form method="get" id="filtroPlanoForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); margin-left: -140px;">
+      <label for="plano" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Plano:</label>
+      <select name="plano" id="plano" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+        <option value="">Todos</option>
+        {% for plano in planos %}
+          <option value="{{ plano.ID_PLANO }}" {% if plano_filtro == plano.ID_PLANO|string %}selected{% endif %}>{{ plano.nome_plano }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <form method="get" id="filtroStatusForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+      <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
+      <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+        <option value="">Todos</option>
+        <option value="Ativo" {% if status_filtro == 'Ativo' %}selected{% endif %}>Ativo</option>
+        <option value="Inativo" {% if status_filtro == 'Inativo' %}selected{% endif %}>Inativo</option>
+        <option value="Inadimplente" {% if status_filtro == 'Inadimplente' %}selected{% endif %}>Inadimplente</option>
+      </select>
+    </form>
+  </div>
+
+  <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades" style="width:100%; text-align:center;">
       <thead>
         <tr>

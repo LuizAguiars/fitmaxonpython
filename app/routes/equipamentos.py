@@ -52,13 +52,33 @@ def gestao_equipamentos():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    cursor.execute("""
+    unidade_filtro = request.args.get('unidade', '')
+    status_filtro = request.args.get('status', '')
+    tipo_filtro = request.args.get('tipo', '')
+
+    query = """
         SELECT e.*, u.Nome_Unidade, s.status_do_Equipamento, t.nome_tipo_equipamento
         FROM EQUIPAMENTOS e
         LEFT JOIN UNIDADES u ON e.ID_unidade_equipamento = u.ID_Unidades
         LEFT JOIN status_dos_Equipamentos s ON e.id_status_do_equipamento = s.idstatus_dos_Equipamentos
         LEFT JOIN tipo_equipamento t ON e.idtipo_equipamento = t.idtipo_equipamento
-    """)
+        WHERE 1=1
+    """
+    params = []
+
+    if unidade_filtro:
+        query += " AND e.ID_unidade_equipamento = %s"
+        params.append(unidade_filtro)
+
+    if status_filtro:
+        query += " AND e.id_status_do_equipamento = %s"
+        params.append(status_filtro)
+
+    if tipo_filtro:
+        query += " AND e.idtipo_equipamento = %s"
+        params.append(tipo_filtro)
+
+    cursor.execute(query, params)
     equipamentos = cursor.fetchall()
 
     cursor.execute("SELECT * FROM UNIDADES")
@@ -78,5 +98,8 @@ def gestao_equipamentos():
         equipamentos=equipamentos,
         unidades=unidades,
         status_equipamentos=status_equipamentos,
-        tipos_equipamento=tipos_equipamento
-    ) 
+        tipos_equipamento=tipos_equipamento,
+        unidade_filtro=unidade_filtro,
+        status_filtro=status_filtro,
+        tipo_filtro=tipo_filtro
+    )

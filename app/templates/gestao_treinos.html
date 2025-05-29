@@ -41,7 +41,7 @@
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
   <main class="container" style="margin-top: 32px;">
-    <div class="tabela-unidades-container" style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); padding: 32px 32px 24px 32px; max-width: 950px; margin: 0 auto;">
+    <div class="tabela-unidades-container" style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); padding: 32px 32px 24px 32px; max-width: 950px; margin: 0 auto; overflow-x: auto; max-height: 500px; overflow-y: auto;">
       <h2 class="titulo-pagina" style="margin-bottom: 24px; color: #001f5b;">Gestão de Treinos Padrão</h2>
 
       <section class="formulario" style="margin-bottom: 32px;">
@@ -90,13 +90,13 @@
         <h3 style="color: #001f5b; margin-bottom: 12px;">Treinos Cadastrados</h3>
         <table id="tabela-treinos" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background: #232b4a; color: #fff;">
-              <th style="padding: 8px; color: #111;">ID</th>
-              <th style="padding: 8px; color: #111;">Nome</th>
-              <th style="padding: 8px; color: #111;">Descrição</th>
-              <th style="padding: 8px; color: #111;">Equipamentos</th>
-              <th style="padding: 8px; color: #111;">Unidade</th>
-              <th style="padding: 8px; color: #111;">Ações</th>
+            <tr>
+              <th id="th-id" style="padding: 8px; color: #111;">ID</th>
+              <th id="th-nome" style="padding: 8px; color: #111;">Nome</th>
+              <th id="th-descricao" style="padding: 8px; color: #111;">Descrição</th>
+              <th id="th-equipamentos" style="padding: 8px; color: #111;">Equipamentos</th>
+              <th id="th-unidade" style="padding: 8px; color: #111;">Unidade</th>
+              <th id="th-acoes" style="padding: 8px; color: #111;">Ações</th>
             </tr>
           </thead>
           <tbody id="tbody-treinos">
@@ -258,15 +258,21 @@
     let sortDirection = {};
 
     headers.forEach((header, index) => {
-      const icon = header.querySelector('span') || document.createElement('span');
-      icon.style.marginLeft = '8px';
-      header.appendChild(icon);
+      const headerText = header.textContent.trim();
+      const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
 
       header.addEventListener('click', () => {
-        if (header.textContent.trim() === 'Ações') {
-          return; // Não aplicar ordenação no campo "Ações"
-        }
-
         const rows = Array.from(table.querySelectorAll('tbody tr'));
         const isAscending = sortDirection[index] === 'asc';
 
@@ -293,9 +299,7 @@
       });
 
       header.addEventListener('mouseenter', () => {
-        if (header.textContent.trim() !== 'Ações') {
-          icon.style.visibility = 'visible';
-        }
+        icon.style.visibility = 'visible';
       });
 
       header.addEventListener('mouseleave', () => {

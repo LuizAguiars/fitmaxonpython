@@ -215,40 +215,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tables.forEach(table => {
     const headers = table.querySelectorAll('th');
+    const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
     let sortDirection = {};
 
     headers.forEach((header, index) => {
-      const icon = document.createElement('span');
-      icon.style.marginLeft = '8px';
-      header.appendChild(icon);
+      const headerText = header.textContent.trim();
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
 
       header.addEventListener('click', () => {
-        if (header.textContent.trim() === 'Ações') {
-          return; // Não aplicar ordenação no campo "Ações"
-        }
-
         const rows = Array.from(table.querySelectorAll('tbody tr'));
         const isAscending = sortDirection[index] === 'asc';
 
-        if (header.textContent.trim() === 'Status') {
-          rows.sort((a, b) => {
-            const cellA = a.cells[index].textContent.trim();
-            const cellB = b.cells[index].textContent.trim();
+        rows.sort((a, b) => {
+          const cellA = a.cells[index].textContent.trim().toLowerCase();
+          const cellB = b.cells[index].textContent.trim().toLowerCase();
 
-            if (cellA === 'Ativo' && cellB === 'Inativo') return isAscending ? -1 : 1;
-            if (cellA === 'Inativo' && cellB === 'Ativo') return isAscending ? 1 : -1;
-            return 0;
-          });
-        } else {
-          rows.sort((a, b) => {
-            const cellA = a.cells[index].textContent.trim().toLowerCase();
-            const cellB = b.cells[index].textContent.trim().toLowerCase();
-
-            if (cellA < cellB) return isAscending ? -1 : 1;
-            if (cellA > cellB) return isAscending ? 1 : -1;
-            return 0;
-          });
-        }
+          if (cellA < cellB) return isAscending ? -1 : 1;
+          if (cellA > cellB) return isAscending ? 1 : -1;
+          return 0;
+        });
 
         sortDirection[index] = isAscending ? 'desc' : 'asc';
 
@@ -260,9 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       header.addEventListener('mouseenter', () => {
-        if (header.textContent.trim() !== 'Ações') {
-          icon.style.visibility = 'visible';
-        }
+        icon.style.visibility = 'visible';
       });
 
       header.addEventListener('mouseleave', () => {

@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Unidades - Fitmax Gym</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+    <!-- Ajuste para eliminar scroll horizontal da página inteira -->
+    <style>
+      body {
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
 </head>
 <body>
 <header style="background: #001f5b; color: #fff; padding: 24px 40px 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); border-bottom: 1px solid rgba(255,255,255,0.07);">
@@ -80,8 +89,30 @@
   </form>
 </div>
 <!-- filtro por quantidade de itens -->
-<div class="tabela-unidades-container">
-    <table class="tabela-unidades">
+<!-- Adicionando dropdowns para filtro por cidade e bairro -->
+<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center;">
+
+
+  <form method="get" id="filtroCidadeBairroForm" style="display: flex; align-items: center; gap: 10px; justify-content: flex-start; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);margin-left: -140px;">
+    <label for="cidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Cidade:</label>
+    <select name="cidade" id="cidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todas</option>
+      {% for cidade in cidades_disponiveis %}
+        <option value="{{ cidade }}" {% if cidade_filtro == cidade %}selected{% endif %}>{{ cidade }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="bairro" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Bairro:</label>
+    <select name="bairro" id="bairro" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todos</option>
+      {% for bairro in bairros_disponiveis %}
+        <option value="{{ bairro }}" {% if bairro_filtro == bairro %}selected{% endif %}>{{ bairro }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+<div class="tabela-unidades-container" style="overflow-x: hidden; max-height: 500px; overflow-y: auto; width: 100%; box-sizing: border-box;">
+    <table class="tabela-unidades" style="width: 100%; table-layout: fixed; word-wrap: break-word; white-space: normal; overflow-wrap: break-word;">
     <thead>
       <tr>
         <th>Nome</th>
@@ -346,28 +377,30 @@
   document.addEventListener('DOMContentLoaded', () => {
     const table = document.querySelector('.tabela-unidades');
     const headers = table.querySelectorAll('th');
+    const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
     let sortDirection = {};
 
     headers.forEach((header, index) => {
-      const icon = header.querySelector('span') || document.createElement('span');
-      icon.style.marginLeft = '8px';
-      header.appendChild(icon);
+      const headerText = header.textContent.trim();
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
 
       header.addEventListener('click', () => {
-        if (header.textContent.trim() === 'Ações') {
-          return; // Não aplicar ordenação no campo "Ações"
-        }
-
         const rows = Array.from(table.querySelectorAll('tbody tr'));
         const isAscending = sortDirection[index] === 'asc';
 
         rows.sort((a, b) => {
-          const cellA = a.cells[index].textContent.trim();
-          const cellB = b.cells[index].textContent.trim();
-
-          if (!isNaN(cellA) && !isNaN(cellB)) {
-            return isAscending ? cellA - cellB : cellB - cellA;
-          }
+          const cellA = a.cells[index].textContent.trim().toLowerCase();
+          const cellB = b.cells[index].textContent.trim().toLowerCase();
 
           if (cellA < cellB) return isAscending ? -1 : 1;
           if (cellA > cellB) return isAscending ? 1 : -1;
@@ -384,9 +417,7 @@
       });
 
       header.addEventListener('mouseenter', () => {
-        if (header.textContent.trim() !== 'Ações') {
-          icon.style.visibility = 'visible';
-        }
+        icon.style.visibility = 'visible';
       });
 
       header.addEventListener('mouseleave', () => {

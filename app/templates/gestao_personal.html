@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestão de Personais - Fitmax Gym</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+  <!-- Ajustando o estilo para remover o scroll horizontal -->
+  <style>
+    body {
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
   <header style="background: #001f5b; color: #fff; padding: 24px 40px 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); border-bottom: 1px solid rgba(255,255,255,0.07);">
@@ -61,17 +70,40 @@
   </nav>
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
+  <!-- Alterando filtro para unidades na gestão de personais -->
+  <!-- Ajustando os filtros para ficarem lado a lado na gestão de personais -->
+  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 20px;">
+    <form method="get" id="filtroUnidadesForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+      <label for="unidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Unidade:</label>
+      <select name="unidade" id="unidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+        <option value="">Todas</option>
+        {% for unidade in unidades_disponiveis %}
+          <option value="{{ unidade.ID_Unidades }}" {% if unidade_filtro == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+        {% endfor %}
+      </select>
+    </form>
 
-  <div class="tabela-unidades-container">
+    <form method="get" id="filtroEspecialidadeForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+      <label for="especialidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Especialidade:</label>
+      <select name="especialidade" id="especialidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+        <option value="">Todas</option>
+        {% for especialidade in especialidades %}
+          <option value="{{ especialidade.Especialidade }}" {% if especialidade_filtro == especialidade.Especialidade %}selected{% endif %}>{{ especialidade.Especialidade }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Especialidade</th>
-          <th>Unidade</th>
-          <th>Ações</th>
+          <th id="th-id">ID</th>
+          <th id="th-nome">Nome</th>
+          <th id="th-email">Email</th>
+          <th id="th-especialidade">Especialidade</th>
+          <th id="th-unidade">Unidade</th>
+          <th id="th-acoes">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -191,15 +223,21 @@
       let sortDirection = {};
 
       headers.forEach((header, index) => {
-        const icon = header.querySelector('span') || document.createElement('span');
-        icon.style.marginLeft = '8px';
-        header.appendChild(icon);
+        const headerText = header.textContent.trim();
+        const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+
+        if (!filterableFields.includes(headerText)) {
+          return; // Ignorar campos que não são filtráveis
+        }
+
+        let icon = header.querySelector('span');
+        if (!icon) {
+          icon = document.createElement('span');
+          icon.style.marginLeft = '8px';
+          header.appendChild(icon);
+        }
 
         header.addEventListener('click', () => {
-          if (header.textContent.trim() === 'Ações') {
-            return; // Não aplicar ordenação no campo "Ações"
-          }
-
           const rows = Array.from(table.querySelectorAll('tbody tr'));
           const isAscending = sortDirection[index] === 'asc';
 
@@ -226,9 +264,7 @@
         });
 
         header.addEventListener('mouseenter', () => {
-          if (header.textContent.trim() !== 'Ações') {
-            icon.style.visibility = 'visible';
-          }
+          icon.style.visibility = 'visible';
         });
 
         header.addEventListener('mouseleave', () => {
