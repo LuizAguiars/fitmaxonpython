@@ -725,3 +725,39 @@ button:hover {
 }
 
 
+.resumo-geral {
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.card {
+  background-color: rgba(0, 31, 91);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 2rem;
+  flex: 1 1 250px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.card p {
+  font-size: 1.1rem;
+}

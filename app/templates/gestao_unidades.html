@@ -40,6 +40,7 @@
     <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
   </div>
   <a href="{{ url_for('unidades.gerenciar_unidade') }}" class="btn-menu ativo desabilitado">GESTÃO DAS UNIDADES</a>
+  <a href="{{ url_for('personais.gestao_personal') }}" class="btn-menu">GESTÃO DOS PERSONAIS</a>
   <a href="{{ url_for('usuarios.gestao_usuarios') }}" class="btn-menu{% if request.endpoint == 'usuarios.gestao_usuarios' %} ativo{% endif %}">GESTÃO DOS USUÁRIOS</a>
   <a href="{{ url_for('equipamentos.gestao_equipamentos') }}" class="btn-menu{% if request.endpoint == 'equipamentos.gestao_equipamentos' %} ativo{% endif %}">GESTÃO DE EQUIPAMENTOS</a>
   <a href="{{ url_for('planos.gestao_planos') }}" class="btn-menu{% if request.endpoint == 'planos.gestao_planos' %} ativo{% endif %}">GESTÃO DE PLANOS</a>
