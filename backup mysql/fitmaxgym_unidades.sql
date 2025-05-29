@@ -25,16 +25,22 @@ DROP TABLE IF EXISTS `unidades`;
 CREATE TABLE `unidades` (
   `ID_Unidades` int NOT NULL AUTO_INCREMENT,
   `Nome_Unidade` varchar(100) DEFAULT NULL,
-  `Endereco_Unidade` varchar(255) DEFAULT NULL,
-  `ID_Regiao` int DEFAULT NULL,
   `Capacidade` int DEFAULT NULL,
   `Fone` varchar(20) DEFAULT NULL,
-  `Cidade` varchar(100) DEFAULT NULL,
-  `Estado` varchar(100) DEFAULT NULL,
-  `CEP` varchar(15) DEFAULT NULL,
+  `logradouro_unidade` varchar(100) DEFAULT NULL,
+  `numero_unidade` varchar(10) DEFAULT NULL,
+  `bairro_unidade` varchar(50) DEFAULT NULL,
+  `cidade_unidade` varchar(50) DEFAULT NULL,
+  `estado_unidade` char(2) DEFAULT NULL,
+  `cep_unidade` varchar(10) DEFAULT NULL,
+  `CNPJ` varchar(18) DEFAULT NULL,
+  `Email` varchar(120) DEFAULT NULL,
+  `Horario_Funcionamento_ID` int DEFAULT NULL,
+  `Ativa` tinyint(1) DEFAULT '1',
+  `Data_Cadastro` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID_Unidades`),
-  KEY `ID_Regiao` (`ID_Regiao`),
-  CONSTRAINT `unidades_ibfk_1` FOREIGN KEY (`ID_Regiao`) REFERENCES `regiao` (`ID_Regiao`)
+  KEY `fk_horario_funcionamento` (`Horario_Funcionamento_ID`),
+  CONSTRAINT `fk_horario_funcionamento` FOREIGN KEY (`Horario_Funcionamento_ID`) REFERENCES `horarios_funcionamento` (`ID_Horario`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -44,7 +50,7 @@ CREATE TABLE `unidades` (
 
 LOCK TABLES `unidades` WRITE;
 /*!40000 ALTER TABLE `unidades` DISABLE KEYS */;
-INSERT INTO `unidades` VALUES (5,'Unidade  Guaraituba','Rua cascavel, 1223',1,48,'(41) 99999-9999','Colombo','PR','83410-270'),(6,'Unidade Portão','15021',1,44,'(41) 88888-8888','Curitiba','231313','81050-610'),(7,'Unidade Portão 2','Rua Itajuba, 673',2,300,'(41) 77777-7777','Curitiba','PR','81050-610');
+INSERT INTO `unidades` VALUES (5,'Unidade  Guaraituba',100,'(41) 98760-9987','Rua Cascavel','1221','Guaraituba','Colombo','PR','83410-270','65.857.639/0001-04','fitmax.guaraituba@fitmax.com.br',1,1,'2025-05-28 19:45:30'),(6,'Unidade Portão',250,'(41) 98788-8888','Rua Itajubá','3789','Portão','Curitiba','PR','81070-190','18.349.128/0001-90','fitmax.portao@fitmax.com.br',1,1,'2025-05-28 19:45:30'),(7,'Unidade Cabral',100,'(41) 99878-8874','Avenida Cândido de Abreu','589','Centro Cívico','Curitiba','PR','80530-908','32.174.905/0001-01','fitmax.portao@fitmax.com.br',1,1,'2025-05-28 19:45:30');
 /*!40000 ALTER TABLE `unidades` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-27 20:54:52
+-- Dump completed on 2025-05-28 21:56:40

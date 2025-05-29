@@ -61,7 +61,7 @@ def notificar_aulas():
             u.Email_user, 
             u.Nome_User,
             un.Nome_Unidade,
-            CONCAT(un.Endereco_Unidade, ', ', un.Cidade, ' - ', un.Estado, ', CEP: ', un.CEP) AS endereco_unidade
+            CONCAT(un.logradouro_unidade, ', ', un.numero_unidade, ' - ', un.bairro_unidade, ', ', un.cidade_unidade, ' - ', un.estado_unidade, ', CEP: ', un.cep_unidade) AS endereco_unidade
         FROM 
             agendar_treino a
         JOIN 
