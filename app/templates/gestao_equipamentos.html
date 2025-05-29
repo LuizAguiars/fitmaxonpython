@@ -56,7 +56,7 @@
     <a href="{{ url_for('equipamentos.gestao_equipamentos') }}"class="btn-menu desabilitado">GESTÃO DE EQUIPAMENTOS</a>
     <a href="{{ url_for('planos.gestao_planos') }}" class="btn-menu">GESTÃO DE PLANOS</a>
     <a href="{{ url_for('home.treinos_padrao') }}" class="btn-menu{% if request.endpoint == 'home.treinos_padrao' %} ativo{% endif %}">TREINOS PADRÃO</a>
-    <a href="{{ url_for('feedbacks.relatorios') }}" class="btn-menu">RELATÓRIOS</a>
+    <a href="{{ url_for('relatorios.utilizacao_equipamentos') }}" class="btn-menu">RELATÓRIOS</a>
     <a href="#" class="btn-menu fechar" onclick="fecharMenu()">FECHAR</a>
   </nav>
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
