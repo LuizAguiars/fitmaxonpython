@@ -633,7 +633,7 @@ button:hover {
 .tabela-unidades th, .tabela-unidades td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 0px solid #ddd;
 }
 
 .tabela-unidades-container {
@@ -670,7 +670,7 @@ button:hover {
   padding: 20px 22px;
   font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 2px solid #263159;
+  border-bottom: 0px solid #263159;
 }
 
 .tabela-unidades th:nth-child(2),
@@ -724,3 +724,40 @@ button:hover {
   padding: 12px 10px;
 }
 
+
+.resumo-geral {
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.card {
+  background-color: rgba(0, 31, 91);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 2rem;
+  flex: 1 1 250px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.card p {
+  font-size: 1.1rem;
+}
