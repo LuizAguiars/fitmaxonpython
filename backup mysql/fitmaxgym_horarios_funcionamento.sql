@@ -16,27 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `tipo_equipamento`
+-- Table structure for table `horarios_funcionamento`
 --
 
-DROP TABLE IF EXISTS `tipo_equipamento`;
+DROP TABLE IF EXISTS `horarios_funcionamento`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tipo_equipamento` (
-  `idtipo_equipamento` int NOT NULL AUTO_INCREMENT,
-  `nome_tipo_equipamento` varchar(50) NOT NULL,
-  PRIMARY KEY (`idtipo_equipamento`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `horarios_funcionamento` (
+  `ID_Horario` int NOT NULL AUTO_INCREMENT,
+  `Descricao_Horario` varchar(100) NOT NULL,
+  `Dias_Semana` set('Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo') DEFAULT NULL,
+  `Hora_Inicio` time DEFAULT NULL,
+  `Hora_Fim` time DEFAULT NULL,
+  PRIMARY KEY (`ID_Horario`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `tipo_equipamento`
+-- Dumping data for table `horarios_funcionamento`
 --
 
-LOCK TABLES `tipo_equipamento` WRITE;
-/*!40000 ALTER TABLE `tipo_equipamento` DISABLE KEYS */;
-INSERT INTO `tipo_equipamento` VALUES (1,'Equipamentos de Cardio'),(2,'Equipamentos de Musculação'),(3,'Equipamentos Funcionais'),(4,'Equipamentos de Alongamento'),(5,'Equipamentos de Pilates'),(6,'Equipamentos de Artes Marciais'),(7,'Acessórios Livres');
-/*!40000 ALTER TABLE `tipo_equipamento` ENABLE KEYS */;
+LOCK TABLES `horarios_funcionamento` WRITE;
+/*!40000 ALTER TABLE `horarios_funcionamento` DISABLE KEYS */;
+INSERT INTO `horarios_funcionamento` VALUES (1,'Seg a Sex - 06:00 às 22:00','Segunda,Terca,Quarta,Quinta,Sexta','06:00:00','22:00:00');
+/*!40000 ALTER TABLE `horarios_funcionamento` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-28 21:56:41
+-- Dump completed on 2025-05-28 21:56:40

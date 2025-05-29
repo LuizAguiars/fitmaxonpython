@@ -29,23 +29,50 @@ def gerenciar_unidade():
             if acao == 'incluir':
                 cursor.execute("""
                     INSERT INTO UNIDADES 
-                    (Nome_Unidade, Endereco_Unidade, Capacidade, Fone, Cidade, Estado, CEP, ID_Regiao)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (nome, endereco, capacidade, fone, cidade, estado, cep, id_regiao))
+                    (Nome_Unidade, Capacidade, Fone, logradouro_unidade, numero_unidade, bairro_unidade, cidade_unidade, estado_unidade, cep_unidade, CNPJ, Email, Horario_Funcionamento_ID, Ativa)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,1)
+                """, (
+                    nome,
+                    capacidade,
+                    fone,
+                    request.form.get('logradouro'),
+                    request.form.get('numero'),
+                    request.form.get('bairro'),
+                    request.form.get('cidade'),
+                    request.form.get('estado'),
+                    request.form.get('cep'),
+                    request.form.get('cnpj'),
+                    request.form.get('email'),
+                    request.form.get('horario_funcionamento_id')
+                ))
                 flash("Unidade incluída com sucesso!", "success")
 
             elif acao == 'editar':
                 cursor.execute("""
                     UPDATE UNIDADES 
-                    SET Nome_Unidade=%s, Endereco_Unidade=%s, Capacidade=%s, Fone=%s, Cidade=%s, Estado=%s, CEP=%s, ID_Regiao=%s 
+                    SET Nome_Unidade=%s, Capacidade=%s, Fone=%s, logradouro_unidade=%s, numero_unidade=%s, bairro_unidade=%s, cidade_unidade=%s, estado_unidade=%s, cep_unidade=%s, CNPJ=%s, Email=%s, Horario_Funcionamento_ID=%s
                     WHERE ID_Unidades=%s
-                """, (nome, endereco, capacidade, fone, cidade, estado, cep, id_regiao, id))
+                """, (
+                    nome,
+                    capacidade,
+                    fone,
+                    request.form.get('logradouro'),
+                    request.form.get('numero'),
+                    request.form.get('bairro'),
+                    request.form.get('cidade'),
+                    request.form.get('estado'),
+                    request.form.get('cep'),
+                    request.form.get('cnpj'),
+                    request.form.get('email'),
+                    request.form.get('horario_funcionamento_id'),
+                    id
+                ))
                 flash("Unidade alterada com sucesso!", "warning")
 
             elif acao == 'remover':
                 cursor.execute(
-                    "DELETE FROM UNIDADES WHERE ID_Unidades=%s", (id,))
-                flash("Unidade removida com sucesso!", "error")
+                    "UPDATE UNIDADES SET Ativa=0 WHERE ID_Unidades=%s", (id,))
+                flash("Unidade desativada com sucesso!", "error")
 
             conn.commit()
         except Exception as e:
@@ -64,22 +91,24 @@ def gerenciar_unidade():
     total_paginas = (total_unidades + itens_por_pagina - 1) // itens_por_pagina
 
     cursor.execute("""
-        SELECT u.*, r.Nome_Regiao 
+        SELECT u.*, h.Descricao_Horario 
         FROM UNIDADES u
-        JOIN REGIAO r ON u.ID_Regiao = r.ID_Regiao
+        LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario
         LIMIT %s OFFSET %s
     """, (itens_por_pagina, offset))
     unidades = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM REGIAO")
-    regioes = cursor.fetchall()
+    # Não busca mais regioes
+    horarios = []
+    cursor.execute("SELECT * FROM horarios_funcionamento")
+    horarios = cursor.fetchall()
 
     cursor.close()
     conn.close()
     return render_template(
         'gestao_unidades.html',
         unidades=unidades,
-        regioes=regioes,
+        horarios=horarios,
         total_paginas=total_paginas,
         pagina=pagina,
         itens_por_pagina=itens_por_pagina

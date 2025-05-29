@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from db import get_db_connection
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, time
 
 agendar_bp = Blueprint('agendar', __name__)
 
@@ -36,11 +36,30 @@ def agendar():
             flash('A data deve ser igual ou posterior à data atual.', 'error')
             return redirect(request.url)
 
+        # Converte hora da requisição para datetime.time
+        def to_time(h):
+            if isinstance(h, time):
+                return h
+            elif isinstance(h, timedelta):
+                return (datetime.min + h).time()
+            elif isinstance(h, datetime):
+                return h.time()
+            elif isinstance(h, str):
+                h = h.strip()
+                try:
+                    return datetime.strptime(h, "%H:%M:%S").time()
+                except ValueError:
+                    return datetime.strptime(h, "%H:%M").time()
+            raise TypeError("Hora inválida")
+
+        hora_nova = to_time(hora)
+        inicio_novo = datetime.combine(data_obj, hora_nova)
+
         # Verificar conflito de horário exato
         cursor.execute("""
             SELECT 1 FROM agendar_treino
             WHERE ID_Personal = %s AND DataTreino = %s AND HoraTreino = %s
-        """, (id_personal, data_obj, hora))
+        """, (id_personal, data_obj, hora_nova))
 
         if cursor.fetchone():
             flash(
@@ -51,13 +70,12 @@ def agendar():
         # Verificar conflito considerando duração
         cursor.execute("""
             SELECT 1 FROM agendar_treino
-            WHERE ID_Personal = %s
-              AND DataTreino = %s
+            WHERE ID_Personal = %s AND DataTreino = %s
               AND status IN ('Agendado', 'Concluído')
               AND (
                 (ADDTIME(HoraTreino, SEC_TO_TIME(DuracaoAula * 60)) > %s AND HoraTreino <= %s)
               )
-        """, (id_personal, data_obj, hora, hora))
+        """, (id_personal, data_obj, hora_nova, hora_nova))
 
         if cursor.fetchone():
             flash('Já existe uma aula nesse horário ou sobrepondo outra.', 'error')
@@ -75,29 +93,107 @@ def agendar():
             conn.close()
             return redirect(request.url)
 
+        # Verificar se o aluno já tem agendamento no mesmo dia e horário
+        cursor.execute("""
+            SELECT 1 FROM agendar_treino
+            WHERE ID_usuario = %s AND DataTreino = %s AND HoraTreino = %s
+              AND status IN ('Agendado', 'Concluído')
+        """, (id_aluno, data_obj, hora_nova))
+
+        if cursor.fetchone():
+            flash('Você já possui uma aula agendada nesse dia e horário.', 'error')
+            conn.close()
+            return redirect(request.url)
+
         # Buscar duração da aula
         cursor.execute("""
             SELECT COALESCE(SUM(tempo_minutos), 0) as duracao_total
             FROM equipamentos_por_tipo_treino
             WHERE idtipo_de_treino = %s
         """, (id_treino,))
-        row = cursor.fetchone()
-        duracao_aula = row['duracao_total'] if row else 0
+        row_dur = cursor.fetchone()
+        duracao_aula = int(
+            row_dur['duracao_total']) if row_dur and row_dur['duracao_total'] is not None else 0
+
+        # Verificar sobreposição com outras aulas do aluno
+        cursor.execute("""
+            SELECT HoraTreino, DuracaoAula FROM agendar_treino
+            WHERE ID_usuario = %s AND DataTreino = %s
+              AND status IN ('Agendado', 'Concluído')
+        """, (id_aluno, data_obj))
+
+        fim_novo = inicio_novo + timedelta(minutes=duracao_aula)
+        conflito = False
+        for row in cursor.fetchall():
+            hora_existente = to_time(row['HoraTreino'])
+            inicio_existente = datetime.combine(data_obj, hora_existente)
+            duracao_existente = int(
+                row['DuracaoAula']) if row['DuracaoAula'] is not None else 0
+            fim_existente = inicio_existente + \
+                timedelta(minutes=duracao_existente)
+
+            if (inicio_novo < fim_existente and fim_novo > inicio_existente):
+                conflito = True
+                break
+
+        if conflito:
+            flash('Você já possui uma aula agendada que sobrepõe esse horário.', 'error')
+            conn.close()
+            return redirect(request.url)
+
+        # --- Validação de horário de funcionamento da unidade ---
+        # Descobre o dia da semana em português
+        dia_semana = data_obj.strftime('%A')
+        dia_semana_map = {
+            'Monday': 'Segunda',
+            'Tuesday': 'Terca',
+            'Wednesday': 'Quarta',
+            'Thursday': 'Quinta',
+            'Friday': 'Sexta',
+            'Saturday': 'Sabado',
+            'Sunday': 'Domingo'
+        }
+        dia_em_portugues = dia_semana_map[dia_semana]
+
+        # Busca o horário de funcionamento da unidade para o dia
+        cursor.execute("""
+            SELECT Hora_Inicio, Hora_Fim FROM horarios_funcionamento
+            WHERE FIND_IN_SET(%s, Dias_Semana)
+        """, (dia_em_portugues,))
+        horario_func = cursor.fetchone()
+
+        if not horario_func:
+            flash('A unidade não funciona neste dia da semana.', 'error')
+            conn.close()
+            return redirect(request.url)
+
+        hora_inicio_func = datetime.strptime(
+            str(horario_func['Hora_Inicio']), "%H:%M:%S").time()
+        hora_fim_func = datetime.strptime(
+            str(horario_func['Hora_Fim']), "%H:%M:%S").time()
+        fim_novo = inicio_novo + timedelta(minutes=duracao_aula)
+        hora_fim_aula = fim_novo.time()
+
+        if not (hora_nova >= hora_inicio_func and hora_fim_aula <= hora_fim_func):
+            flash(
+                f'A aula deve começar e terminar dentro do horário de funcionamento da unidade ({hora_inicio_func.strftime("%H:%M")} às {hora_fim_func.strftime("%H:%M")}).', 'error')
+            conn.close()
+            return redirect(request.url)
+        # ...existing code...
 
         try:
-            # Inserir agendamento
             cursor.execute("""
                 INSERT INTO agendar_treino
                 (ID_usuario, ID_Personal, ID_Tipodetreino, DataTreino, HoraTreino, ID_Unidade_Treino, DuracaoAula, status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (id_aluno, id_personal, id_treino, data, hora, id_unidade, duracao_aula, 'Agendado'))
+            """, (id_aluno, id_personal, id_treino, data_obj, hora_nova, id_unidade, duracao_aula, 'Agendado'))
             conn.commit()
             flash('Aula agendada com sucesso!', 'success')
 
             # Enviar e-mail de confirmação
             cursor.execute("""
                 SELECT u.Email_user, u.Nome_User, p.Nome_Personal, un.Nome_Unidade,
-                       CONCAT(un.Endereco_Unidade, ', ', un.Cidade, ' - ', un.Estado, ', CEP: ', un.CEP) AS endereco_unidade
+                       CONCAT(un.logradouro_unidade, ', ', un.numero_unidade, ' - ', un.bairro_unidade, ', ', un.cidade_unidade, ' - ', un.estado_unidade, ', CEP: ', un.cep_unidade) AS endereco_unidade
                 FROM usuario u
                 JOIN personal p ON p.ID_Personal = %s
                 JOIN unidades un ON un.ID_Unidades = %s
@@ -117,9 +213,9 @@ def agendar():
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; color: #002147; font-family: Arial, sans-serif;">
                       <div style="text-align: left; max-width: 70%;">
                         <h2 style="color: #002147;">Olá {info['Nome_User']},</h2>
-                        <p style="color: #002147;">Sua aula foi agendada com sucesso!</p>
+                        <p>Sua aula foi agendada com sucesso!</p>
 
-                        <p style="color: #002147;">
+                        <p>
                           <b>Data:</b> {data}<br>
                           <b>Hora:</b> {hora}<br>
                           <b>Personal:</b> {info['Nome_Personal']}<br>
@@ -127,12 +223,10 @@ def agendar():
                           <b>Endereço:</b> {info['endereco_unidade']}<br><br>
 
                           👉 <a href="https://www.google.com/maps/search/?api=1&query={endereco_formatado}" 
-                          target="_blank" style="color: #002147; text-decoration: underline;">
-                          📍 Ver no Google Maps
-                          </a><br><br>
+                          target="_blank">📍 Ver no Google Maps</a><br><br>
 
                           Desejamos um ótimo treino! 💪<br><br>
-                          <span style="color: #002147;">Qualquer dúvida, entre em contato com a equipe Fitmax.</span>
+                          Qualquer dúvida, entre em contato com a equipe Fitmax.
                         </p>
                       </div>
 
@@ -144,11 +238,9 @@ def agendar():
                 </html>
                 """
 
-                enviar_email(
-                    info['Email_user'],
-                    'Confirmação de Agendamento - Fitmax',
-                    corpo
-                )
+                enviar_email(info['Email_user'],
+                             'Confirmação de Agendamento - Fitmax', corpo)
+
         except Exception as e:
             conn.rollback()
             flash(f'Erro ao agendar aula: {str(e)}', 'error')
@@ -167,9 +259,4 @@ def agendar():
 
     conn.close()
 
-    return render_template(
-        'agendar.html',
-        personais=personais,
-        treinos=treinos,
-        unidades=unidades
-    )
+    return render_template('agendar.html', personais=personais, treinos=treinos, unidades=unidades)
