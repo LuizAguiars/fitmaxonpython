@@ -24,7 +24,7 @@
       <a href="{{ url_for('home.inicial_logado') }}"> Voltar a Tela Inicial</a>
   </nav>
 </header>
-
+<!-- menu bolacha lateral -->
 <div class="botoes-menu-bar">
   <button class="btn verde" onclick="abrirModal('modalIncluir')">➕ Incluir</button>
   <button class="menu-hamburguer" id="btnMenuHamburguer" onclick="abrirMenu()" title="Abrir menu de navegação">
@@ -40,6 +40,7 @@
     <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
   </div>
   <a href="{{ url_for('unidades.gerenciar_unidade') }}" class="btn-menu ativo desabilitado">GESTÃO DAS UNIDADES</a>
+  <a href="{{ url_for('personais.gestao_personal') }}" class="btn-menu">GESTÃO DOS PERSONAIS</a>
   <a href="{{ url_for('usuarios.gestao_usuarios') }}" class="btn-menu{% if request.endpoint == 'usuarios.gestao_usuarios' %} ativo{% endif %}">GESTÃO DOS USUÁRIOS</a>
   <a href="{{ url_for('equipamentos.gestao_equipamentos') }}" class="btn-menu{% if request.endpoint == 'equipamentos.gestao_equipamentos' %} ativo{% endif %}">GESTÃO DE EQUIPAMENTOS</a>
   <a href="{{ url_for('planos.gestao_planos') }}" class="btn-menu{% if request.endpoint == 'planos.gestao_planos' %} ativo{% endif %}">GESTÃO DE PLANOS</a>
@@ -47,8 +48,15 @@
   <a href="{{ url_for('feedbacks.relatorios') }}" class="btn-menu{% if request.endpoint == 'feedbacks.relatorios' %} ativo{% endif %}">RELATÓRIOS</a>
   <a href="#" class="btn-menu fechar" onclick="fecharMenu()">FECHAR</a>
 </nav>
-<div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
+<!-- menu bolacha lateral -->
 
+
+
+
+<!-- overlay preto opacidade, após abrir o menu bolacha -->
+<div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
+<!-- overlay preto opacidade, após abrir o menu bolacha -->
+<!-- notificação -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
   <div class="flash-container">
@@ -58,9 +66,9 @@
   </div>
 {% endif %}
 {% endwith %}
-
+<!-- notificação -->
 <div class="botoes-acoes" style="display:none"></div>
-
+<!-- filtro por quantidade de itens -->
 <div class="filtros-container" style="margin-bottom: -12px;">
   <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
     <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
@@ -71,38 +79,54 @@
     </select>
   </form>
 </div>
-
+<!-- filtro por quantidade de itens -->
 <div class="tabela-unidades-container">
-  <table class="tabela-unidades">
+    <table class="tabela-unidades">
     <thead>
       <tr>
-        <th>ID</th>
         <th>Nome</th>
-        <th>Endereço</th>
         <th>Capacidade</th>
         <th>Fone</th>
-        <th>Cidade</th>
+        <th>Endereço</th>
+        <th>Bairro/Cidade</th>
         <th>Estado</th>
-        <th>CEP</th>
-        <th>Região</th>
+        <th>Horário Funcionamento</th>
         <th>Ações</th>
       </tr>
     </thead>
     <tbody>
       {% for unidade in unidades %}
-      <tr>
-        <td>{{ unidade.ID_Unidades }}</td>
+      <tr 
+        data-id="{{ unidade.ID_Unidades }}"
+        data-nome="{{ unidade.Nome_Unidade }}"
+        data-logradouro="{{ unidade.logradouro_unidade }}"
+        data-numero="{{ unidade.numero_unidade }}"
+        data-bairro="{{ unidade.bairro_unidade }}"
+        data-cidade="{{ unidade.cidade_unidade }}"
+        data-estado="{{ unidade.estado_unidade }}"
+        data-cep="{{ unidade.cep_unidade }}"
+        data-capacidade="{{ unidade.Capacidade }}"
+        data-fone="{{ unidade.Fone }}"
+        data-cnpj="{{ unidade.CNPJ }}"
+        data-email="{{ unidade.Email }}"
+        data-horario="{{ unidade.Horario_Funcionamento_ID }}"
+      >
         <td>{{ unidade.Nome_Unidade }}</td>
-        <td>{{ unidade.Endereco_Unidade }}</td>
         <td>{{ unidade.Capacidade }}</td>
         <td>{{ unidade.Fone }}</td>
-        <td>{{ unidade.Cidade }}</td>
-        <td>{{ unidade.Estado }}</td>
-        <td>{{ unidade.CEP }}</td>
-        <td>{{ unidade.Nome_Regiao }}</td>
+        <td>{{ unidade.logradouro_unidade }}, {{ unidade.numero_unidade }}</td>
+        <td>{{ unidade.bairro_unidade }}, {{ unidade.cidade_unidade }}</td>
+        <td>{{ unidade.estado_unidade }}</td>
         <td>
-          <button class="btn-acao editar" title="Editar">✏️</button>
-          <button class="btn-acao remover" title="Remover">🗑️</button>
+          {% for horario in horarios %}
+            {% if horario.ID_Horario == unidade.Horario_Funcionamento_ID %}
+              {{ horario.Descricao_Horario }}
+            {% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          <button class="btn-acao editar" title="Editar" data-id="{{ unidade.ID_Unidades }}">✏️</button>
+          <button class="btn-acao remover" title="Remover" data-id="{{ unidade.ID_Unidades }}">🗑️</button>
         </td>
       </tr>
       {% endfor %}
@@ -141,22 +165,26 @@
   <div class="modal-box">
     <h2>Editar Unidade</h2>
     <div id="infoUnidadeSelecionada" style="margin-bottom: 10px; font-weight: bold;">
-      Unidade Selecionada: <span id="infoId"></span> - <span id="infoNome"></span>, <span id="infoEndereco"></span>
+      Unidade Selecionada: <span id="infoId"></span> - <span id="infoNome"></span>
     </div>
     <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
       <input type="hidden" name="acao" value="editar">
       <input type="hidden" name="id" id="editId">
-      <input type="text" name="nome" id="editNome" placeholder="Nome da Unidade">
-      <input type="text" name="endereco" id="editEndereco" placeholder="Endereço">
-      <input type="number" name="capacidade" id="editCapacidade" placeholder="Capacidade">
-      <input type="tel" name="fone" id="editFone" placeholder="Fone" maxlength="15">
-      <input type="text" name="cidade" id="editCidade" placeholder="Cidade">
-      <input type="text" name="estado" id="editEstado" placeholder="Estado">
-      <input type="text" name="cep" id="editCep" placeholder="CEP" maxlength="9">
-      <select name="id_regiao" id="editRegiao" required>
-        <option value="">Selecione a Região</option>
-        {% for regiao in regioes %}
-          <option value="{{ regiao.ID_Regiao }}">{{ regiao.Nome_Regiao }}</option>
+      <input type="text" name="nome" id="editNome" placeholder="Nome da Unidade" required>
+      <input type="text" name="logradouro" id="editLogradouro" placeholder="Logradouro" required>
+      <input type="text" name="numero" id="editNumero" placeholder="Número" required>
+      <input type="text" name="bairro" id="editBairro" placeholder="Bairro" required>
+      <input type="text" name="cidade" id="editCidade" placeholder="Cidade" required>
+      <input type="text" name="estado" id="editEstado" placeholder="Estado (UF)" maxlength="2" required>
+      <input type="text" name="cep" id="editCep" placeholder="CEP" maxlength="10" required>
+      <input type="number" name="capacidade" id="editCapacidade" placeholder="Capacidade" min="1" required>
+      <input type="tel" name="fone" id="editFone" placeholder="Fone" maxlength="20">
+      <input type="text" name="cnpj" id="editCnpj" placeholder="CNPJ" maxlength="18">
+      <input type="email" name="email" id="editEmail" placeholder="E-mail">
+      <select name="horario_funcionamento_id" id="editHorario" required>
+        <option value="">Selecione o Horário de Funcionamento</option>
+        {% for horario in horarios %}
+          <option value="{{ horario.ID_Horario }}">{{ horario.Descricao_Horario }}</option>
         {% endfor %}
       </select>
       <button type="submit" class="confirmar">Salvar</button>
@@ -171,16 +199,20 @@
     <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
       <input type="hidden" name="acao" value="incluir">
       <input type="text" name="nome" placeholder="Nome da Unidade" required>
-      <input type="text" name="endereco" placeholder="Endereço" required>
-      <input type="number" name="capacidade" placeholder="Capacidade" min="1">
-      <input type="tel" name="fone" id="incluirFone" placeholder="Fone" maxlength="15">
-      <input type="text" name="cidade" placeholder="Cidade">
-      <input type="text" name="estado" placeholder="Estado">
-      <input type="text" name="cep" placeholder="CEP" maxlength="9">
-      <select name="id_regiao" required>
-        <option value="">Selecione a Região</option>
-        {% for regiao in regioes %}
-          <option value="{{ regiao.ID_Regiao }}">{{ regiao.Nome_Regiao }}</option>
+      <input type="text" name="logradouro" placeholder="Logradouro" required>
+      <input type="text" name="numero" placeholder="Número" required>
+      <input type="text" name="bairro" placeholder="Bairro" required>
+      <input type="text" name="cidade" placeholder="Cidade" required>
+      <input type="text" name="estado" placeholder="Estado (UF)" maxlength="2" required>
+      <input type="text" name="cep" id="incluirCep" placeholder="CEP" maxlength="10" required>
+      <input type="number" name="capacidade" placeholder="Capacidade" min="1" required>
+      <input type="tel" name="fone" id="incluirFone" placeholder="Fone" maxlength="20">
+      <input type="text" name="cnpj" placeholder="CNPJ" maxlength="18">
+      <input type="email" name="email" placeholder="E-mail">
+      <select name="horario_funcionamento_id" required>
+        <option value="">Selecione o Horário de Funcionamento</option>
+        {% for horario in horarios %}
+          <option value="{{ horario.ID_Horario }}">{{ horario.Descricao_Horario }}</option>
         {% endfor %}
       </select>
       <button type="submit" class="confirmar">Confirmar</button>
@@ -189,8 +221,7 @@
   </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/flash.js') }}"></script>
-<script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
+
 <script>
   function abrirMenu() {
     document.getElementById('menuResponsivo').classList.add('ativo');
@@ -202,6 +233,116 @@
     document.getElementById('btnMenuHamburguer').classList.remove('menu-oculto');
     document.getElementById('menuOverlay').classList.remove('ativo');
   }
+  function abrirModal(id) {
+    document.getElementById(id).style.display = 'flex';
+  }
+  function fecharModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+  // Fecha modal ao clicar fora da caixa
+  document.querySelectorAll('.modal-overlay').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) fecharModal(modal.id);
+    });
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    // Corrige botões de abrir modal
+    document.querySelectorAll('button[onclick^="abrirModal"]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+        abrirModal(id);
+      });
+    });
+    // Corrige botões de abrir modal para funcionar SEM onclick inline
+    document.querySelectorAll('.btn-acao.editar').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = btn.getAttribute('data-id');
+        var linha = document.querySelector('tr[data-id="' + id + '"]');
+        if (!linha) return;
+        document.getElementById('editId').value = id;
+        document.getElementById('editNome').value = linha.dataset.nome || '';
+        document.getElementById('editLogradouro').value = linha.dataset.logradouro || '';
+        document.getElementById('editNumero').value = linha.dataset.numero || '';
+        document.getElementById('editBairro').value = linha.dataset.bairro || '';
+        document.getElementById('editCidade').value = linha.dataset.cidade || '';
+        document.getElementById('editEstado').value = linha.dataset.estado || '';
+        document.getElementById('editCep').value = linha.dataset.cep || '';
+        document.getElementById('editCapacidade').value = linha.dataset.capacidade || '';
+        document.getElementById('editFone').value = linha.dataset.fone || '';
+        document.getElementById('editCnpj').value = linha.dataset.cnpj || '';
+        document.getElementById('editEmail').value = linha.dataset.email || '';
+        document.getElementById('editHorario').value = linha.dataset.horario || '';
+        abrirModal('modalEditar');
+      });
+    });
+    document.querySelectorAll('.btn-acao.remover').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        abrirModal('modalRemover');
+      });
+    });
+    document.querySelectorAll('.btn.verde').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Limpa todos os campos do modal de inclusão
+        document.querySelector('#modalIncluir input[name="nome"]').value = '';
+        document.querySelector('#modalIncluir input[name="logradouro"]').value = '';
+        document.querySelector('#modalIncluir input[name="numero"]').value = '';
+        document.querySelector('#modalIncluir input[name="bairro"]').value = '';
+        document.querySelector('#modalIncluir input[name="cidade"]').value = '';
+        document.querySelector('#modalIncluir input[name="estado"]').value = '';
+        document.querySelector('#modalIncluir input[name="cep"]').value = '';
+        document.querySelector('#modalIncluir input[name="capacidade"]').value = '';
+        document.querySelector('#modalIncluir input[name="fone"]').value = '';
+        document.querySelector('#modalIncluir input[name="cnpj"]').value = '';
+        document.querySelector('#modalIncluir input[name="email"]').value = '';
+        document.querySelector('#modalIncluir select[name="horario_funcionamento_id"]').selectedIndex = 0;
+        abrirModal('modalIncluir');
+      });
+    });
+  });
+  // Busca automática de endereço pelo CEP no modal de inclusão de unidade
+  // (igual ao cadastro de usuário e editar unidade)
+  document.addEventListener('DOMContentLoaded', function() {
+    const cepInput = document.querySelector('#modalIncluir input[name="cep"]');
+    const logradouroInput = document.querySelector('#modalIncluir input[name="logradouro"]');
+    const bairroInput = document.querySelector('#modalIncluir input[name="bairro"]');
+    const cidadeInput = document.querySelector('#modalIncluir input[name="cidade"]');
+    const estadoInput = document.querySelector('#modalIncluir input[name="estado"]');
+
+    if (cepInput && logradouroInput && bairroInput && cidadeInput && estadoInput) {
+      cepInput.addEventListener('blur', async function() {
+        const cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+          const data = await response.json();
+          if (data.erro) {
+            alert('CEP não encontrado.');
+            logradouroInput.value = '';
+            bairroInput.value = '';
+            cidadeInput.value = '';
+            estadoInput.value = '';
+            return;
+          }
+          logradouroInput.value = data.logradouro || '';
+          bairroInput.value = data.bairro || '';
+          cidadeInput.value = data.localidade || '';
+          estadoInput.value = data.uf || '';
+        } catch (e) {
+          alert('Erro ao buscar o CEP.');
+          logradouroInput.value = '';
+          bairroInput.value = '';
+          cidadeInput.value = '';
+          estadoInput.value = '';
+        }
+      });
+    }
+  });
 </script>
 </body>
+<script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+<script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
 </html>

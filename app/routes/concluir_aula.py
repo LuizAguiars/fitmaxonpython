@@ -89,15 +89,44 @@ def concluir_aula():
             flash(f'Erro ao concluir aula: {str(e)}', 'error')
 
     hoje = datetime.now().date()
-    cursor.execute("""
+
+    # Filtros GET
+    mes = request.args.get('mes')
+    tipo = request.args.get('tipo')
+    status = request.args.get('status')
+
+    query = """
         SELECT a.*, t.nome_tipo_treino, u.Nome_User as Nome_Aluno 
         FROM agendar_treino a
         JOIN tipo_de_treino t ON a.ID_Tipodetreino = t.idtipo_de_treino
         JOIN usuario u ON a.ID_usuario = u.ID_User
-        WHERE a.ID_Personal = %s AND a.status = 'Agendado' AND a.DataTreino <= %s
-    """, (session['usuario'], hoje))
+        WHERE a.ID_Personal = %s
+    """
+    params = [session['usuario']]
 
+    if status:
+        query += " AND a.status = %s"
+        params.append(status)
+    else:
+        query += " AND a.status IN ('Agendado','Concluído','Cancelado','Ausente')"
+
+    if mes:
+        query += " AND MONTH(a.DataTreino) = %s"
+        params.append(int(mes))
+    if tipo:
+        query += " AND a.ID_Tipodetreino = %s"
+        params.append(int(tipo))
+
+    query += " AND a.DataTreino <= %s"
+    params.append(hoje)
+
+    cursor.execute(query, tuple(params))
     aulas = cursor.fetchall()
+
+    # Buscar todos os tipos de treino para o filtro
+    cursor.execute(
+        "SELECT idtipo_de_treino, nome_tipo_treino FROM tipo_de_treino")
+    tipos_treino = cursor.fetchall()
 
     # Buscar equipamentos de cada tipo de treino
     equipamentos_por_treino = {}
@@ -112,4 +141,9 @@ def concluir_aula():
         equipamentos_por_treino[tipo_id] = cursor.fetchall()
 
     conn.close()
-    return render_template('concluir_aula.html', aulas=aulas, equipamentos_por_treino=equipamentos_por_treino)
+    return render_template(
+        'concluir_aula.html',
+        aulas=aulas,
+        equipamentos_por_treino=equipamentos_por_treino,
+        tipos_treino=tipos_treino
+    )

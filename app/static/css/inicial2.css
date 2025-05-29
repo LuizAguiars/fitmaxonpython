@@ -77,7 +77,7 @@ header h1 {
   display: flex !important;
   align-items: center;
   justify-content: center;
-  background: #001f5b;
+  background: #001f5b; /* Cor original */
   border-radius: 8px;
   padding: 8px 10px;
   cursor: pointer;
@@ -92,7 +92,7 @@ header h1 {
 }
 .menu-hamburguer svg { display: block; }
 .menu-hamburguer:hover {
-  background: #003080;
+  background: #003080; /* Cor de hover original */
   box-shadow: 2px 2px 10px rgba(0,0,0,0.18);
 }
 .menu-hamburguer .bar { display: none; }

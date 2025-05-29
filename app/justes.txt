@@ -4,3 +4,8 @@
 
 deve ser possivel apenas agendar com personal da academia
 quando marcar aulas devem aparecer apenas os personais e equipamento da academia
+
+
+
+
+ALTER TABLE agendar_treino ADD COLUMN notificado TINYINT(1) DEFAULT 0;

@@ -136,26 +136,89 @@ def gestao_usuarios():
     return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
 
 
-@usuarios_bp.route('/minhas-aulas')
+@usuarios_bp.route('/minhas-aulas', methods=['GET'])
 def minhas_aulas():
-    if 'usuario' not in session or session.get('tipo') != 'aluno':
-        flash("Você precisa estar logado como aluno para acessar suas aulas.", "error")
+    if 'usuario' not in session:
         return redirect(url_for('auth.login'))
 
-    user_id = session['usuario']
-    db = get_db_connection()
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT a.idAgendar_Treino, a.DataTreino, a.HoraTreino, t.nome_tipo_treino, p.Nome_Personal, a.status
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Filtros GET
+    ano = request.args.get('ano')
+    mes = request.args.get('mes')
+    tipo = request.args.get('tipo')
+    status = request.args.get('status')
+    try:
+        per_page = int(request.args.get('per_page', 8))  # padrão agora é 8
+    except ValueError:
+        per_page = 8
+    per_page = max(4, min(per_page, 16))
+    try:
+        page = int(request.args.get('page', 1))
+    except ValueError:
+        page = 1
+    offset = (page - 1) * per_page
+
+    # Monta a query base
+    query_base = """
         FROM agendar_treino a
         JOIN tipo_de_treino t ON a.ID_Tipodetreino = t.idtipo_de_treino
         JOIN personal p ON a.ID_Personal = p.ID_Personal
         WHERE a.ID_usuario = %s
+    """
+    params = [session['usuario']]
+
+    if status:
+        query_base += " AND a.status = %s"
+        params.append(status)
+    if ano:
+        query_base += " AND YEAR(a.DataTreino) = %s"
+        params.append(int(ano))
+    if mes:
+        query_base += " AND MONTH(a.DataTreino) = %s"
+        params.append(int(mes))
+    if tipo:
+        query_base += " AND a.ID_Tipodetreino = %s"
+        params.append(int(tipo))
+
+    # Conta total de registros para paginação
+    cursor.execute(f"SELECT COUNT(*) as total {query_base}", tuple(params))
+    total = cursor.fetchone()['total']
+    total_pages = max(1, (total + per_page - 1) // per_page)
+
+    # Busca as aulas paginadas
+    query = f"""
+        SELECT a.*, t.nome_tipo_treino, p.Nome_Personal
+        {query_base}
         ORDER BY a.DataTreino DESC, a.HoraTreino DESC
-    """, (user_id,))
+        LIMIT %s OFFSET %s
+    """
+    params_paged = params + [per_page, offset]
+    cursor.execute(query, tuple(params_paged))
     aulas = cursor.fetchall()
-    db.close()
-    return render_template('minhas_aulas.html', aulas=aulas)
+
+    # Buscar todos os tipos de treino para o filtro
+    cursor.execute(
+        "SELECT idtipo_de_treino, nome_tipo_treino FROM tipo_de_treino")
+    tipos_treino = cursor.fetchall()
+
+    # Buscar anos disponíveis para filtro
+    cursor.execute(
+        "SELECT DISTINCT YEAR(DataTreino) as ano FROM agendar_treino WHERE ID_usuario = %s ORDER BY ano DESC", (session['usuario'],))
+    anos_disponiveis = [row['ano'] for row in cursor.fetchall()]
+
+    conn.close()
+    return render_template(
+        'minhas_aulas.html',
+        aulas=aulas,
+        tipos_treino=tipos_treino,
+        anos_disponiveis=anos_disponiveis,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total=total
+    )
 
 
 @usuarios_bp.route('/cancelar-aula', methods=['POST'])
