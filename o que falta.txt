@@ -1,14 +1,14 @@
-Melhorar visual do calendario para agendar aula
+Melhorar visual do calendario para agendar aula - ??
 
-melhoria de filtros e adição
-unidades adicionar filtro por capacidade
-usuarios filtro por bairro e cidade
-
-
-corrigir links de agendar aula etc.. em outras telas
+melhoria de filtros e adição - feito
+unidades adicionar filtro por capacidade - feito
+usuarios filtro por bairro e cidade - feito
 
 
-quando um professor concluir aula mandar email pro aluno e pro aluno dar feedback
+corrigir links de agendar aula etc.. em outras telas - feito (i think)
+
+
+quando um professor concluir aula mandar email pro aluno e pro aluno dar feedback - ? boa sorte kkkk
 
 
 

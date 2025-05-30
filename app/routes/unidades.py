@@ -68,24 +68,10 @@ def gerenciar_unidade():
             flash(f'Erro ao atualizar unidade: {str(e)}', 'error')
             return redirect(url_for('unidades.gerenciar_unidade'))
 
-    # Obtendo cidades e bairros disponíveis no banco de dados
-    cursor.execute(
-        "SELECT DISTINCT cidade_unidade FROM UNIDADES WHERE Ativa=1")
-    cidades_disponiveis = [row['cidade_unidade'] for row in cursor.fetchall()]
-
-    cursor.execute(
-        "SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE Ativa=1")
-    bairros_disponiveis = [row['bairro_unidade'] for row in cursor.fetchall()]
-
-    # Obtendo capacidades disponíveis no banco de dados
-    cursor.execute(
-        "SELECT DISTINCT Capacidade FROM UNIDADES WHERE Ativa=1"
-    )
-    capacidades_disponiveis = [row['Capacidade'] for row in cursor.fetchall()]
-
-    # Filtro por cidade e bairro
+    # Filtros
     cidade_filtro = request.args.get('cidade', '')
     bairro_filtro = request.args.get('bairro', '')
+    capacidade_filtro = request.args.get('capacidade', '')
 
     query = "SELECT u.*, h.Descricao_Horario FROM UNIDADES u LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario WHERE Ativa=1"
     params = []
@@ -98,13 +84,10 @@ def gerenciar_unidade():
         query += " AND bairro_unidade = %s"
         params.append(bairro_filtro)
 
-    # Filtro por capacidade
-    capacidade_filtro = request.args.get('capacidade', '')
     if capacidade_filtro and capacidade_filtro.lower() != 'todas':
         query += " AND Capacidade = %s"
         params.append(capacidade_filtro)
     else:
-        # Caso "Todas" seja selecionado, não aplica filtro de capacidade
         capacidade_filtro = None
 
     # Paginação
@@ -124,6 +107,21 @@ def gerenciar_unidade():
 
     cursor.execute("SELECT * FROM horarios_funcionamento")
     horarios = cursor.fetchall()
+
+    # Buscar cidades disponíveis
+    cursor.execute("SELECT DISTINCT cidade_unidade FROM UNIDADES WHERE cidade_unidade IS NOT NULL AND cidade_unidade <> '' ORDER BY cidade_unidade")
+    cidades_disponiveis = [row['cidade_unidade'] for row in cursor.fetchall()]
+
+    # Buscar bairros disponíveis, filtrando pela cidade se selecionada
+    if cidade_filtro:
+        cursor.execute("SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE cidade_unidade = %s AND bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade", (cidade_filtro,))
+    else:
+        cursor.execute("SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade")
+    bairros_disponiveis = [row['bairro_unidade'] for row in cursor.fetchall()]
+
+    # Buscar capacidades disponíveis
+    cursor.execute("SELECT DISTINCT Capacidade FROM UNIDADES WHERE Capacidade IS NOT NULL AND Capacidade <> '' ORDER BY Capacidade")
+    capacidades_disponiveis = [row['Capacidade'] for row in cursor.fetchall()]
 
     cursor.close()
     conn.close()

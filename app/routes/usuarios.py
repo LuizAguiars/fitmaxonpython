@@ -174,7 +174,11 @@ def gestao_usuarios():
     cursor.execute("SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
     cidades = [row['cidade_user'] for row in cursor.fetchall()]
 
-    cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
+    # Buscar bairros disponíveis, filtrando pela cidade se selecionada
+    if cidade_filtro:
+        cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
+    else:
+        cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
     bairros = [row['bairro_user'] for row in cursor.fetchall()]
 
     cursor.close()
