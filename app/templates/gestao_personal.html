@@ -181,7 +181,7 @@
         <input type="password" name="senha" id="editSenha" placeholder="Senha (deixe em branco para não alterar)">
         <select name="id_unidade" id="editUnidade" required>
           <option value="">Selecione a Unidade</option>
-          {% for unidade in unidades %}
+          {% for unidade in unidades_disponiveis %}
             <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
           {% endfor %}
         </select>
@@ -205,7 +205,7 @@
         <input type="password" name="senha" placeholder="Senha" required>
         <select name="id_unidade" required>
           <option value="">Selecione a Unidade</option>
-          {% for unidade in unidades %}
+          {% for unidade in unidades_disponiveis %}
             <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
           {% endfor %}
         </select>

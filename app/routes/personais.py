@@ -23,12 +23,15 @@ def gestao_personal():
         id_unidade = request.form.get('id_unidade')
         senha = request.form.get('senha')  # Novo campo senha
 
+        # Converte para int se não vazio, senão None
+        id_unidade_db = int(id_unidade) if id_unidade and id_unidade.isdigit() else None
+
         try:
             if acao == 'incluir':
                 cursor.execute("""
                     INSERT INTO PERSONAL (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal)
                     VALUES (%s, %s, %s, %s, %s)
-                """, (nome, email, especialidade, id_unidade, senha))
+                """, (nome, email, especialidade, id_unidade_db, senha))
                 flash("Personal incluído com sucesso!", "success")
 
             elif acao == 'editar':
@@ -37,13 +40,13 @@ def gestao_personal():
                         UPDATE PERSONAL
                         SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, Senha_Personal=%s
                         WHERE ID_Personal=%s
-                    """, (nome, email, especialidade, id_unidade, senha, id))
+                    """, (nome, email, especialidade, id_unidade_db, senha, id))
                 else:
                     cursor.execute("""
                         UPDATE PERSONAL
                         SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
                         WHERE ID_Personal=%s
-                    """, (nome, email, especialidade, id_unidade, id))
+                    """, (nome, email, especialidade, id_unidade_db, id))
                 flash("Personal alterado com sucesso!", "warning")
 
             elif acao == 'remover':
