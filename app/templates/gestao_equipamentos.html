@@ -103,6 +103,20 @@
   </form>
 </div>
 
+
+<div class="filtros-container" style="margin-bottom: -12px;">
+  <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
+    <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
+    <select name="itensPorPagina" id="itensPorPagina" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="25" {% if itens_por_pagina == 25 %}selected{% endif %}>25</option>
+      <option value="50" {% if itens_por_pagina == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if itens_por_pagina == 100 %}selected{% endif %}>100</option>
+    </select>
+  </form>
+</div>
+
+
+
   <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades">
       <thead>

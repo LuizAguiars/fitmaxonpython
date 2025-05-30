@@ -70,6 +70,8 @@
   </nav>
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
+  
+
   <!-- Adicionando filtros por plano e status na gestão de usuários -->
   <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 20px;">
     <form method="get" id="filtroPlanoForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); margin-left: -140px;">
@@ -93,6 +95,20 @@
     </form>
   </div>
 
+
+<div class="filtros-container" style="margin-bottom: -12px;">
+  <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
+    <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
+    <select name="itensPorPagina" id="itensPorPagina" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="25" {% if itens_por_pagina == 25 %}selected{% endif %}>25</option>
+      <option value="50" {% if itens_por_pagina == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if itens_por_pagina == 100 %}selected{% endif %}>100</option>
+    </select>
+  </form>
+</div>
+<!-- filtro por quantidade de itens -->
+<!-- Adicionando dropdowns para filtro por cidade e bairro -->
+<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center;">
   <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades" style="width:100%; text-align:center;">
       <thead>
@@ -100,9 +116,12 @@
           <th style="text-align:center;">Nome</th>
           <th style="text-align:center;">Email</th>
           <th style="text-align:center;">Endereço</th>
+          <th style="text-align:center;">Bairro/Cidade</th>
+          <th style="text-align:center;">Estado</th>
           <th style="text-align:center;">Plano</th>
           <th style="text-align:center;">Status</th>
           <th style="text-align:center;">Ações</th>
+          
         </tr>
       </thead>
       <tbody>
@@ -127,7 +146,9 @@
         >
           <td>{{ usuario.Nome_User }}</td>
           <td>{{ usuario.Email_user }}</td>
-          <td>{{ usuario.logradouro_user }}, {{ usuario.numero_user }} - {{ usuario.bairro_user }}, {{ usuario.cidade_user }} - {{ usuario.estado_user }}</td>
+          <td>{{ usuario.logradouro_user }}, {{ usuario.numero_user }}</td>
+          <td>{{ usuario.bairro_user}}, {{ usuario.cidade_user }}</td>
+          <td>{{ usuario.estado_user }}</td>
           <td>{{ usuario.nome_plano }}</td>
           <td>{{ usuario.status_cliente }}</td>
           <td>
