@@ -44,7 +44,7 @@
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
     <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
     <p><strong>CPF:</strong> {{ usuario.cpf_user }}</p>
-    <p><strong>Endereço:</strong> {{ usuario.endereco_formatado or 'Não informado' }}</p>
+    <p><strong>Endereço:</strong> {{ usuario.endereco_user or 'Não informado' }}</p>
     <p><strong>CEP:</strong> {{ usuario.CEP_USER or 'Não informado' }}</p>
     <p><strong>Sexo:</strong> 
         {% if usuario.sexo_user == 'M' %}Masculino
