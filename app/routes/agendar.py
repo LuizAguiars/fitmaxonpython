@@ -174,12 +174,45 @@ def agendar():
         fim_novo = inicio_novo + timedelta(minutes=duracao_aula)
         hora_fim_aula = fim_novo.time()
 
-        if not (hora_nova >= hora_inicio_func and hora_fim_aula <= hora_fim_func):
+        hora_inicio_func_dt = datetime.combine(data_obj, hora_inicio_func)
+        hora_fim_func_dt = datetime.combine(data_obj, hora_fim_func)
+        # Corrige caso o horário de fechamento seja depois da meia-noite (ex: 22:00-01:00)
+        if hora_fim_func <= hora_inicio_func:
+            hora_fim_func_dt += timedelta(days=1)
+        # Validação correta: início e fim da aula dentro do funcionamento
+        if not (inicio_novo >= hora_inicio_func_dt and fim_novo <= hora_fim_func_dt):
             flash(
                 f'A aula deve começar e terminar dentro do horário de funcionamento da unidade ({hora_inicio_func.strftime("%H:%M")} às {hora_fim_func.strftime("%H:%M")}).', 'error')
             conn.close()
             return redirect(request.url)
-        # ...existing code...
+
+        # --- Regra de antecedência por plano ---
+        # Buscar o plano do usuário
+        cursor.execute(
+            "SELECT p.nome_plano FROM usuario u LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO WHERE u.ID_User = %s", (id_aluno,))
+        row_plano = cursor.fetchone()
+        nome_plano = (row_plano['nome_plano'] or '').strip(
+        ).lower() if row_plano and row_plano['nome_plano'] else ''
+        # Define antecedência mínima por plano
+        if nome_plano == 'full':
+            antecedencia_min = timedelta(minutes=30)
+        elif nome_plano == 'medio' or nome_plano == 'médio':
+            antecedencia_min = timedelta(hours=1, minutes=30)
+        else:  # basic ou qualquer outro
+            antecedencia_min = timedelta(hours=2)
+        agora = datetime.now()
+        if inicio_novo - agora < antecedencia_min:
+            if nome_plano == 'medio' or nome_plano == 'médio':
+                flash(
+                    f'Seu plano exige agendamento com pelo menos {antecedencia_min} de antecedência. Faça upgrade para o plano Full e reserve aulas com ate 30 minutos de antecedencia.', 'error')
+            elif nome_plano == 'basic' or nome_plano == 'básico':
+                flash(
+                    f'Seu plano exige agendamento com pelo menos {antecedencia_min} de antecedência. Faça upgrade para o plano Full e reserve aulas com ate 30 minutos de antecedencia.', 'error')
+            else:
+                flash(
+                    f'Seu plano exige agendamento com pelo menos {antecedencia_min} de antecedência.', 'error')
+            conn.close()
+            return redirect(request.url)
 
         try:
             cursor.execute("""
