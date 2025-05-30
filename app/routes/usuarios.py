@@ -134,6 +134,8 @@ def gestao_usuarios():
 
     plano_filtro = request.args.get('plano', '')
     status_filtro = request.args.get('status', '')
+    cidade_filtro = request.args.get('cidade', '')
+    bairro_filtro = request.args.get('bairro', '')
 
     query = """
         SELECT u.*, un.Nome_Unidade, p.nome_plano
@@ -152,6 +154,14 @@ def gestao_usuarios():
         query += " AND u.status_cliente = %s"
         params.append(status_filtro)
 
+    if cidade_filtro:
+        query += " AND u.cidade_user = %s"
+        params.append(cidade_filtro)
+
+    if bairro_filtro:
+        query += " AND u.bairro_user = %s"
+        params.append(bairro_filtro)
+
     cursor.execute(query, params)
     usuarios = cursor.fetchall()
 
@@ -161,10 +171,27 @@ def gestao_usuarios():
     cursor.execute("SELECT * FROM PLANO")
     planos = cursor.fetchall()
 
+    cursor.execute("SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
+    cidades = [row['cidade_user'] for row in cursor.fetchall()]
+
+    cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
+    bairros = [row['bairro_user'] for row in cursor.fetchall()]
+
     cursor.close()
     conn.close()
 
-    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos, plano_filtro=plano_filtro, status_filtro=status_filtro)
+    return render_template(
+        'gestao_usuarios.html',
+        usuarios=usuarios,
+        unidades=unidades,
+        planos=planos,
+        plano_filtro=plano_filtro,
+        status_filtro=status_filtro,
+        cidade_filtro=cidade_filtro,
+        bairro_filtro=bairro_filtro,
+        cidades=cidades,
+        bairros=bairros
+    )
 
 
 @usuarios_bp.route('/minhas-aulas', methods=['GET'])

@@ -73,25 +73,48 @@
   
 
   <!-- Adicionando filtros por plano e status na gestão de usuários -->
-  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 20px;">
-    <form method="get" id="filtroPlanoForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); margin-left: -140px;">
-      <label for="plano" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Plano:</label>
-      <select name="plano" id="plano" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
-        <option value="">Todos</option>
-        {% for plano in planos %}
-          <option value="{{ plano.ID_PLANO }}" {% if plano_filtro == plano.ID_PLANO|string %}selected{% endif %}>{{ plano.nome_plano }}</option>
-        {% endfor %}
-      </select>
-    </form>
-
-    <form method="get" id="filtroStatusForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
-      <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
-      <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
-        <option value="">Todos</option>
-        <option value="Ativo" {% if status_filtro == 'Ativo' %}selected{% endif %}>Ativo</option>
-        <option value="Inativo" {% if status_filtro == 'Inativo' %}selected{% endif %}>Inativo</option>
-        <option value="Inadimplente" {% if status_filtro == 'Inadimplente' %}selected{% endif %}>Inadimplente</option>
-      </select>
+  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 0;">
+    <form method="get" style="display: flex;">
+      <div style="display: flex;">
+        <div style="background: rgba(20,24,38,0.92); border-radius: 10px 0 0 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="plano" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Plano:</label>
+          <select name="plano" id="plano" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todos</option>
+            {% for plano in planos %}
+              <option value="{{ plano.ID_PLANO }}" {% if plano_filtro == plano.ID_PLANO|string %}selected{% endif %}>{{ plano.nome_plano }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
+          <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todos</option>
+            <option value="Ativo" {% if status_filtro == 'Ativo' %}selected{% endif %}>Ativo</option>
+            <option value="Inativo" {% if status_filtro == 'Inativo' %}selected{% endif %}>Inativo</option>
+            <option value="Inadimplente" {% if status_filtro == 'Inadimplente' %}selected{% endif %}>Inadimplente</option>
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="cidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Cidade:</label>
+          <select name="cidade" id="cidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todas</option>
+            {% for cidade in cidades %}
+              <option value="{{ cidade }}" {% if cidade_filtro == cidade %}selected{% endif %}>{{ cidade }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="bairro" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Bairro:</label>
+          <select name="bairro" id="bairro" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todos</option>
+            {% for bairro in bairros %}
+              <option value="{{ bairro }}" {% if bairro_filtro == bairro %}selected{% endif %}>{{ bairro }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <!-- Para manter múltiplos filtros ao mesmo tempo, preserve os valores dos outros filtros como campos hidden -->
+      <input type="hidden" name="itensPorPagina" value="{{ itens_por_pagina }}">
     </form>
   </div>
 
@@ -106,9 +129,7 @@
     </select>
   </form>
 </div>
-<!-- filtro por quantidade de itens -->
-<!-- Adicionando dropdowns para filtro por cidade e bairro -->
-<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center;">
+
   <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades" style="width:100%; text-align:center;">
       <thead>

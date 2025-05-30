@@ -72,25 +72,28 @@
 
   <!-- Alterando filtro para unidades na gestão de personais -->
   <!-- Ajustando os filtros para ficarem lado a lado na gestão de personais -->
-  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 0; border-radius: 10px;">
-    <form method="get" id="filtroUnidadesForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px 0 0 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
-      <label for="unidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Unidade:</label>
-      <select name="unidade" id="unidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
-        <option value="">Todas</option>
-        {% for unidade in unidades_disponiveis %}
-          <option value="{{ unidade.ID_Unidades }}" {% if unidade_filtro == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
-        {% endfor %}
-      </select>
-    </form>
-
-    <form method="get" id="filtroEspecialidadeForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
-      <label for="especialidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Especialidade:</label>
-      <select name="especialidade" id="especialidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
-        <option value="">Todas</option>
-        {% for especialidade in especialidades %}
-          <option value="{{ especialidade.Especialidade }}" {% if especialidade_filtro == especialidade.Especialidade %}selected{% endif %}>{{ especialidade.Especialidade }}</option>
-        {% endfor %}
-      </select>
+  <div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 0;">
+    <form method="get" style="display: flex;">
+      <div style="display: flex;">
+        <div style="background: rgba(20,24,38,0.92); border-radius: 10px 0 0 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="unidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Unidade:</label>
+          <select name="unidade" id="unidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todas</option>
+            {% for unidade in unidades_disponiveis %}
+              <option value="{{ unidade.ID_Unidades }}" {% if unidade_filtro == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="especialidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Especialidade:</label>
+          <select name="especialidade" id="especialidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todas</option>
+            {% for especialidade in especialidades %}
+              <option value="{{ especialidade.Especialidade }}" {% if especialidade_filtro == especialidade.Especialidade %}selected{% endif %}>{{ especialidade.Especialidade }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
     </form>
   </div>
 
