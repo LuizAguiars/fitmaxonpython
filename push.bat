@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Separado o endereço no gestão de usuários  %DATAHORA%"
+git commit -m "Aprove esse push,ajustes nas gestões usuário e unidade e o arquivo txt  %DATAHORA%"
 
 
 

@@ -119,7 +119,8 @@
         <th>Capacidade</th>
         <th>Fone</th>
         <th>Endereço</th>
-        <th>Bairro/Cidade</th>
+          <th>Bairro</th>
+        <th>Cidade</th>
         <th>Estado</th>
         <th>Horário Funcionamento</th>
         <th>Ações</th>
@@ -146,7 +147,8 @@
         <td>{{ unidade.Capacidade }}</td>
         <td>{{ unidade.Fone }}</td>
         <td>{{ unidade.logradouro_unidade }}, {{ unidade.numero_unidade }}</td>
-        <td>{{ unidade.bairro_unidade }}, {{ unidade.cidade_unidade }}</td>
+         <td>{{ unidade.bairro_unidade }}</td>
+        <td>{{ unidade.cidade_unidade }}
         <td>{{ unidade.estado_unidade }}</td>
         <td>
           {% for horario in horarios %}
