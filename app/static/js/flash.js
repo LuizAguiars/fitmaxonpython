@@ -209,6 +209,62 @@ botoesImagem.forEach(btn => {
   btn.addEventListener('mouseleave', () => overlay.classList.remove('active'));
 });
 
+// ---------------------- ORDENAR TABELAS COM ÍCONES ---------------------- //
+document.addEventListener('DOMContentLoaded', () => {
+  const tables = document.querySelectorAll('table');
+
+  tables.forEach(table => {
+    const headers = table.querySelectorAll('th');
+    const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+    let sortDirection = {};
+
+    headers.forEach((header, index) => {
+      const headerText = header.textContent.trim();
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
+
+      header.addEventListener('click', () => {
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const isAscending = sortDirection[index] === 'asc';
+
+        rows.sort((a, b) => {
+          const cellA = a.cells[index].textContent.trim().toLowerCase();
+          const cellB = b.cells[index].textContent.trim().toLowerCase();
+
+          if (cellA < cellB) return isAscending ? -1 : 1;
+          if (cellA > cellB) return isAscending ? 1 : -1;
+          return 0;
+        });
+
+        sortDirection[index] = isAscending ? 'desc' : 'asc';
+
+        const tbody = table.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+
+        // Atualizar ícone
+        icon.textContent = isAscending ? '▼' : '▲';
+      });
+
+      header.addEventListener('mouseenter', () => {
+        icon.style.visibility = 'visible';
+      });
+
+      header.addEventListener('mouseleave', () => {
+        icon.style.visibility = 'hidden';
+      });
+    });
+  });
+});
+
 
 
 

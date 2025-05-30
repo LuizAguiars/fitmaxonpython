@@ -54,8 +54,63 @@
     
     <section class="testimonials">
         <h2>O que nossos alunos dizem</h2>
-        <blockquote>"A Fitmax Gym mudou minha vida! Ambiente incrível e excelentes profissionais."</blockquote>
-        <cite>- João Silva</cite>
+        {% if depoimentos and depoimentos|length > 0 %}
+          <div class="depoimentos-carrossel" id="depoimentos-carrossel">
+            {% for d in depoimentos %}
+              <div class="depoimento-item{% if loop.first %} ativo{% endif %}">
+                <div style="color: #ffc107; font-size: 1.5em; font-weight: bold; margin-bottom: 8px;">{{ '★' * d.nota_user }}</div>
+                <div style="font-size:1.18em; color:#fff; margin-bottom: 10px;">"{{ d.Comentario }}"</div>
+                <div style="margin-top: 8px; color: #fff; font-size: 1.05em;">
+                  <b>{{ d.Nome_User }}</b>{% if d.cidade_user %}, {{ d.cidade_user }}{% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <style>
+            .depoimentos-carrossel {
+              position: relative;
+              min-height: 120px;
+              overflow: hidden;
+            }
+            .depoimentos-carrossel .depoimento-item {
+              position: absolute;
+              left: 0; top: 0; width: 100%;
+              opacity: 0;
+              transform: translateX(100%);
+              transition: opacity 0.5s, transform 0.7s;
+              z-index: 1;
+              display: block;
+            }
+            .depoimentos-carrossel .depoimento-item.ativo {
+              opacity: 1;
+              transform: translateX(0);
+              z-index: 2;
+            }
+            .depoimentos-carrossel .depoimento-item.saindo {
+              opacity: 0;
+              transform: translateX(-100%);
+              z-index: 1;
+            }
+          </style>
+          <script>
+            let idx = 0;
+            const depoimentos = document.querySelectorAll('#depoimentos-carrossel .depoimento-item');
+            setInterval(() => {
+              const atual = depoimentos[idx];
+              atual.classList.remove('ativo');
+              atual.classList.add('saindo');
+              idx = (idx + 1) % depoimentos.length;
+              const proximo = depoimentos[idx];
+              proximo.classList.add('ativo');
+              setTimeout(() => {
+                atual.classList.remove('saindo');
+              }, 700);
+            }, 7000);
+          </script>
+        {% else %}
+          <blockquote style="color:#fff;">"A Fitmax Gym mudou minha vida! Ambiente incrível e excelentes profissionais."</blockquote>
+          <cite style="color:#fff;">- João Silva</cite>
+        {% endif %}
     </section>
     
     

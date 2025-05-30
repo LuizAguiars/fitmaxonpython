@@ -15,12 +15,27 @@ def minha_conta():
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, endereco_user,
-               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
+               logradouro_user, numero_user, bairro_user, cidade_user, estado_user
         FROM usuario
         WHERE ID_User = %s
     """, (user_id,))
     usuario = cursor.fetchone()
+
+    # Monta endereço formatado
+    if usuario:
+        partes = []
+        if usuario.get('logradouro_user'):
+            partes.append(usuario['logradouro_user'])
+        if usuario.get('numero_user'):
+            partes.append(usuario['numero_user'])
+        if usuario.get('bairro_user'):
+            partes.append(usuario['bairro_user'])
+        if usuario.get('cidade_user'):
+            partes.append(usuario['cidade_user'])
+        if usuario.get('estado_user'):
+            partes.append(usuario['estado_user'])
+        usuario['endereco_formatado'] = ', '.join(partes) if partes else None
 
     # Buscar aulas agendadas e concluídas
     cursor.execute("""
@@ -36,6 +51,7 @@ def minha_conta():
     return render_template('minhaconta.html', usuario=usuario, aulas=aulas)
 
 
+# Adicionando lógica para filtrar por plano e status
 @usuarios_bp.route('/gestao-usuarios', methods=['GET', 'POST'])
 def gestao_usuarios():
     if 'usuario' not in session or session.get('tipo') != 'aluno':
@@ -116,12 +132,27 @@ def gestao_usuarios():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    cursor.execute("""
+    plano_filtro = request.args.get('plano', '')
+    status_filtro = request.args.get('status', '')
+
+    query = """
         SELECT u.*, un.Nome_Unidade, p.nome_plano
         FROM USUARIO u
         LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
         LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
-    """)
+        WHERE 1=1
+    """
+    params = []
+
+    if plano_filtro:
+        query += " AND u.ID_PLANO = %s"
+        params.append(plano_filtro)
+
+    if status_filtro:
+        query += " AND u.status_cliente = %s"
+        params.append(status_filtro)
+
+    cursor.execute(query, params)
     usuarios = cursor.fetchall()
 
     cursor.execute("SELECT * FROM UNIDADES")
@@ -133,7 +164,7 @@ def gestao_usuarios():
     cursor.close()
     conn.close()
 
-    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
+    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos, plano_filtro=plano_filtro, status_filtro=status_filtro)
 
 
 @usuarios_bp.route('/minhas-aulas', methods=['GET'])

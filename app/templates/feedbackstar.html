@@ -40,20 +40,21 @@
 
 <body>
   <div class="wrapper-centralizado">
-  <div class="dashboard-card">
-    <div class="unidade-select">
-      <label for="unidade">Selecione a Unidade:</label>
-      <select id="unidade-select">
-        {% for unidade in unidades %}
-          <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
-        {% endfor %}
-      </select>
+    <div class="dashboard-card">
+      <div class="unidade-select">
+        <label for="unidade">Selecione a Unidade:</label>
+        <select id="unidade-select">
+          <option value="todas">Todas as Unidades</option>
+          {% for unidade in unidades %}
+            <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="grafico-section">
+        <canvas id="graficoEstrelas"></canvas>
+        <!-- A legenda será inserida via JS como <div id='estrelas-legenda'></div> -->
+      </div>
     </div>
-
-    <div class="grafico-section">
-      <canvas id="graficoEstrelas"></canvas>
-    </div>
-  </div>
   </div>
 
 <main class="relatorio-avaliacoes">
@@ -61,17 +62,24 @@
 
 
 
-<section class="bloco-avaliacao comentarios">
-  <h3>Comentários dos Usuários</h3>
-  <ul>
-    {% for c in comentarios %}
-      <li>
-        <p><strong>⭐ {{ c['nota_user'] }}</strong> — {{ c['nome_unidade'] }} ({{ c['nome_regiao'] }})</p>
-        <p><em>{{ c['Comentario'] }}</em></p>
-        <hr>
-      </li>
-    {% endfor %}
-  </ul>
+<section class="bloco-avaliacao comentarios" style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); padding: 32px 32px 24px 32px; max-width: 900px; margin: 32px auto 0 auto;">
+  <h3 style="color: #001f5b; font-size: 1.5rem; font-weight: 700; margin-bottom: 18px; letter-spacing: 1px; text-align: left;">Comentários dos Usuários</h3>
+  <div style="margin-bottom: 18px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: flex-start;">
+    <input id="filtro-usuario" type="text" placeholder="Filtrar por usuário..." style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #263159; font-size: 1.08rem; min-width: 180px; background: #f7f8fa;">
+    <select id="filtro-nota" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #263159; font-size: 1.08rem; background: #f7f8fa;">
+      <option value="">Todas as notas</option>
+      {% for n in range(5, 0, -1) %}
+        <option value="{{ n }}">{{ n }} estrelas</option>
+      {% endfor %}
+    </select>
+    <select id="filtro-quantidade" style="padding: 8px 16px; border-radius: 8px; border: 1.5px solid #263159; font-size: 1.08rem; background: #f7f8fa;">
+      <option value="10">10 por página</option>
+      <option value="20">20 por página</option>
+      <option value="30">30 por página</option>
+    </select>
+  </div>
+  <ul id="comentarios-lista" style="list-style: none; padding: 0; margin: 0;"></ul>
+  <div id="comentarios-paginacao" style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px;"></div>
 </section>
 
   </main>
@@ -88,6 +96,7 @@
 </body>
  
   <script src="{{ url_for('static', filename='js/relatoriofeedback.js') }}"></script>
-   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/comentarios_feedback.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
 
 </html>
