@@ -15,12 +15,27 @@ def minha_conta():
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, endereco_user,
-               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
+               logradouro_user, numero_user, bairro_user, cidade_user, estado_user
         FROM usuario
         WHERE ID_User = %s
     """, (user_id,))
     usuario = cursor.fetchone()
+
+    # Monta endereço formatado
+    if usuario:
+        partes = []
+        if usuario.get('logradouro_user'):
+            partes.append(usuario['logradouro_user'])
+        if usuario.get('numero_user'):
+            partes.append(usuario['numero_user'])
+        if usuario.get('bairro_user'):
+            partes.append(usuario['bairro_user'])
+        if usuario.get('cidade_user'):
+            partes.append(usuario['cidade_user'])
+        if usuario.get('estado_user'):
+            partes.append(usuario['estado_user'])
+        usuario['endereco_formatado'] = ', '.join(partes) if partes else None
 
     # Buscar aulas agendadas e concluídas
     cursor.execute("""

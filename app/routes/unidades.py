@@ -13,11 +13,68 @@ def gerenciar_unidade():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
+    # --- TRATAMENTO DE INCLUSÃO DE UNIDADE ---
+    if request.method == 'POST' and request.form.get('acao') == 'incluir':
+        nome = request.form.get('nome')
+        logradouro = request.form.get('logradouro')
+        numero = request.form.get('numero')
+        bairro = request.form.get('bairro')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
+        cep = request.form.get('cep')
+        capacidade = request.form.get('capacidade')
+        fone = request.form.get('fone')
+        cnpj = request.form.get('cnpj')
+        email = request.form.get('email')
+        horario_funcionamento_id = request.form.get('horario_funcionamento_id')
+        try:
+            cursor.execute("""
+                INSERT INTO UNIDADES (Nome_Unidade, logradouro_unidade, numero_unidade, bairro_unidade, cidade_unidade, estado_unidade, cep_unidade, Capacidade, Fone, CNPJ, Email, Horario_Funcionamento_ID, Ativa)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
+            """, (nome, logradouro, numero, bairro, cidade, estado, cep, capacidade, fone, cnpj, email, horario_funcionamento_id))
+            conn.commit()
+            flash('Unidade incluída com sucesso!', 'success')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+        except Exception as e:
+            conn.rollback()
+            flash(f'Erro ao incluir unidade: {str(e)}', 'error')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+
+    # --- TRATAMENTO DE EDIÇÃO DE UNIDADE ---
+    if request.method == 'POST' and request.form.get('acao') == 'editar':
+        id_unidade = request.form.get('id')
+        nome = request.form.get('nome')
+        logradouro = request.form.get('logradouro')
+        numero = request.form.get('numero')
+        bairro = request.form.get('bairro')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
+        cep = request.form.get('cep')
+        capacidade = request.form.get('capacidade')
+        fone = request.form.get('fone')
+        cnpj = request.form.get('cnpj')
+        email = request.form.get('email')
+        horario_funcionamento_id = request.form.get('horario_funcionamento_id')
+        try:
+            cursor.execute("""
+                UPDATE UNIDADES SET Nome_Unidade=%s, logradouro_unidade=%s, numero_unidade=%s, bairro_unidade=%s, cidade_unidade=%s, estado_unidade=%s, cep_unidade=%s, Capacidade=%s, Fone=%s, CNPJ=%s, Email=%s, Horario_Funcionamento_ID=%s
+                WHERE ID_Unidades=%s
+            """, (nome, logradouro, numero, bairro, cidade, estado, cep, capacidade, fone, cnpj, email, horario_funcionamento_id, id_unidade))
+            conn.commit()
+            flash('Unidade atualizada com sucesso!', 'success')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+        except Exception as e:
+            conn.rollback()
+            flash(f'Erro ao atualizar unidade: {str(e)}', 'error')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+
     # Obtendo cidades e bairros disponíveis no banco de dados
-    cursor.execute("SELECT DISTINCT cidade_unidade FROM UNIDADES WHERE Ativa=1")
+    cursor.execute(
+        "SELECT DISTINCT cidade_unidade FROM UNIDADES WHERE Ativa=1")
     cidades_disponiveis = [row['cidade_unidade'] for row in cursor.fetchall()]
 
-    cursor.execute("SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE Ativa=1")
+    cursor.execute(
+        "SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE Ativa=1")
     bairros_disponiveis = [row['bairro_unidade'] for row in cursor.fetchall()]
 
     # Filtro por cidade e bairro
