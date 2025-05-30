@@ -71,8 +71,9 @@
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
   <!-- Adicionando filtros por unidade, status e tipo na gestão de equipamentos -->
-<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 20px;">
-  <form method="get" id="filtroUnidadeForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+<!-- Unifica os filtros de Unidade, Status e Tipo em uma única div -->
+<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 0;">
+  <form method="get" id="filtroUnidadeForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 10px 0 0 10px; padding: 4px 10px 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); border-right: 1px solid #232b4a;">
     <label for="unidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Unidade:</label>
     <select name="unidade" id="unidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="">Todas</option>
@@ -82,7 +83,7 @@
     </select>
   </form>
 
-  <form method="get" id="filtroStatusForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+  <form method="get" id="filtroStatusForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 0; padding: 4px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); border-right: 1px solid #232b4a;">
     <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
     <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="">Todos</option>
@@ -92,7 +93,7 @@
     </select>
   </form>
 
-  <form method="get" id="filtroTipoForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+  <form method="get" id="filtroTipoForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; padding: 4px 14px 4px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
     <label for="tipo" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Tipo:</label>
     <select name="tipo" id="tipo" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="">Todos</option>
@@ -103,7 +104,7 @@
   </form>
 </div>
 
-
+<!-- Mantém a div do filtro de itens por página separada e na mesma posição -->
 <div class="filtros-container" style="margin-bottom: -12px;">
   <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
     <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
