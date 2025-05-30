@@ -100,15 +100,9 @@ def concluir_aula():
         FROM agendar_treino a
         JOIN tipo_de_treino t ON a.ID_Tipodetreino = t.idtipo_de_treino
         JOIN usuario u ON a.ID_usuario = u.ID_User
-        WHERE a.ID_Personal = %s
+        WHERE a.ID_Personal = %s AND a.status = 'Agendado'
     """
     params = [session['usuario']]
-
-    if status:
-        query += " AND a.status = %s"
-        params.append(status)
-    else:
-        query += " AND a.status IN ('Agendado','Concluído','Cancelado','Ausente')"
 
     if mes:
         query += " AND MONTH(a.DataTreino) = %s"
