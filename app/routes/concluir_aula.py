@@ -80,6 +80,59 @@ def concluir_aula():
                 UPDATE agendar_treino SET status = 'Concluído' WHERE idAgendar_Treino = %s
             """, (id_agenda,))
 
+            # Enviar e-mail ao aluno ao concluir aula
+            cursor.execute('''
+                SELECT u.Email_user, u.Nome_User, a.DataTreino, a.HoraTreino, un.Nome_Unidade,
+                       CONCAT(un.logradouro_unidade, ', ', un.numero_unidade, ' - ', un.bairro_unidade, ', ', un.cidade_unidade, ' - ', un.estado_unidade, ', CEP: ', un.cep_unidade) AS endereco_unidade
+                FROM usuario u
+                JOIN agendar_treino a ON a.ID_usuario = u.ID_User
+                JOIN unidades un ON a.ID_Unidade_Treino = un.ID_Unidades
+                WHERE a.idAgendar_Treino = %s
+            ''', (id_agenda,))
+            info = cursor.fetchone()
+            if info:
+                # Buscar equipamentos usados
+                cursor.execute('''
+                    SELECT e.Nome_Equipamento, ue.tempo_utilizado_minutos
+                    FROM uso_equipamentos ue
+                    JOIN equipamentos e ON ue.id_equipamento = e.ID_equipamentos
+                    WHERE ue.id_treino_agendado = %s
+                ''', (id_agenda,))
+                equipamentos_usados = cursor.fetchall()
+                equipamentos_html = ''
+                if equipamentos_usados:
+                    equipamentos_html = '<ul>' + \
+                        ''.join(
+                            f'<li>{eq["Nome_Equipamento"]} - {eq["tempo_utilizado_minutos"]} min</li>' for eq in equipamentos_usados) + '</ul>'
+                else:
+                    equipamentos_html = '<i>Nenhum equipamento registrado</i>'
+                from notifica_aulas import enviar_email
+                endereco_formatado = info['endereco_unidade'].replace(' ', '+')
+                corpo = f"""
+                <html>
+                  <body>
+                    <div style='font-family: Arial, sans-serif; color: #002147;'>
+                      <h2>Olá {info['Nome_User']},</h2>
+                      <p>Sua aula foi concluída na Fitmax!</p>
+                      <p>
+                        <b>Data:</b> {info['DataTreino']}<br>
+                        <b>Hora:</b> {info['HoraTreino']}<br>
+                        <b>Unidade:</b> {info['Nome_Unidade']}<br>
+                        <b>Endereço:</b> {info['endereco_unidade']}<br><br>
+                        <b>Equipamentos utilizados:</b><br>
+                        {equipamentos_html}
+                        <br>
+                        👉 <a href='https://www.google.com/maps/search/?api=1&query={endereco_formatado}' target='_blank'>Ver no Google Maps</a><br><br>
+                        <b>Ajude-nos a melhorar:</b> <a href='{url_for('feedbacks.feedbackstar', _external=True)}?id_treino={id_agenda}'>Clique aqui para avaliar sua experiência</a>
+                      </p>
+                      <div style='text-align: right;'><img src='cid:logo1' alt='Logo Fitmax' width='120'></div>
+                    </div>
+                  </body>
+                </html>
+                """
+                enviar_email(info['Email_user'],
+                             'Aula Concluída - Fitmax', corpo)
+
             conn.commit()
             flash('Aula concluída com sucesso!', 'success')
             # Redireciona para atualizar a lista

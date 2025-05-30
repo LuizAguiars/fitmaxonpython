@@ -171,14 +171,17 @@ def gestao_usuarios():
     cursor.execute("SELECT * FROM PLANO")
     planos = cursor.fetchall()
 
-    cursor.execute("SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
+    cursor.execute(
+        "SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
     cidades = [row['cidade_user'] for row in cursor.fetchall()]
 
     # Buscar bairros disponíveis, filtrando pela cidade se selecionada
     if cidade_filtro:
-        cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
+        cursor.execute(
+            "SELECT DISTINCT bairro_user FROM USUARIO WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
     else:
-        cursor.execute("SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
+        cursor.execute(
+            "SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
     bairros = [row['bairro_user'] for row in cursor.fetchall()]
 
     cursor.close()
@@ -304,23 +307,18 @@ def cancelar_aula():
         db.close()
         flash('Só é possível cancelar aulas agendadas.', 'error')
         return redirect(url_for('usuarios.minhas_aulas'))
-    # Verifica se está no prazo (até 1h antes do início)
-    data_treino = aula['DataTreino']
-    hora_treino = aula['HoraTreino']
-    if isinstance(hora_treino, str):
-        hora_treino = datetime.strptime(hora_treino, '%H:%M:%S').time() if len(
-            hora_treino) > 5 else datetime.strptime(hora_treino, '%H:%M').time()
-    elif hasattr(hora_treino, 'seconds'):
-        total_seconds = hora_treino.seconds
-        horas = total_seconds // 3600
-        minutos = (total_seconds // 60) % 60
-        hora_treino = time(hour=horas, minute=minutos)
-    datahora_treino = datetime.combine(data_treino, hora_treino)
-    agora = datetime.now()
-    if agora > datahora_treino - timedelta(hours=1):
-        db.close()
-        flash('Só é possível cancelar aulas até 1 hora antes do início.', 'error')
-        return redirect(url_for('usuarios.minhas_aulas'))
+    # Verifica se está no prazo (até 1h antes do início), exceto para plano Unlocked
+    cursor.execute("""
+        SELECT p.nome_plano FROM usuario u LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO WHERE u.ID_User = %s
+    """, (user_id,))
+    row_plano = cursor.fetchone()
+    nome_plano = (row_plano['nome_plano'] or '').strip(
+    ).lower() if row_plano and row_plano['nome_plano'] else ''
+    if nome_plano != 'unlocked':
+        if agora > datahora_treino - timedelta(hours=1):
+            db.close()
+            flash('Só é possível cancelar aulas até 1 hora antes do início.', 'error')
+            return redirect(url_for('usuarios.minhas_aulas'))
     cursor.execute(
         "UPDATE agendar_treino SET status = 'Cancelado' WHERE idAgendar_Treino = %s", (id_agenda,))
     db.commit()

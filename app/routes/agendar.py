@@ -194,14 +194,16 @@ def agendar():
         nome_plano = (row_plano['nome_plano'] or '').strip(
         ).lower() if row_plano and row_plano['nome_plano'] else ''
         # Define antecedência mínima por plano
-        if nome_plano == 'full':
+        if nome_plano == 'unlocked':
+            antecedencia_min = None  # Sem restrição
+        elif nome_plano == 'full':
             antecedencia_min = timedelta(minutes=30)
         elif nome_plano == 'medio' or nome_plano == 'médio':
             antecedencia_min = timedelta(hours=1, minutes=30)
         else:  # basic ou qualquer outro
             antecedencia_min = timedelta(hours=2)
         agora = datetime.now()
-        if inicio_novo - agora < antecedencia_min:
+        if antecedencia_min is not None and inicio_novo - agora < antecedencia_min:
             if nome_plano == 'medio' or nome_plano == 'médio':
                 flash(
                     f'Seu plano exige agendamento com pelo menos {antecedencia_min} de antecedência. Faça upgrade para o plano Full e reserve aulas com ate 30 minutos de antecedencia.', 'error')
