@@ -265,6 +265,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  const capacidadeSelect = document.getElementById('capacidade');
+
+  capacidadeSelect.addEventListener('change', () => {
+    const capacidade = capacidadeSelect.value;
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (capacidade.toLowerCase() === 'todas' || capacidade === '') {
+      urlParams.delete('capacidade');
+    } else {
+      urlParams.set('capacidade', capacidade);
+    }
+
+    fetch(`/gestao-unidades?${urlParams.toString()}`)
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const novaTabela = doc.querySelector('.tabela-unidades-container');
+        const tabelaAtual = document.querySelector('.tabela-unidades-container');
+
+        if (novaTabela && tabelaAtual) {
+          tabelaAtual.innerHTML = novaTabela.innerHTML;
+        }
+
+        // Preservar os valores dos filtros existentes
+        const filtrosAtuais = doc.querySelectorAll('.filtros-container select');
+        filtrosAtuais.forEach(filtro => {
+          const filtroAtual = document.querySelector(`#${filtro.id}`);
+          if (filtroAtual) {
+            filtroAtual.value = filtro.value;
+          }
+        });
+
+        // Atualizar o valor do filtro de capacidade
+        capacidadeSelect.value = capacidade;
+      })
+      .catch(error => console.error('Erro ao atualizar tabela:', error));
+  });
+
+  // Garantir que o valor do filtro seja mantido ao carregar a página
+  window.addEventListener('load', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const capacidade = urlParams.get('capacidade');
+    if (capacidade) {
+      capacidadeSelect.value = capacidade;
+    }
+  });
+});
+
 
 
 

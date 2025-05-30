@@ -77,6 +77,12 @@ def gerenciar_unidade():
         "SELECT DISTINCT bairro_unidade FROM UNIDADES WHERE Ativa=1")
     bairros_disponiveis = [row['bairro_unidade'] for row in cursor.fetchall()]
 
+    # Obtendo capacidades disponíveis no banco de dados
+    cursor.execute(
+        "SELECT DISTINCT Capacidade FROM UNIDADES WHERE Ativa=1"
+    )
+    capacidades_disponiveis = [row['Capacidade'] for row in cursor.fetchall()]
+
     # Filtro por cidade e bairro
     cidade_filtro = request.args.get('cidade', '')
     bairro_filtro = request.args.get('bairro', '')
@@ -91,6 +97,15 @@ def gerenciar_unidade():
     if bairro_filtro:
         query += " AND bairro_unidade = %s"
         params.append(bairro_filtro)
+
+    # Filtro por capacidade
+    capacidade_filtro = request.args.get('capacidade', '')
+    if capacidade_filtro and capacidade_filtro.lower() != 'todas':
+        query += " AND Capacidade = %s"
+        params.append(capacidade_filtro)
+    else:
+        # Caso "Todas" seja selecionado, não aplica filtro de capacidade
+        capacidade_filtro = None
 
     # Paginação
     itens_por_pagina = int(request.args.get('itensPorPagina', 25))
@@ -123,5 +138,6 @@ def gerenciar_unidade():
         cidades_disponiveis=cidades_disponiveis,
         bairros_disponiveis=bairros_disponiveis,
         cidade_filtro=cidade_filtro,
-        bairro_filtro=bairro_filtro
+        bairro_filtro=bairro_filtro,
+        capacidades_disponiveis=capacidades_disponiveis
     )

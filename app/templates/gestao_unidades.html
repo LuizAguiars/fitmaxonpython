@@ -89,11 +89,9 @@
   </form>
 </div>
 <!-- filtro por quantidade de itens -->
-<!-- Adicionando dropdowns para filtro por cidade e bairro -->
-<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center;">
-
-
-  <form method="get" id="filtroCidadeBairroForm" style="display: flex; align-items: center; gap: 10px; justify-content: flex-start; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);margin-left: -140px;">
+<!-- Unificando todos os filtros em uma única div -->
+<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 10px;">
+  <form method="get" id="filtroUnificadoForm" style="display: flex; align-items: center; gap: 10px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
     <label for="cidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Cidade:</label>
     <select name="cidade" id="cidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="">Todas</option>
@@ -107,6 +105,14 @@
       <option value="">Todos</option>
       {% for bairro in bairros_disponiveis %}
         <option value="{{ bairro }}" {% if bairro_filtro == bairro %}selected{% endif %}>{{ bairro }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="capacidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Capacidade:</label>
+    <select name="capacidade" id="capacidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todas</option>
+      {% for capacidade in capacidades_disponiveis %}
+        <option value="{{ capacidade }}" {% if capacidade_filtro == capacidade %}selected{% endif %}>{{ capacidade }}</option>
       {% endfor %}
     </select>
   </form>

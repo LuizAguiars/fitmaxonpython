@@ -58,7 +58,15 @@ def gestao_personal():
 
     unidade_filtro = request.args.get('unidade', '')
     especialidade_filtro = request.args.get('especialidade', '')
+    # nome_personal_filtro = request.args.get('nome_personal', '')  # Removido
 
+    # Buscar todos os nomes dos personais para o dropdown
+    # cursor.execute(
+    #     "SELECT DISTINCT Nome_Personal FROM PERSONAL ORDER BY Nome_Personal"
+    # )
+    # nomes_personais = cursor.fetchall()
+
+    # Montar a query base
     query = """
         SELECT p.*, u.Nome_Unidade
         FROM PERSONAL p
@@ -66,6 +74,10 @@ def gestao_personal():
         WHERE 1=1
     """
     params = []
+
+    # if nome_personal_filtro:
+    #     query += " AND p.Nome_Personal = %s"
+    #     params.append(nome_personal_filtro)
 
     if unidade_filtro:
         query += " AND u.ID_Unidades = %s"
@@ -87,4 +99,26 @@ def gestao_personal():
     cursor.close()
     conn.close()
 
-    return render_template("gestao_personal.html", personais=personais, unidades_disponiveis=unidades_disponiveis, especialidades=especialidades, unidade_filtro=unidade_filtro, especialidade_filtro=especialidade_filtro)
+    return render_template(
+        "gestao_personal.html",
+        personais=personais,
+        unidades_disponiveis=unidades_disponiveis,
+        especialidades=especialidades,
+        unidade_filtro=unidade_filtro,
+        especialidade_filtro=especialidade_filtro
+        # nomes_personais e nome_personal_filtro removidos
+    )
+
+
+@personais_bp.route('/listar-nomes-personais', methods=['GET'])
+def listar_nomes_personais():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT Nome_Personal FROM PERSONAL")
+    nomes_personais = [row['Nome_Personal'] for row in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+
+    return render_template('listar_nomes_personais.html', nomes_personais=nomes_personais)
