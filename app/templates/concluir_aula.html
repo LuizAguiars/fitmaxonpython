@@ -54,7 +54,7 @@
     <div class="logo">
       <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo" />
     </div>
-    <h1>concluir aulas</h1>
+    <h1>CONCLUIR AULAS</h1>
 
     <div class="usuario-logado">
       <form method="GET" action="{{ url_for('home.inicial_logado') }}">
@@ -96,7 +96,7 @@
           });
         });
       </script>
-      <h2 style="color: #001f5b; text-align: center; margin-bottom: 24px;">Concluir Aulas Agendadas</h2>
+      
       {% if aulas %}
         <div style="display: flex; flex-wrap: wrap; gap: 32px; justify-content: center;">
           {% for aula in aulas %}

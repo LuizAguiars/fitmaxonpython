@@ -308,6 +308,20 @@ def cancelar_aula():
         flash('Só é possível cancelar aulas agendadas.', 'error')
         return redirect(url_for('usuarios.minhas_aulas'))
     # Verifica se está no prazo (até 1h antes do início), exceto para plano Unlocked
+    data_treino = aula['DataTreino']
+    hora_treino = aula['HoraTreino']
+    # Garante que hora_treino seja datetime.time
+    if isinstance(hora_treino, str):
+        hora_treino = datetime.strptime(hora_treino, '%H:%M:%S').time() if len(
+            hora_treino) > 5 else datetime.strptime(hora_treino, '%H:%M').time()
+    elif hasattr(hora_treino, 'seconds'):
+        total_seconds = hora_treino.seconds
+        horas = total_seconds // 3600
+        minutos = (total_seconds // 60) % 60
+        hora_treino = time(hour=horas, minute=minutos)
+    datahora_treino = datetime.combine(data_treino, hora_treino)
+    agora = datetime.now()
+    # Verifica se está no prazo (até 1h antes do início), exceto para plano Unlocked
     cursor.execute("""
         SELECT p.nome_plano FROM usuario u LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO WHERE u.ID_User = %s
     """, (user_id,))
