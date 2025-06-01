@@ -193,7 +193,7 @@
         <input type="text" name="nome" placeholder="Nome" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="senha" placeholder="Senha" required>
-        <input type="text" name="telefone" placeholder="Telefone" required>
+        <input type="tel" id="editTelefone" name="telefone" maxlength="15" placeholder="Telefone" oninput="formatarTelefone(this)">
         <input type="text" name="cpf" placeholder="CPF" required>
         <input type="text" name="logradouro" placeholder="Rua" required>
         <input type="text" name="numero" placeholder="Número" required>

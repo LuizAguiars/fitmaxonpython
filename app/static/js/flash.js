@@ -89,7 +89,11 @@ function abrirModalEditarUsuario(id) {
   document.getElementById('editId').value = id;
   document.getElementById('editNome').value = linha.dataset.nome || '';
   document.getElementById('editEmail').value = linha.dataset.email || '';
-  document.getElementById('editTelefone').value = linha.dataset.telefone || '';
+  
+  const campoTelefone = document.getElementById('editTelefone');
+  campoTelefone.value = linha.dataset.telefone || '';
+  formatarTelefone(campoTelefone); // <- Aqui você formata o valor ao abrir o modal
+
   document.getElementById('editLogradouro').value = linha.dataset.logradouro || '';
   document.getElementById('editNumero').value = linha.dataset.numero || '';
   document.getElementById('editBairro').value = linha.dataset.bairro || '';
@@ -314,6 +318,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function formatarTelefone(input) {
+  let valor = input.value.replace(/\D/g, '');
+
+  if (valor.length > 11) valor = valor.slice(0, 11);
+
+  if (valor.length > 0) {
+    valor = '(' + valor;
+  }
+  if (valor.length > 3) {
+    valor = valor.slice(0, 3) + ') ' + valor.slice(3);
+  }
+  if (valor.length > 10) {
+    valor = valor.slice(0, 10) + '-' + valor.slice(10);
+  }
+
+  input.value = valor;
+}
+
 
 
 
