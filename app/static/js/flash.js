@@ -89,7 +89,11 @@ function abrirModalEditarUsuario(id) {
   document.getElementById('editId').value = id;
   document.getElementById('editNome').value = linha.dataset.nome || '';
   document.getElementById('editEmail').value = linha.dataset.email || '';
-  document.getElementById('editTelefone').value = linha.dataset.telefone || '';
+  
+  const campoTelefone = document.getElementById('editTelefone');
+  campoTelefone.value = linha.dataset.telefone || '';
+  formatarTelefone(campoTelefone); // <- Aqui você formata o valor ao abrir o modal
+
   document.getElementById('editLogradouro').value = linha.dataset.logradouro || '';
   document.getElementById('editNumero').value = linha.dataset.numero || '';
   document.getElementById('editBairro').value = linha.dataset.bairro || '';
@@ -208,6 +212,131 @@ botoesImagem.forEach(btn => {
   btn.addEventListener('mouseenter', () => overlay.classList.add('active'));
   btn.addEventListener('mouseleave', () => overlay.classList.remove('active'));
 });
+
+// ---------------------- ORDENAR TABELAS COM ÍCONES ---------------------- //
+document.addEventListener('DOMContentLoaded', () => {
+  const tables = document.querySelectorAll('table');
+
+  tables.forEach(table => {
+    const headers = table.querySelectorAll('th');
+    const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+    let sortDirection = {};
+
+    headers.forEach((header, index) => {
+      const headerText = header.textContent.trim();
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
+
+      header.addEventListener('click', () => {
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const isAscending = sortDirection[index] === 'asc';
+
+        rows.sort((a, b) => {
+          const cellA = a.cells[index].textContent.trim().toLowerCase();
+          const cellB = b.cells[index].textContent.trim().toLowerCase();
+
+          if (cellA < cellB) return isAscending ? -1 : 1;
+          if (cellA > cellB) return isAscending ? 1 : -1;
+          return 0;
+        });
+
+        sortDirection[index] = isAscending ? 'desc' : 'asc';
+
+        const tbody = table.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+
+        // Atualizar ícone
+        icon.textContent = isAscending ? '▼' : '▲';
+      });
+
+      header.addEventListener('mouseenter', () => {
+        icon.style.visibility = 'visible';
+      });
+
+      header.addEventListener('mouseleave', () => {
+        icon.style.visibility = 'hidden';
+      });
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const capacidadeSelect = document.getElementById('capacidade');
+
+  capacidadeSelect.addEventListener('change', () => {
+    const capacidade = capacidadeSelect.value;
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (capacidade.toLowerCase() === 'todas' || capacidade === '') {
+      urlParams.delete('capacidade');
+    } else {
+      urlParams.set('capacidade', capacidade);
+    }
+
+    fetch(`/gestao-unidades?${urlParams.toString()}`)
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const novaTabela = doc.querySelector('.tabela-unidades-container');
+        const tabelaAtual = document.querySelector('.tabela-unidades-container');
+
+        if (novaTabela && tabelaAtual) {
+          tabelaAtual.innerHTML = novaTabela.innerHTML;
+        }
+
+        // Preservar os valores dos filtros existentes
+        const filtrosAtuais = doc.querySelectorAll('.filtros-container select');
+        filtrosAtuais.forEach(filtro => {
+          const filtroAtual = document.querySelector(`#${filtro.id}`);
+          if (filtroAtual) {
+            filtroAtual.value = filtro.value;
+          }
+        });
+
+        // Atualizar o valor do filtro de capacidade
+        capacidadeSelect.value = capacidade;
+      })
+      .catch(error => console.error('Erro ao atualizar tabela:', error));
+  });
+
+  // Garantir que o valor do filtro seja mantido ao carregar a página
+  window.addEventListener('load', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const capacidade = urlParams.get('capacidade');
+    if (capacidade) {
+      capacidadeSelect.value = capacidade;
+    }
+  });
+});
+
+function formatarTelefone(input) {
+  let valor = input.value.replace(/\D/g, '');
+
+  if (valor.length > 11) valor = valor.slice(0, 11);
+
+  if (valor.length > 0) {
+    valor = '(' + valor;
+  }
+  if (valor.length > 3) {
+    valor = valor.slice(0, 3) + ') ' + valor.slice(3);
+  }
+  if (valor.length > 10) {
+    valor = valor.slice(0, 10) + '-' + valor.slice(10);
+  }
+
+  input.value = valor;
+}
+
 
 
 

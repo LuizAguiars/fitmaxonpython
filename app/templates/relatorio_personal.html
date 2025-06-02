@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Personais - Fitmax Gym</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios1.css') }}">
+  <style>
+    .relatorio-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 32px 28px 24px 28px;
+      margin: 32px auto 24px auto;
+      max-width: 900px;
+      color: #222;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .relatorio-card h2 {
+      color: #222;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .relatorio-card p, .relatorio-card td, .relatorio-card th {
+      color: #444;
+      font-size: 1.08rem;
+    }
+    .relatorio-card table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 10px;
+      background: #fafbfc;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .relatorio-card th, .relatorio-card td {
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .relatorio-card th {
+      background: #f2f3f5;
+      color: #222;
+      font-weight: 500;
+    }
+    .relatorio-card tr:nth-child(even) {
+      background: #f7f8fa;
+    }
+    .relatorio-card tr:nth-child(odd) {
+      background: #fff;
+    }
+    .relatorio-card canvas {
+      background: #fff;
+      border-radius: 12px;
+      margin-top: 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+  </div>
+  <nav class="menu-logado">
+    <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+    <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+    <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+    <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
+  </nav>
+</header>
+<main>
+  <form method="get" action="" class="relatorio-card">
+    <label for="unidade_id"><strong>Filtrar por Unidade:</strong></label>
+    <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}" {% if unidade_id == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+      {% endfor %}
+    </select>
+    <label for="mes" style="margin-left:20px;"><strong>Filtrar por Mês:</strong></label>
+    <input type="month" name="mes" id="mes" value="{{ mes }}" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #ccc;">
+  </form>
+
+  <section class="relatorio-card">
+    <h2>Personal que Deu Mais Aulas</h2>
+    {% if mais_personal %}
+      <p><b>{{ mais_personal.Nome_Personal }}</b> ({{ mais_personal.total_aulas }} aulas)</p>
+    {% else %}
+      <p>Nenhum dado encontrado.</p>
+    {% endif %}
+  </section>
+
+  <section class="relatorio-card">
+    <h2>Personal que Deu Menos Aulas</h2>
+    {% if menos_personal %}
+      <p><b>{{ menos_personal.Nome_Personal }}</b> ({{ menos_personal.total_aulas }} aulas)</p>
+    {% else %}
+      <p>Nenhum dado encontrado.</p>
+    {% endif %}
+  </section>
+
+  <section class="relatorio-card">
+    <h2>Tipos de Aula Mais Utilizados</h2>
+    <table>
+      <thead>
+        <tr><th>Tipo de Aula</th><th>Total de Horas</th><th>Total de Aulas</th></tr>
+      </thead>
+      <tbody>
+        {% for tipo in tipos_mais_usados %}
+          <tr><td>{{ tipo.nome_tipo_treino }}</td><td>{{ tipo.total_horas }}</td><td>{{ tipo.total_aulas }}</td></tr>
+        {% else %}
+          <tr><td colspan="3">Nenhum dado encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top: 32px;">
+   
+      <canvas id="graficoAulasPersonal" width="800" height="350"></canvas>
+    </div>
+  </section>
+
+  <section class="relatorio-card">
+    <h2>Usuários Cadastrados na Unidade (no mês/ano)</h2>
+    <table>
+      <thead>
+        <tr><th>Unidade</th><th>Usuários Cadastrados</th></tr>
+      </thead>
+      <tbody>
+        {% for unidade in usuarios_unidade %}
+          <tr><td>{{ unidade.Nome_Unidade }}</td><td>{{ unidade.total_usuarios }}</td></tr>
+        {% else %}
+          <tr><td colspan="2">Nenhum dado encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+<script>
+  var nomesPersonais = JSON.parse('{{ lista_personais | map(attribute="Nome_Personal") | list | tojson | safe }}');
+  var totalAulas = JSON.parse('{{ lista_personais | map(attribute="total_aulas") | list | tojson | safe }}');
+  var ctx = document.getElementById('graficoAulasPersonal').getContext('2d');
+  var grafico = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: nomesPersonais,
+      datasets: [{
+        label: 'Total de Aulas',
+        data: totalAulas,
+        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'Total de Aulas por Personal',
+          font: { size: 18 }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Personal' },
+          ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 }
+        },
+        y: {
+          title: { display: true, text: 'Aulas' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>

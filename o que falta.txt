@@ -1,3 +1,19 @@
-aluno ele mesmo não pode reservar mais de uma aula com base nas deles marcada
+Melhorar visual do calendario para agendar aula - ??
+
+melhoria de filtros e adição - feito
+unidades adicionar filtro por capacidade - feito
+usuarios filtro por bairro e cidade - feito
+
+
+corrigir links de agendar aula etc.. em outras telas - feito (i think)
+
+
+quando um professor concluir aula mandar email pro aluno e pro aluno dar feedback - ? boa sorte kkkk
+
+
+não deixar agendar aula no dia antes do horario atual
+
+usuario poder alterar informações
+
 
 

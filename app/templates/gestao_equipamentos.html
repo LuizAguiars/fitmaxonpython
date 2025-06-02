@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestão de Equipamentos - Fitmax Gym</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial2.css') }}">
+  <style>
+    /* Ajustando o estilo para evitar scroll horizontal */
+    body {
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
   <header style="background: #001f5b; color: #fff; padding: 24px 40px 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10); border-bottom: 1px solid rgba(255,255,255,0.07);">
@@ -56,23 +65,71 @@
     <a href="{{ url_for('equipamentos.gestao_equipamentos') }}"class="btn-menu desabilitado">GESTÃO DE EQUIPAMENTOS</a>
     <a href="{{ url_for('planos.gestao_planos') }}" class="btn-menu">GESTÃO DE PLANOS</a>
     <a href="{{ url_for('home.treinos_padrao') }}" class="btn-menu{% if request.endpoint == 'home.treinos_padrao' %} ativo{% endif %}">TREINOS PADRÃO</a>
-    <a href="{{ url_for('feedbacks.relatorios') }}" class="btn-menu">RELATÓRIOS</a>
+    <a href="{{ url_for('relatorios.utilizacao_equipamentos') }}" class="btn-menu">RELATÓRIOS</a>
     <a href="#" class="btn-menu fechar" onclick="fecharMenu()">FECHAR</a>
   </nav>
   <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
 
-  <div class="tabela-unidades-container">
+  <!-- Adicionando filtros por unidade, status e tipo na gestão de equipamentos -->
+<!-- Unifica os filtros de Unidade, Status e Tipo em uma única div -->
+<div class="filtros-container" style="margin-bottom: 18px; display: flex; justify-content: center; gap: 0;">
+  <form method="get" id="filtroUnidadeForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 10px 0 0 10px; padding: 4px 10px 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); border-right: 1px solid #232b4a;">
+    <label for="unidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Unidade:</label>
+    <select name="unidade" id="unidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todas</option>
+      {% for unidade in unidades %}
+        <option value="{{ unidade.ID_Unidades }}" {% if unidade_filtro == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <form method="get" id="filtroStatusForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 0; padding: 4px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); border-right: 1px solid #232b4a;">
+    <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
+    <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todos</option>
+      {% for status in status_equipamentos %}
+        <option value="{{ status.idstatus_dos_Equipamentos }}" {% if status_filtro == status.idstatus_dos_Equipamentos|string %}selected{% endif %}>{{ status.status_do_Equipamento }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <form method="get" id="filtroTipoForm" style="display: flex; align-items: center; background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; padding: 4px 14px 4px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.10);">
+    <label for="tipo" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Tipo:</label>
+    <select name="tipo" id="tipo" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="">Todos</option>
+      {% for tipo in tipos_equipamento %}
+        <option value="{{ tipo.idtipo_equipamento }}" {% if tipo_filtro == tipo.idtipo_equipamento|string %}selected{% endif %}>{{ tipo.nome_tipo_equipamento }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<!-- Mantém a div do filtro de itens por página separada e na mesma posição -->
+<div class="filtros-container" style="margin-bottom: -12px;">
+  <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
+    <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
+    <select name="itensPorPagina" id="itensPorPagina" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="25" {% if itens_por_pagina == 25 %}selected{% endif %}>25</option>
+      <option value="50" {% if itens_por_pagina == 50 %}selected{% endif %}>50</option>
+      <option value="100" {% if itens_por_pagina == 100 %}selected{% endif %}>100</option>
+    </select>
+  </form>
+</div>
+
+
+
+  <div class="tabela-unidades-container" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
     <table class="tabela-unidades">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nome</th>
-          <th>Descrição</th>
-          <th>Data de Compra</th>
-          <th>Unidade</th>
-          <th>Status</th>
-          <th>Tipo</th>
-          <th>Ações</th>
+          <th id="th-id">ID</th>
+          <th id="th-nome">Nome</th>
+          <th id="th-descricao">Descrição</th>
+          <th id="th-data-compra">Data de Compra</th>
+          <th id="th-unidade">Unidade</th>
+          <th id="th-status">Status</th>
+          <th id="th-tipo">Tipo</th>
+          <th id="th-acoes">Ações</th>
         </tr>
       </thead>
       <tbody>
@@ -137,7 +194,10 @@
       <input type="hidden" name="acao" value="editar">
       <input type="hidden" name="id" id="editId">
 
-      <input type="text" name="nome" id="editNome" placeholder="Nome do Equipamento" required>
+      <input type="text" name="nome" id="editNome" placeholder="Nome do Equipamento" required>      <!-- ...existing code... -->
+      <input type="text" name="nome" placeholder="Nome do Equipamento" required pattern=".*\S.*" title="Preencha o nome corretamente.">
+      <input type="text" name="descricao" placeholder="Descrição" required pattern=".*\S.*" title="Preencha a descrição corretamente.">
+      <!-- ...existing code... -->
       <input type="text" name="descricao" id="editDescricao" placeholder="Descrição" required>
       <input type="date" name="data_compra" id="editDataCompra" required>
 
@@ -175,8 +235,8 @@
     <form method="POST" action="{{ url_for('equipamentos.gestao_equipamentos') }}">
       <input type="hidden" name="acao" value="incluir">
 
-      <input type="text" name="nome" placeholder="Nome do Equipamento" required>
-      <input type="text" name="descricao" placeholder="Descrição" required>
+      <input type="text" name="nome" placeholder="Nome do Equipamento" required pattern=".*\S.*" title="Preencha o nome corretamente.">
+      <input type="text" name="descricao" placeholder="Descrição" required pattern=".*\S.*" title="Preencha a descrição corretamente.">
       <input type="date" name="data_compra" required>
 
       <select name="id_unidade" required>
@@ -219,6 +279,64 @@
     document.getElementById('btnMenuHamburguer').classList.remove('menu-oculto');
     document.getElementById('menuOverlay').classList.remove('ativo');
   }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const table = document.querySelector('.tabela-unidades');
+    const headers = table.querySelectorAll('th');
+    let sortDirection = {};
+
+    headers.forEach((header, index) => {
+      const headerText = header.textContent.trim();
+      const filterableFields = ['Nome', 'Capacidade', 'Plano', 'ID', 'Data de Compra', 'Duração (meses)'];
+
+      if (!filterableFields.includes(headerText)) {
+        return; // Ignorar campos que não são filtráveis
+      }
+
+      let icon = header.querySelector('span');
+      if (!icon) {
+        icon = document.createElement('span');
+        icon.style.marginLeft = '8px';
+        header.appendChild(icon);
+      }
+
+      header.addEventListener('click', () => {
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const isAscending = sortDirection[index] === 'asc';
+
+        rows.sort((a, b) => {
+          const cellA = a.cells[index].textContent.trim();
+          const cellB = b.cells[index].textContent.trim();
+
+          if (!isNaN(cellA) && !isNaN(cellB)) {
+            return isAscending ? cellA - cellB : cellB - cellA;
+          }
+
+          if (cellA < cellB) return isAscending ? -1 : 1;
+          if (cellA > cellB) return isAscending ? 1 : -1;
+          return 0;
+        });
+
+        sortDirection[index] = isAscending ? 'desc' : 'asc';
+
+        const tbody = table.querySelector('tbody');
+        rows.forEach(row => tbody.appendChild(row));
+
+        // Atualizar ícone
+        icon.textContent = isAscending ? '▼' : '▲';
+      });
+
+      header.addEventListener('mouseenter', () => {
+        icon.style.visibility = 'visible';
+      });
+
+      header.addEventListener('mouseleave', () => {
+        icon.style.visibility = 'hidden';
+      });
+    });
+  });
 </script>
 
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>

@@ -609,7 +609,36 @@ button:hover {
   transform: scale(1.05);
 }
 
+.btn.grande {
+  background-color: #001f5b;
+  color: #fff;
+  font-size: 1.18rem;
+  font-weight: bold;
+  border-radius: 14px;
+  padding: 18px 38px;
+  margin: 18px 0 18px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  border: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  display: inline-block;
+  opacity: 1;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  letter-spacing: 1px;
+  white-space: normal;
+  text-align: center;
+  min-width: 260px;
+  max-width: 320px;
+  overflow-wrap: break-word;
+}
 
+.btn.grande:hover, .btn.grande:focus {
+  background-color: #0a2a6c;
+  color: #fff;
+  transform: scale(1.04);
+  opacity: 0.95;
+  text-decoration: none !important;
+}
 
 .tabela-unidades-container {
   margin: 40px 60px;
@@ -760,4 +789,204 @@ button:hover {
 
 .card p {
   font-size: 1.1rem;
+}
+
+/* Fundo escurecido */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal centralizado */
+.modal-box {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  color: black;
+}
+
+.modal-box h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-box form input,
+.modal-box form select {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: black;
+}
+
+.modal-box form button {
+  width: 48%;
+  padding: 10px;
+  margin-top: 10px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-box form .confirmar {
+  background-color: green;
+  color: white;
+}
+
+.modal-box form .cancelar {
+  background-color: red;
+  color: white;
+  float: right;
+}
+
+.botoes-acoes {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+
+.modal-overlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  display: flex;
+}
+
+.modal-box {
+  transform: translateY(-30px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.active .modal-box {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.flash-message.success { background-color: #28a745; }
+.flash-message.warning { background-color: #ffc107; color: black; }
+.flash-message.error   { background-color: #dc3545; }
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  margin: 0;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  margin-top: 20px;
+  width: auto;
+  max-width: 200px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.3s ease-in-out;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn.verde {
+  background-color: #28a745;
+}
+
+.btn.amarelo {
+  background-color: #ffc107;
+  color: black;
+}
+
+.btn.vermelho {
+  background-color: #dc3545;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.btn.grande {
+  background-color: #001f5b;
+  color: #fff;
+  font-size: 1.18rem;
+  font-weight: bold;
+  border-radius: 14px;
+  padding: 18px 38px;
+  margin: 18px 0 18px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  border: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  display: inline-block;
+  opacity: 1;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  letter-spacing: 1px;
+  white-space: normal;
+  text-align: center;
+  min-width: 260px;
+  max-width: 320px;
+  overflow-wrap: break-word;
+}
+
+.btn.grande:hover, .btn.grande:focus {
+  background-color: #0a2a6c;
+  color: #fff;
+  transform: scale(1.04);
+  opacity: 0.95;
+  text-decoration: none !important;
+}
+
+.botao-imagem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 18px 0 0 0;
+  gap: 32px;
+}
+
+.imagem-overlay img {
+  width: 60px;
+  height: 60px;
+  margin-right: 18px;
+  opacity: 0.7;
+  background: #001f5b;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Centraliza todos os blocos de botões */
+.centraliza-botoes-relatorios {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 30px;
 }

@@ -15,12 +15,27 @@ def minha_conta():
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, endereco_user,
-               CEP_USER, sexo_user, status_cliente, pagou_mes_atual
+        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
+               logradouro_user, numero_user, bairro_user, cidade_user, estado_user
         FROM usuario
         WHERE ID_User = %s
     """, (user_id,))
     usuario = cursor.fetchone()
+
+    # Monta endereço formatado
+    if usuario:
+        partes = []
+        if usuario.get('logradouro_user'):
+            partes.append(usuario['logradouro_user'])
+        if usuario.get('numero_user'):
+            partes.append(usuario['numero_user'])
+        if usuario.get('bairro_user'):
+            partes.append(usuario['bairro_user'])
+        if usuario.get('cidade_user'):
+            partes.append(usuario['cidade_user'])
+        if usuario.get('estado_user'):
+            partes.append(usuario['estado_user'])
+        usuario['endereco_formatado'] = ', '.join(partes) if partes else None
 
     # Buscar aulas agendadas e concluídas
     cursor.execute("""
@@ -36,6 +51,7 @@ def minha_conta():
     return render_template('minhaconta.html', usuario=usuario, aulas=aulas)
 
 
+# Adicionando lógica para filtrar por plano e status
 @usuarios_bp.route('/gestao-usuarios', methods=['GET', 'POST'])
 def gestao_usuarios():
     if 'usuario' not in session or session.get('tipo') != 'aluno':
@@ -116,12 +132,37 @@ def gestao_usuarios():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    cursor.execute("""
+    plano_filtro = request.args.get('plano', '')
+    status_filtro = request.args.get('status', '')
+    cidade_filtro = request.args.get('cidade', '')
+    bairro_filtro = request.args.get('bairro', '')
+
+    query = """
         SELECT u.*, un.Nome_Unidade, p.nome_plano
         FROM USUARIO u
         LEFT JOIN UNIDADES un ON u.Unidade_Prox_ID = un.ID_Unidades
         LEFT JOIN PLANO p ON u.ID_PLANO = p.ID_PLANO
-    """)
+        WHERE 1=1
+    """
+    params = []
+
+    if plano_filtro:
+        query += " AND u.ID_PLANO = %s"
+        params.append(plano_filtro)
+
+    if status_filtro:
+        query += " AND u.status_cliente = %s"
+        params.append(status_filtro)
+
+    if cidade_filtro:
+        query += " AND u.cidade_user = %s"
+        params.append(cidade_filtro)
+
+    if bairro_filtro:
+        query += " AND u.bairro_user = %s"
+        params.append(bairro_filtro)
+
+    cursor.execute(query, params)
     usuarios = cursor.fetchall()
 
     cursor.execute("SELECT * FROM UNIDADES")
@@ -130,10 +171,34 @@ def gestao_usuarios():
     cursor.execute("SELECT * FROM PLANO")
     planos = cursor.fetchall()
 
+    cursor.execute(
+        "SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
+    cidades = [row['cidade_user'] for row in cursor.fetchall()]
+
+    # Buscar bairros disponíveis, filtrando pela cidade se selecionada
+    if cidade_filtro:
+        cursor.execute(
+            "SELECT DISTINCT bairro_user FROM USUARIO WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
+    else:
+        cursor.execute(
+            "SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
+    bairros = [row['bairro_user'] for row in cursor.fetchall()]
+
     cursor.close()
     conn.close()
 
-    return render_template('gestao_usuarios.html', usuarios=usuarios, unidades=unidades, planos=planos)
+    return render_template(
+        'gestao_usuarios.html',
+        usuarios=usuarios,
+        unidades=unidades,
+        planos=planos,
+        plano_filtro=plano_filtro,
+        status_filtro=status_filtro,
+        cidade_filtro=cidade_filtro,
+        bairro_filtro=bairro_filtro,
+        cidades=cidades,
+        bairros=bairros
+    )
 
 
 @usuarios_bp.route('/minhas-aulas', methods=['GET'])
@@ -242,9 +307,10 @@ def cancelar_aula():
         db.close()
         flash('Só é possível cancelar aulas agendadas.', 'error')
         return redirect(url_for('usuarios.minhas_aulas'))
-    # Verifica se está no prazo (até 1h antes do início)
+    # Verifica se está no prazo (até 1h antes do início), exceto para plano Unlocked
     data_treino = aula['DataTreino']
     hora_treino = aula['HoraTreino']
+    # Garante que hora_treino seja datetime.time
     if isinstance(hora_treino, str):
         hora_treino = datetime.strptime(hora_treino, '%H:%M:%S').time() if len(
             hora_treino) > 5 else datetime.strptime(hora_treino, '%H:%M').time()
@@ -255,10 +321,18 @@ def cancelar_aula():
         hora_treino = time(hour=horas, minute=minutos)
     datahora_treino = datetime.combine(data_treino, hora_treino)
     agora = datetime.now()
-    if agora > datahora_treino - timedelta(hours=1):
-        db.close()
-        flash('Só é possível cancelar aulas até 1 hora antes do início.', 'error')
-        return redirect(url_for('usuarios.minhas_aulas'))
+    # Verifica se está no prazo (até 1h antes do início), exceto para plano Unlocked
+    cursor.execute("""
+        SELECT p.nome_plano FROM usuario u LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO WHERE u.ID_User = %s
+    """, (user_id,))
+    row_plano = cursor.fetchone()
+    nome_plano = (row_plano['nome_plano'] or '').strip(
+    ).lower() if row_plano and row_plano['nome_plano'] else ''
+    if nome_plano != 'unlocked':
+        if agora > datahora_treino - timedelta(hours=1):
+            db.close()
+            flash('Só é possível cancelar aulas até 1 hora antes do início.', 'error')
+            return redirect(url_for('usuarios.minhas_aulas'))
     cursor.execute(
         "UPDATE agendar_treino SET status = 'Cancelado' WHERE idAgendar_Treino = %s", (id_agenda,))
     db.commit()

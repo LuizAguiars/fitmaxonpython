@@ -665,27 +665,103 @@ button:hover {
   height: 300px !important;
 }
 
-
-
-
-.page-dashboard {
+/* --- GRÁFICO DE ESTRELAS E LEGENDA --- */
+.grafico-section {
   display: flex;
-  justify-content: center;
+  flex-direction: row;
   align-items: center;
-  min-height: calc(100vh - 120px); /* considera o header */
-  padding-top: 60px;
-  padding-bottom: 60px;
+  justify-content: center;
+  gap: 48px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto 32px auto;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
+#graficoEstrelas {
+  max-width: 340px;
+  width: 100%;
+  height: 300px !important;
+  background: transparent;
+}
 
+#estrelas-legenda {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 1.18rem;
+  font-weight: bold;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 120px;
+  margin: 0;
+  padding: 0 4px;
+}
+#estrelas-legenda span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+#estrelas-legenda span > span:nth-child(2) {
+  min-width: 22px;
+  text-align: center;
+  font-size: 1.18rem;
+  font-weight: 600;
+}
+#estrelas-legenda span > span:nth-child(3) {
+  min-width: 32px;
+  text-align: left;
+  font-size: 1.18rem;
+  font-weight: 600;
+  margin-left: 2px;
+}
 
-/* Centralização do gráfico e dashboard-card com segurança */
+@media (max-width: 900px) {
+  .grafico-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 98vw;
+    padding: 0 4vw;
+  }
+  #graficoEstrelas {
+    max-width: 98vw;
+    min-width: 0;
+  }
+  #estrelas-legenda {
+    align-items: center;
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+  }
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.2);
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 32px auto;
+  text-align: center;
+}
+
 .wrapper-centralizado {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
-  min-height: 100vh;
+  justify-content: center;
+  padding: 40px 0 0 0;
+  min-height: unset;
+  width: 100%;
   box-sizing: border-box;
 }
 
