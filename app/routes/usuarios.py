@@ -85,7 +85,7 @@ def gestao_usuarios():
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO USUARIO (
+                    INSERT INTO usuario (
                         Nome_User, Email_user, Senha_User, telefone_user,
                         Unidade_Prox_ID, cpf_user, logradouro_user, numero_user,
                         bairro_user, cidade_user, estado_user, CEP_USER,
@@ -99,7 +99,7 @@ def gestao_usuarios():
 
             elif acao == 'editar':
                 cursor.execute("""
-                    UPDATE USUARIO SET
+                    UPDATE usuario SET
                         Nome_User=%s,
                         Email_user=%s,
                         telefone_user=%s,
@@ -123,7 +123,7 @@ def gestao_usuarios():
                 flash("Usuário atualizado com sucesso!", "warning")
 
             elif acao == 'remover':
-                cursor.execute("DELETE FROM USUARIO WHERE ID_User = %s", (id,))
+                cursor.execute("DELETE FROM usuario WHERE ID_User = %s", (id,))
                 flash("Usuário removido com sucesso!", "error")
 
             conn.commit()
@@ -165,23 +165,23 @@ def gestao_usuarios():
     cursor.execute(query, params)
     usuarios = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM UNIDADES")
+    cursor.execute("SELECT * FROM unidades")
     unidades = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM PLANO")
+    cursor.execute("SELECT * FROM plano")
     planos = cursor.fetchall()
 
     cursor.execute(
-        "SELECT DISTINCT cidade_user FROM USUARIO WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
+        "SELECT DISTINCT cidade_user FROM usuario WHERE cidade_user IS NOT NULL AND cidade_user <> '' ORDER BY cidade_user")
     cidades = [row['cidade_user'] for row in cursor.fetchall()]
 
     # Buscar bairros disponíveis, filtrando pela cidade se selecionada
     if cidade_filtro:
         cursor.execute(
-            "SELECT DISTINCT bairro_user FROM USUARIO WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
+            "SELECT DISTINCT bairro_user FROM usuario WHERE cidade_user = %s AND bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user", (cidade_filtro,))
     else:
         cursor.execute(
-            "SELECT DISTINCT bairro_user FROM USUARIO WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
+            "SELECT DISTINCT bairro_user FROM usuario WHERE bairro_user IS NOT NULL AND bairro_user <> '' ORDER BY bairro_user")
     bairros = [row['bairro_user'] for row in cursor.fetchall()]
 
     cursor.close()

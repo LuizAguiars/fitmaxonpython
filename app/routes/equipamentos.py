@@ -26,7 +26,7 @@ def gestao_equipamentos():
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO EQUIPAMENTOS
+                    INSERT INTO equipamentos
                     (Nome_Equipamento, descricao_equipamentos, data_de_compra,
                      ID_unidade_equipamento, id_status_do_equipamento, idtipo_equipamento)
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -35,16 +35,16 @@ def gestao_equipamentos():
 
             elif acao == 'editar':
                 cursor.execute("""
-                    UPDATE EQUIPAMENTOS
+                    UPDATE equipamentos
                     SET Nome_Equipamento=%s, descricao_equipamentos=%s, data_de_compra=%s,
                         ID_unidade_equipamento=%s, id_status_do_equipamento=%s, idtipo_equipamento=%s
-                    WHERE ID_equipamentos=%s
+                    WHERE id_equipamentos=%s
                 """, (nome, descricao, data_compra, id_unidade, id_status, id_tipo, id))
                 flash("Equipamento atualizado com sucesso!", "warning")
 
             elif acao == 'remover':
                 cursor.execute(
-                    "DELETE FROM EQUIPAMENTOS WHERE ID_equipamentos = %s", (id,))
+                    "DELETE FROM equipamentos WHERE id_equipamentos = %s", (id,))
                 flash("Equipamento removido com sucesso!", "error")
 
             conn.commit()
@@ -59,7 +59,7 @@ def gestao_equipamentos():
 
     query = """
         SELECT e.*, u.Nome_Unidade, s.status_do_Equipamento, t.nome_tipo_equipamento
-        FROM EQUIPAMENTOS e
+        FROM equipamentos e
         LEFT JOIN UNIDADES u ON e.ID_unidade_equipamento = u.ID_Unidades
         LEFT JOIN status_dos_Equipamentos s ON e.id_status_do_equipamento = s.idstatus_dos_Equipamentos
         LEFT JOIN tipo_equipamento t ON e.idtipo_equipamento = t.idtipo_equipamento
@@ -85,7 +85,7 @@ def gestao_equipamentos():
     cursor.execute("SELECT * FROM UNIDADES")
     unidades = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM status_dos_Equipamentos")
+    cursor.execute("SELECT * FROM status_dos_equipamentos")
     status_equipamentos = cursor.fetchall()
 
     cursor.execute("SELECT * FROM tipo_equipamento")
@@ -117,7 +117,7 @@ def relatorio_equipamentos():
     cursor = conn.cursor(dictionary=True)
 
     # Buscar unidades para o filtro
-    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
     unidades = cursor.fetchall()
 
     unidade_id = request.args.get('unidade_id', '')
@@ -158,13 +158,13 @@ def relatorio_equipamentos():
     # Buscar horários de funcionamento das unidades
     horarios_unidade = {}
     cursor.execute(
-        "SELECT ID_Unidades, Horario_Funcionamento_ID FROM UNIDADES")
+        "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
         horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
 
     horarios_funcionamento = {}
     if unidade_id and horarios_unidade.get(int(unidade_id)):
-        cursor.execute("SELECT * FROM horarios_funcionamento WHERE ID_Horario = %s",
+        cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
                        (horarios_unidade[int(unidade_id)],))
         horario = cursor.fetchone()
         if horario:
@@ -216,7 +216,7 @@ def relatorio_equipamentos():
     # Buscar horários de funcionamento da unidade para o dia selecionado
     horarios_funcionamento_dia = None
     if unidade_id and horarios_unidade.get(int(unidade_id)):
-        cursor.execute("SELECT * FROM horarios_funcionamento WHERE ID_Horario = %s",
+        cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
                        (horarios_unidade[int(unidade_id)],))
         horario = cursor.fetchone()
         if horario and dia_idx:
@@ -271,7 +271,7 @@ def relatorio_equipamentos():
             eq_id = row['ID_equipamentos']
             # Buscar horários de funcionamento da unidade
             if unidade_id and horarios_unidade.get(int(unidade_id)):
-                cursor.execute("SELECT * FROM horarios_funcionamento WHERE ID_Horario = %s",
+                cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
                                (horarios_unidade[int(unidade_id)],))
                 horario = cursor.fetchone()
                 for i in range(1, 8):
@@ -339,13 +339,13 @@ def relatorio_equipamentos():
     # Buscar horários de funcionamento da unidade
     horarios_unidade = {}
     cursor.execute(
-        "SELECT ID_Unidades, Horario_Funcionamento_ID FROM UNIDADES")
+        "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
         horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
 
     horarios_funcionamento = {}
     if unidade_id and horarios_unidade.get(int(unidade_id)):
-        cursor.execute("SELECT * FROM horarios_funcionamento WHERE ID_Horario = %s",
+        cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
                        (horarios_unidade[int(unidade_id)],))
         horario = cursor.fetchone()
         if horario:

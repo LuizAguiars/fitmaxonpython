@@ -3,6 +3,7 @@ from db import get_db_connection
 
 planos_bp = Blueprint('planos', __name__)
 
+
 @planos_bp.route('/gestao-planos', methods=['GET', 'POST'])
 def gestao_planos():
     if 'usuario' not in session:
@@ -23,21 +24,21 @@ def gestao_planos():
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO PLANO (nome_plano, descricao, duracao_meses, valor_plano)
+                    INSERT INTO plano (nome_plano, descricao, duracao_meses, valor_plano)
                     VALUES (%s, %s, %s, %s)
                 """, (nome, descricao, duracao, valor))
                 flash("Plano incluído com sucesso!", "success")
 
             elif acao == 'editar':
                 cursor.execute("""
-                    UPDATE PLANO
+                    UPDATE plano
                     SET nome_plano=%s, descricao=%s, duracao_meses=%s, valor_plano=%s
-                    WHERE ID_PLANO=%s
+                    WHERE id_plano=%s
                 """, (nome, descricao, duracao, valor, id))
                 flash("Plano alterado com sucesso!", "warning")
 
             elif acao == 'remover':
-                cursor.execute("DELETE FROM PLANO WHERE ID_PLANO=%s", (id,))
+                cursor.execute("DELETE FROM plano WHERE id_plano=%s", (id,))
                 flash("Plano removido com sucesso!", "error")
 
             conn.commit()
@@ -46,10 +47,10 @@ def gestao_planos():
             conn.rollback()
             flash(f"Erro ao processar operação: {str(e)}", "error")
 
-    cursor.execute("SELECT * FROM PLANO")
+    cursor.execute("SELECT * FROM plano")
     planos = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template("gestao_de_planos.html", planos=planos) 
+    return render_template("gestao_de_planos.html", planos=planos)
