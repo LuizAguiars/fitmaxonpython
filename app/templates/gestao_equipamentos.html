@@ -194,7 +194,10 @@
       <input type="hidden" name="acao" value="editar">
       <input type="hidden" name="id" id="editId">
 
-      <input type="text" name="nome" id="editNome" placeholder="Nome do Equipamento" required>
+      <input type="text" name="nome" id="editNome" placeholder="Nome do Equipamento" required>      <!-- ...existing code... -->
+      <input type="text" name="nome" placeholder="Nome do Equipamento" required pattern=".*\S.*" title="Preencha o nome corretamente.">
+      <input type="text" name="descricao" placeholder="Descrição" required pattern=".*\S.*" title="Preencha a descrição corretamente.">
+      <!-- ...existing code... -->
       <input type="text" name="descricao" id="editDescricao" placeholder="Descrição" required>
       <input type="date" name="data_compra" id="editDataCompra" required>
 
@@ -232,8 +235,8 @@
     <form method="POST" action="{{ url_for('equipamentos.gestao_equipamentos') }}">
       <input type="hidden" name="acao" value="incluir">
 
-      <input type="text" name="nome" placeholder="Nome do Equipamento" required>
-      <input type="text" name="descricao" placeholder="Descrição" required>
+      <input type="text" name="nome" placeholder="Nome do Equipamento" required pattern=".*\S.*" title="Preencha o nome corretamente.">
+      <input type="text" name="descricao" placeholder="Descrição" required pattern=".*\S.*" title="Preencha a descrição corretamente.">
       <input type="date" name="data_compra" required>
 
       <select name="id_unidade" required>
