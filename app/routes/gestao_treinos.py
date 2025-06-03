@@ -70,7 +70,7 @@ def agendar():
             flash(f'Erro ao agendar aula: {str(e)}', 'error')
 
     # Listar dados para o formulário
-    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
     unidades = cursor.fetchall()
 
     # Buscar todos personais com sua unidade
@@ -80,7 +80,7 @@ def agendar():
 
     # Buscar todos tipos de treino (sem unidade)
     cursor.execute(
-        "SELECT idtipo_de_treino, nome_tipo_treino, descricao FROM tipo_de_treino")
+        "SELECT * FROM tipo_de_treino")
     treinos = cursor.fetchall()
 
     conn.close()
@@ -125,7 +125,7 @@ def gestao_treinos():
     treinos = cursor.fetchall()
 
     # Buscar unidades
-    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
     unidades = cursor.fetchall()
 
     conn.close()

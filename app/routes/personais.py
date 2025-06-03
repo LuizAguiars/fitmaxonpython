@@ -24,12 +24,13 @@ def gestao_personal():
         senha = request.form.get('senha')  # Novo campo senha
 
         # Converte para int se não vazio, senão None
-        id_unidade_db = int(id_unidade) if id_unidade and id_unidade.isdigit() else None
+        id_unidade_db = int(
+            id_unidade) if id_unidade and id_unidade.isdigit() else None
 
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO PERSONAL (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal)
+                    INSERT INTO personal (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (nome, email, especialidade, id_unidade_db, senha))
                 flash("Personal incluído com sucesso!", "success")
@@ -37,13 +38,13 @@ def gestao_personal():
             elif acao == 'editar':
                 if senha:
                     cursor.execute("""
-                        UPDATE PERSONAL
+                        UPDATE personal
                         SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, Senha_Personal=%s
                         WHERE ID_Personal=%s
                     """, (nome, email, especialidade, id_unidade_db, senha, id))
                 else:
                     cursor.execute("""
-                        UPDATE PERSONAL
+                        UPDATE personal
                         SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
                         WHERE ID_Personal=%s
                     """, (nome, email, especialidade, id_unidade_db, id))
@@ -51,7 +52,7 @@ def gestao_personal():
 
             elif acao == 'remover':
                 cursor.execute(
-                    "DELETE FROM PERSONAL WHERE ID_Personal=%s", (id,))
+                    "DELETE FROM personal WHERE id_personal=%s", (id,))
                 flash("Personal removido com sucesso!", "error")
 
             conn.commit()
@@ -96,7 +97,7 @@ def gestao_personal():
     cursor.execute("SELECT DISTINCT Especialidade FROM PERSONAL")
     especialidades = cursor.fetchall()
 
-    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM UNIDADES")
+    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
     unidades_disponiveis = cursor.fetchall()
 
     cursor.close()
@@ -118,7 +119,7 @@ def listar_nomes_personais():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT Nome_Personal FROM PERSONAL")
+    cursor.execute("SELECT nome_personal FROM personal")
     nomes_personais = [row['Nome_Personal'] for row in cursor.fetchall()]
 
     cursor.close()
