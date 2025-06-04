@@ -1,48 +1,47 @@
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from datetime import datetime, timedelta
 from db import get_db_connection
 
-
-# Configurações do Gmail
-GMAIL_USER = 'luiz.aguiarzqw@gmail.com'
-GMAIL_PASS = 'rshq zcpa bvkj zjar'  # Senha de app gerada
-
-# Função para enviar e-mail
-
+# Configurações do Zoho Mail
+SMTP_SERVER = 'smtp.zoho.com'
+SMTP_PORT = 465
+SMTP_USER = 'seuemail@zohomail.com'  # substitua pelo e-mail real do Zoho
+SMTP_PASS = 'LuizAguiar8474'
 
 def enviar_email(destinatario, assunto, corpo):
     msg = MIMEMultipart('related')
-    msg['From'] = GMAIL_USER
+    msg['From'] = SMTP_USER
     msg['To'] = destinatario
     msg['Subject'] = assunto
 
     msg_alternative = MIMEMultipart('alternative')
     msg.attach(msg_alternative)
-
     msg_alternative.attach(MIMEText(corpo, 'html'))
 
-    # Anexar a logo
+    # Caminho relativo da logo
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(base_dir, 'static', 'IMG', 'logo1.png')
+
     try:
-        with open(r'C:\Users\Luiz Aguiar\Documents\novo teste\fitmaxonpython\app\static\IMG\logo1.png', 'rb') as img:
+        with open(logo_path, 'rb') as img:
             mime_img = MIMEImage(img.read())
             mime_img.add_header('Content-ID', '<logo1>')
             msg.attach(mime_img)
     except FileNotFoundError:
-        print("Logo não encontrada. Verifique o caminho do arquivo logo1.png")
+        print("⚠️ Logo não encontrada:", logo_path)
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(GMAIL_USER, GMAIL_PASS)
-            server.sendmail(GMAIL_USER, destinatario, msg.as_string())
-        print(f"E-mail enviado para {destinatario}")
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, destinatario, msg.as_string())
+        print(f"✅ E-mail enviado para {destinatario}")
     except Exception as e:
-        print(f"Erro ao enviar e-mail para {destinatario}: {e}")
+        print(f"❌ Erro ao enviar e-mail para {destinatario}: {e}")
 
-
-# Função principal
 def notificar_aulas():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -50,7 +49,6 @@ def notificar_aulas():
     agora = datetime.now()
     daqui_30 = agora + timedelta(minutes=30)
 
-    # Buscar aulas que vão começar em 30 minutos e não foram notificadas
     cursor.execute('''
         SELECT 
             a.idAgendar_Treino, 
@@ -119,7 +117,6 @@ def notificar_aulas():
             corpo
         )
 
-        # Marcar como notificado
         cursor.execute(
             'UPDATE agendar_treino SET notificado = 1 WHERE idAgendar_Treino = %s',
             (aula['idAgendar_Treino'],)
@@ -127,7 +124,6 @@ def notificar_aulas():
 
     conn.commit()
     conn.close()
-
 
 if __name__ == '__main__':
     notificar_aulas()
