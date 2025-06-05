@@ -74,7 +74,7 @@ def gerenciar_treinos():
                 flash(f'Erro ao criar treino: {str(e)}', 'error')
 
     # Buscar todas as unidades para o dropdown
-    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
+    cursor.execute("SELECT ID_Unidades AS ID_Unidades, Nome_Unidade AS Nome_Unidade FROM unidades")
     unidades = cursor.fetchall()
 
     # Buscar todos os treinos (sem filtro)
