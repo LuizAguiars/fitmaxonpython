@@ -38,7 +38,7 @@ CREATE TABLE `horarios_funcionamento` (
 
 LOCK TABLES `horarios_funcionamento` WRITE;
 /*!40000 ALTER TABLE `horarios_funcionamento` DISABLE KEYS */;
-INSERT INTO `horarios_funcionamento` VALUES (1,'Seg a Sex - 06:00 às 22:00','Segunda,Terca,Quarta,Quinta,Sexta','06:00:00','22:00:00');
+INSERT INTO `horarios_funcionamento` VALUES (1,'Seg a Sex - 06:00 às 22:00','Segunda,Terca,Quarta,Quinta,Sexta','06:00:00','23:59:00');
 /*!40000 ALTER TABLE `horarios_funcionamento` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-29 23:08:15
+-- Dump completed on 2025-06-05 18:00:38

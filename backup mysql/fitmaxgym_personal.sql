@@ -29,11 +29,21 @@ CREATE TABLE `personal` (
   `Especialidade` varchar(100) DEFAULT NULL,
   `ID_Unidade` int DEFAULT NULL,
   `Senha_Personal` varchar(100) NOT NULL DEFAULT '1',
+  `DataNascimento` date DEFAULT NULL,
+  `Telefone` varchar(20) DEFAULT NULL,
+  `CPF` varchar(14) DEFAULT NULL,
+  `Genero` enum('M','F','O') DEFAULT 'O',
+  `Bio` text,
+  `CertificadoNome` varchar(150) DEFAULT NULL,
+  `CertificadoCodigo` varchar(50) DEFAULT NULL,
+  `CertificadoEmissor` varchar(100) DEFAULT NULL,
+  `CertificadoData` date DEFAULT NULL,
+  `DataCadastro` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID_Personal`),
   UNIQUE KEY `Email_Personal` (`Email_Personal`),
   KEY `ID_Unidade` (`ID_Unidade`),
   CONSTRAINT `personal_ibfk_1` FOREIGN KEY (`ID_Unidade`) REFERENCES `unidades` (`ID_Unidades`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +52,7 @@ CREATE TABLE `personal` (
 
 LOCK TABLES `personal` WRITE;
 /*!40000 ALTER TABLE `personal` DISABLE KEYS */;
-INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6,'1'),(3,'Alexandre Bento','alexandre.bento@unicesumar.com','Musculação',7,'1'),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5,'1'),(6,'Paulo Gomes','paulogomes@gmail.com','treinamento funcional',5,'1'),(7,'Adalberto Junior','Adalberto@fitmax.com.br','Musculação',5,'1'),(8,'Gabriel Barbosa','gabriel@fitmax.com.br','Musculação',5,'1'),(9,'Pedro Henrique','pedro.henrique@fitmax.com.br','Musculação',5,'1'),(10,'Brian Santos','brian.santos@fitmax.com.br','Musculação',5,'1'),(11,'Caique Santos','caique.santos@fitmax.com.br','treinamento funcional',5,'1'),(12,'Welington Souza','welington.souza@fitmax.com.br','treinamento de atletas de alta performance',5,'1');
+INSERT INTO `personal` VALUES (2,'Silvio Bortoleto','silviobortoleto@unicesumar.com','treinamento funcional',6,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(3,'Alexandre Bento','alexandre.bento@unicesumar.com','Musculação',7,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(5,'Luiz Fernando Corcini','luiz.corcini@unicesumar.edu.br','Musculação',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(6,'Paulo Gomes','paulogomes@gmail.com','treinamento funcional',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(7,'Adalberto Junior','Adalberto@fitmax.com.br','Musculação',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(8,'Gabriel Barbosa','gabriel@fitmax.com.br','Musculação',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(9,'Pedro Henrique','pedro.henrique@fitmax.com.br','Musculação',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(10,'Brian Santos','brian.santos@fitmax.com.br','Musculação',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(11,'Caique Santos','caique.santos@fitmax.com.br','treinamento funcional',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(12,'Welington Souza','welington.souza@fitmax.com.br','treinamento de atletas de alta performance',5,'1',NULL,NULL,NULL,'O',NULL,NULL,NULL,NULL,NULL,'2025-06-04 19:54:49'),(13,'Willian Cardoso','contato.fitmax.cwb@gmail.com','treinamento funcional',6,'1','2005-01-04','(41) 99999-9999','109.077.469-93','M',NULL,'Educação Fisica','SAJDHY1279TY12DG126GD1','CESUMAR CURITIBA','2003-01-05','2025-06-04 20:10:24'),(16,'Silvia Cardoso','contrato.fitmax@gmail.com','treinamento de atletas de alta performance',6,'1','2005-02-04','(41) 9999-9999','109.077.469-93','F',NULL,'Educação Fisica','SAJDHQ2178H1281278H182','UFPR','1998-05-08','2025-06-04 20:25:18');
 /*!40000 ALTER TABLE `personal` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-29 23:08:15
+-- Dump completed on 2025-06-05 18:00:36

@@ -16,27 +16,40 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `regiao`
+-- Table structure for table `info_usuario`
 --
 
-DROP TABLE IF EXISTS `regiao`;
+DROP TABLE IF EXISTS `info_usuario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `regiao` (
-  `ID_Regiao` int NOT NULL AUTO_INCREMENT,
-  `Nome_Regiao` varchar(50) NOT NULL,
-  PRIMARY KEY (`ID_Regiao`)
+CREATE TABLE `info_usuario` (
+  `ID_Info` int NOT NULL AUTO_INCREMENT,
+  `ID_User` int NOT NULL,
+  `Altura` decimal(4,2) DEFAULT NULL,
+  `Peso` decimal(5,2) DEFAULT NULL,
+  `GorduraCorporal` decimal(5,2) DEFAULT NULL,
+  `Perimetro_Braquial` decimal(5,2) DEFAULT NULL,
+  `Perimetro_Abdominal` decimal(5,2) DEFAULT NULL,
+  `Perimetro_Toracico` decimal(5,2) DEFAULT NULL,
+  `Perimetro_Cintura` decimal(5,2) DEFAULT NULL,
+  `Perimetro_Quadril` decimal(5,2) DEFAULT NULL,
+  `IMC` decimal(5,2) DEFAULT NULL,
+  `DataMedicao` datetime DEFAULT CURRENT_TIMESTAMP,
+  `Observacoes` text,
+  PRIMARY KEY (`ID_Info`),
+  KEY `ID_User` (`ID_User`),
+  CONSTRAINT `info_usuario_ibfk_1` FOREIGN KEY (`ID_User`) REFERENCES `usuario` (`ID_User`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `regiao`
+-- Dumping data for table `info_usuario`
 --
 
-LOCK TABLES `regiao` WRITE;
-/*!40000 ALTER TABLE `regiao` DISABLE KEYS */;
-INSERT INTO `regiao` VALUES (1,'Norte'),(2,'Sul'),(3,'Leste'),(4,'Oeste');
-/*!40000 ALTER TABLE `regiao` ENABLE KEYS */;
+LOCK TABLES `info_usuario` WRITE;
+/*!40000 ALTER TABLE `info_usuario` DISABLE KEYS */;
+INSERT INTO `info_usuario` VALUES (1,1,1.65,75.00,80.00,20.00,80.00,80.00,80.00,80.00,27.55,'2025-06-04 21:21:33','medidas de teste'),(2,1,1.65,65.00,80.00,20.00,95.00,100.00,30.00,80.00,23.88,'2025-06-04 21:33:22','Teste 2'),(3,1,1.65,50.00,50.00,39.00,80.00,80.00,60.00,30.00,18.37,'2025-06-04 21:39:18','Teste 3'),(4,1,1.80,100.00,50.00,30.00,40.00,80.00,50.00,90.00,30.86,'2025-06-05 17:41:07',NULL);
+/*!40000 ALTER TABLE `info_usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
