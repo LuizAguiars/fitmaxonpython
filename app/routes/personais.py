@@ -97,7 +97,7 @@ def gestao_personal():
     cursor.execute("SELECT DISTINCT Especialidade FROM PERSONAL")
     especialidades = cursor.fetchall()
 
-    cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
+    cursor.execute("SELECT ID_Unidades AS ID_Unidades, Nome_Unidade AS Nome_Unidade FROM unidades")
     unidades_disponiveis = cursor.fetchall()
 
     cursor.close()
