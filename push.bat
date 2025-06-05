@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Ajuste gestao de treinos %DATAHORA%"
+git commit -m "correcao de routes %DATAHORA%"
 
 
 
