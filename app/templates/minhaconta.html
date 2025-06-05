@@ -57,8 +57,146 @@
     </p>
 </div>
 
+<div class="minha-conta" style="margin-top:32px;">
+    <h2>INFORMAÇÕES FÍSICAS</h2>
+    {% if datas_medicao and datas_medicao|length > 0 %}
+    <form method="get" style="margin-bottom:18px; text-align:center;">
+        <select name="data_medicao" id="data_medicao" onchange="this.form.submit()" style="padding:6px 14px; border-radius:6px; font-size:1em;">
+            {% for data in datas_medicao %}
+                <option value="{{ data }}" {% if data == data_escolhida %}selected{% endif %}>{{ data|replace('-', '/') }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+    {% if infos_usuario and infos_usuario|length > 0 %}
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: flex-start;">
+        {% for info in infos_usuario %}
+            {% set imc = info.IMC|float if info.IMC else None %}
+            {% set imc_class =
+                'MAGREZA GRAVE' if imc is not none and imc < 16 else
+                'MAGREZA MODERADA' if imc is not none and imc < 17 else
+                'MAGREZA LEVE' if imc is not none and imc < 18.5 else
+                'PESO NORMAL' if imc is not none and imc < 25 else
+                'SOBREPESO' if imc is not none and imc < 30 else
+                'OBESIDADE GRAU I' if imc is not none and imc < 35 else
+                'OBESIDADE GRAU II (SEVERA)' if imc is not none and imc < 40 else
+                'OBESIDADE GRAU III (MÓRBIDA)' if imc is not none and imc >= 40 else ''
+            %}
+            {% set imc_color =
+                '#388e3c' if imc is not none and imc >= 18.5 and imc < 25 else
+                '#ff9800' if imc is not none and ((imc >= 16 and imc < 18.5) or (imc >= 25 and imc < 30)) else
+                '#d32f2f' if imc is not none and ((imc < 16) or (imc >= 30 and imc < 40)) else
+                '#b71c1c' if imc is not none and imc >= 40 else ''
+            %}
+            <div style="background: #f5f5f5; border-radius: 14px; box-shadow: 0 2px 8px #0001; padding: 18px 24px 12px 24px; min-width: 260px; max-width: 320px; margin-bottom: 12px; display: flex; flex-direction: column; align-items: center; color: #111;">
+                <div style="font-size: 1.1em; color: #232b4a; font-weight: bold; margin-bottom: 4px;">{{ info.DataMedicao.strftime('%d/%m/%Y') if info.DataMedicao else '' }}</div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em;"><b>Altura:</b> {{ info.Altura or '-' }} m</div>
+                    <div style="font-size: 1em;"><b>Peso:</b> {{ info.Peso or '-' }} kg</div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em;"><b>Gordura:</b> {{ info.GorduraCorporal or '-' }}%</div>
+                    <div style="font-size: 1em;"><b>Braço:</b> {{ info.Perimetro_Braquial or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Abdômen:</b> {{ info.Perimetro_Abdominal or '-' }} cm</div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em;"><b>Tórax:</b> {{ info.Perimetro_Toracico or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Cintura:</b> {{ info.Perimetro_Cintura or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Quadril:</b> {{ info.Perimetro_Quadril or '-' }} cm</div>
+                </div>
+                <div style="margin: 8px 0 4px 0; text-align: center;">
+                    <span style="font-size: 2em; font-weight: bold; color: #232b4a;">{{ info.IMC or '-' }}</span>
+                    <span {% if imc_color %}style="color: {{ imc_color }}; display: block; font-size: 1em; font-weight: bold; margin-top: 2px; letter-spacing: 1px;"{% else %}style="display: block; font-size: 1em; font-weight: bold; margin-top: 2px; letter-spacing: 1px;"{% endif %}>{{ imc_class }}</span>
+                </div>
+                {% if info.Observacoes %}
+                <div style="margin-top: 6px; color: #555; font-size: 0.98em; text-align: center; background: #f9f9f9; border-radius: 6px; padding: 4px 8px;">{{ info.Observacoes }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p style="color:#888;">Nenhum dado físico cadastrado.</p>
+    {% endif %}
+    <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalInfoUsuario')">Adicionar Valor</button>
+</div>
+
+<!-- MODAL DE INFORMAÇÕES FÍSICAS -->
+<div id="modalInfoUsuario" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Adicionar Informações Físicas</h2>
+    <form method="POST" action="{{ url_for('usuarios.minha_conta') }}">
+      <input type="hidden" name="acao" value="incluir_info_usuario">
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <input type="number" step="0.01" name="altura" id="altura" placeholder="Altura (m)" min="0.5" max="3" style="width:120px;" required>
+        <input type="number" step="0.01" name="peso" id="peso" placeholder="Peso (kg)" min="0" max="600" style="width:120px;" required>
+        <input type="number" step="0.01" name="gordura" id="gordura" placeholder="Gordura (%)" min="0" max="100" style="width:120px;" required>
+        <input type="number" step="0.01" name="braquial" id="braquial" placeholder="Braço (cm)" min="0" max="100" style="width:120px;">
+        <input type="number" step="0.01" name="abdominal" id="abdominal" placeholder="Abdômen (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="toracico" id="toracico" placeholder="Tórax (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="cintura" id="cintura" placeholder="Cintura (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="quadril" id="quadril" placeholder="Quadril (cm)" min="0" max="200" style="width:120px;">
+        <div style="position:relative; width:100%; display:flex; align-items:center; margin-top:8px;">
+          <input type="number" step="0.01" name="imc" placeholder="IMC" min="0" max="100" style="width:120px; background:#eee; color:#888;" readonly tabindex="-1">
+          <span id="imc-classificacao" style="flex:1; text-align:center; font-size:1.1em; font-weight:bold; letter-spacing:1px; display:block;"></span>
+        </div>
+      </div>
+      <div id="erro-validacao" style="color:#d32f2f; font-weight:bold; margin-top:6px; display:none;"></div>
+      <textarea name="observacoes" placeholder="Observações" style="width:100%; margin-top:8px; border-radius:6px; padding:6px;"></textarea>
+      <div style="margin-top:16px; display:flex; gap:12px;">
+        <button type="submit" class="confirmar">Salvar</button>
+        <button type="button" class="cancelar" onclick="fecharModal('modalInfoUsuario')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirModal(id) {
+  document.getElementById(id).classList.add('ativo');
+}
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('ativo');
+}
+
+// Validação dos campos do modal de informações físicas
+function validarCamposInfoUsuario() {
+  const altura = parseFloat(document.getElementById('altura').value.replace(',', '.'));
+  const peso = parseFloat(document.getElementById('peso').value.replace(',', '.'));
+  const gordura = parseFloat(document.getElementById('gordura').value.replace(',', '.'));
+  let erro = '';
+  if (isNaN(altura) || altura < 0.5 || altura > 3) {
+    erro = 'Altura deve ser entre 0,50m e 3,00m';
+  } else if (isNaN(peso) || peso < 0 || peso > 600) {
+    erro = 'Peso deve ser entre 0kg e 600kg';
+  } else if (isNaN(gordura) || gordura < 0 || gordura > 100) {
+    erro = 'Gordura deve ser entre 0% e 100%';
+  }
+  const erroDiv = document.getElementById('erro-validacao');
+  if (erro) {
+    erroDiv.textContent = erro;
+    erroDiv.style.display = 'block';
+    return false;
+  } else {
+    erroDiv.textContent = '';
+    erroDiv.style.display = 'none';
+    return true;
+  }
+}
+
+// Aplica validação ao submit do modal
+const formInfoUsuario = document.querySelector('#modalInfoUsuario form');
+if (formInfoUsuario) {
+  formInfoUsuario.addEventListener('submit', function(e) {
+    if (!validarCamposInfoUsuario()) {
+      e.preventDefault();
+    }
+  });
+}
+</script>
 
     <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/minhaconta_fisica.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
     
 
 </body>

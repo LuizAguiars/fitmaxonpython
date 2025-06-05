@@ -109,8 +109,32 @@ function validarCapacidade(capacidade) {
   return !isNaN(capacidade) && capacidade > 0;
 }
 
+// Validação de idade mínima genérica
+function validarIdadeMinima(data, idadeMinima) {
+  const dataObj = new Date(data);
+  if (isNaN(dataObj.getTime())) return false;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - dataObj.getFullYear();
+  const m = hoje.getMonth() - dataObj.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < dataObj.getDate())) {
+    idade--;
+  }
+  return idade >= idadeMinima;
+}
+
 // Aplicação das máscaras e validações nos campos
 document.addEventListener("DOMContentLoaded", function() {
+  // Validação de idade mínima apenas em campos com classe "validar-idade-personal"
+  document.querySelectorAll('.validar-idade-personal').forEach(input => {
+    input.addEventListener('change', function () {
+      this.setCustomValidity(
+        validarIdadeMinima(this.value, 20)
+          ? ''
+          : 'Personal deve ter pelo menos 20 anos completos.'
+      );
+    });
+  });
+
   // Máscaras
   const mascaraCPF = (value) => {
     value = value.replace(/\D/g, '').slice(0, 11); // Limita a 11 dígitos
@@ -181,11 +205,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  document.querySelectorAll('input[type="date"]').forEach(input => {
-    input.addEventListener('change', function() {
-      this.setCustomValidity(validarData(this.value) ? '' : 'Data inválida');
-    });
-  });
+
+
 
   document.querySelectorAll('input[name="valor"]').forEach(input => {
     input.addEventListener('input', function() {
@@ -294,6 +315,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if (campo.name === 'capacidade' && !validarCapacidade(campo.value)) {
           campo.setCustomValidity('Capacidade inválida');
           formValido = false;
+        }
+
+        // Validação de idade mínima para personal
+        if (isPersonalForm && campo.type === 'date' && campo.name === 'data_nascimento') {
+          if (!validarIdadeMinima(campo.value, 20)) {
+            campo.setCustomValidity('Personal deve ter pelo menos 20 anos completos.');
+            formValido = false;
+          }
         }
       });
 

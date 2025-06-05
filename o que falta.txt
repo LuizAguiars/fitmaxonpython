@@ -16,4 +16,12 @@ não deixar agendar aula no dia antes do horario atual
 usuario poder alterar informações
 
 
+arrumar a data do certificado tá somente com 20 anos arrume para colocar qualquer data pois certificado não tem equipamentos_lista
+ajustar auto preencher do modal do personal
+
+
+
+
+
+
 

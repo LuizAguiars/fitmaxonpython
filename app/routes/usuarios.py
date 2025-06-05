@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, time
 usuarios_bp = Blueprint('usuarios', __name__)
 
 
-@usuarios_bp.route('/minha-conta')
+@usuarios_bp.route('/minha-conta', methods=['GET', 'POST'])
 def minha_conta():
     if 'usuario' not in session or session.get('tipo') != 'aluno':
         flash("Você precisa estar logado como aluno para acessar sua conta.", "error")
@@ -14,6 +14,30 @@ def minha_conta():
     user_id = session['usuario']
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
+
+    # Processa inclusão de info_usuario
+    if request.method == 'POST' and request.form.get('acao') == 'incluir_info_usuario':
+        altura = request.form.get('altura') or None
+        peso = request.form.get('peso') or None
+        gordura = request.form.get('gordura') or None
+        braquial = request.form.get('braquial') or None
+        abdominal = request.form.get('abdominal') or None
+        toracico = request.form.get('toracico') or None
+        cintura = request.form.get('cintura') or None
+        quadril = request.form.get('quadril') or None
+        imc = request.form.get('imc') or None
+        obs = request.form.get('observacoes') or None
+        try:
+            cursor.execute("""
+                INSERT INTO info_usuario (ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs))
+            db.commit()
+            flash('Informações físicas adicionadas com sucesso!', 'success')
+        except Exception as e:
+            db.rollback()
+            flash(f'Erro ao adicionar informações físicas: {str(e)}', 'error')
+
     cursor.execute("""
         SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
                logradouro_user, numero_user, bairro_user, cidade_user, estado_user
@@ -47,8 +71,32 @@ def minha_conta():
         ORDER BY a.DataTreino DESC, a.HoraTreino DESC
     """, (user_id,))
     aulas = cursor.fetchall()
+
+    # Buscar dados de info_usuario
+    cursor.execute("""
+        SELECT * FROM info_usuario WHERE ID_User = %s ORDER BY DataMedicao DESC
+    """, (user_id,))
+    infos_usuario = cursor.fetchall()
+
+    # Dropdown de datas disponíveis (agora mostra todas as datas e horários das medições)
+    datas_medicao = []
+    for i in infos_usuario:
+        if i.get('DataMedicao'):
+            data_str = i['DataMedicao'].strftime('%Y-%m-%d %H:%M:%S')
+            datas_medicao.append(data_str)
+    # já está em ordem decrescente por causa do ORDER BY
+    datas_medicao_unicas = datas_medicao
+
+    # Filtro por data/hora exata (GET)
+    data_escolhida = request.args.get('data_medicao')
+    if data_escolhida:
+        infos_filtradas = [i for i in infos_usuario if i.get(
+            'DataMedicao') and i['DataMedicao'].strftime('%Y-%m-%d %H:%M:%S') == data_escolhida]
+    else:
+        infos_filtradas = infos_usuario[:1]  # só o mais recente
+
     db.close()
-    return render_template('minhaconta.html', usuario=usuario, aulas=aulas)
+    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida)
 
 
 # Adicionando lógica para filtrar por plano e status
@@ -339,3 +387,60 @@ def cancelar_aula():
     db.close()
     flash('Aula cancelada com sucesso!', 'success')
     return redirect(url_for('usuarios.minhas_aulas'))
+
+
+@usuarios_bp.route('/inserir_info', methods=['POST'])
+def inserir_info():
+    from flask import request
+    import mysql.connector
+    from datetime import datetime
+    try:
+        # Coleta e validação dos dados do formulário
+        user_id = int(request.form.get('ID_User', 0))
+        altura = request.form.get('Altura')
+        peso = request.form.get('Peso')
+        gordura = request.form.get('GorduraCorporal')
+        braquial = request.form.get('Perimetro_Braquial')
+        abdominal = request.form.get('Perimetro_Abdominal')
+        toracico = request.form.get('Perimetro_Toracico')
+        cintura = request.form.get('Perimetro_Cintura')
+        quadril = request.form.get('Perimetro_Quadril')
+        obs = request.form.get('Observacoes')
+
+        # Conversão para float ou None
+        def to_float(val):
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return None
+        altura = to_float(altura)
+        peso = to_float(peso)
+        gordura = to_float(gordura)
+        braquial = to_float(braquial)
+        abdominal = to_float(abdominal)
+        toracico = to_float(toracico)
+        cintura = to_float(cintura)
+        quadril = to_float(quadril)
+
+        # Calcula IMC se possível
+        imc = None
+        if altura and peso and altura > 0:
+            imc = round(peso / (altura ** 2), 2)
+
+        # Conexão com o banco
+        from db import get_db_connection
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO info_usuario (
+                ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes, DataMedicao
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        """, (
+            user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs
+        ))
+        db.commit()
+        cursor.close()
+        db.close()
+        return 'Informações físicas inseridas com sucesso!'
+    except Exception as e:
+        return f'Erro ao inserir informações físicas: {str(e)}'

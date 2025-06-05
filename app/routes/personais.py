@@ -22,32 +22,60 @@ def gestao_personal():
         especialidade = request.form.get('especialidade')
         id_unidade = request.form.get('id_unidade')
         senha = request.form.get('senha')  # Novo campo senha
+        data_nascimento = request.form.get('data_nascimento')
+        telefone = request.form.get('telefone')
+        cpf = request.form.get('cpf')
+        genero = request.form.get('genero')
+        bio = request.form.get('bio')
+        certificado_nome = request.form.get('certificado_nome')
+        certificado_codigo = request.form.get('certificado_codigo')
+        certificado_emissor = request.form.get('certificado_emissor')
+        certificado_data = request.form.get('certificado_data')
 
         # Converte para int se não vazio, senão None
         id_unidade_db = int(
             id_unidade) if id_unidade and id_unidade.isdigit() else None
 
+        # Validação de idade mínima (20 anos) apenas para data de nascimento
+        from datetime import datetime, date
+
+        def idade_completa(data_nasc):
+            if not data_nasc:
+                return 0
+            try:
+                nasc = datetime.strptime(data_nasc, '%Y-%m-%d').date()
+            except Exception:
+                return 0
+            hoje = date.today()
+            idade = hoje.year - nasc.year - \
+                ((hoje.month, hoje.day) < (nasc.month, nasc.day))
+            return idade
+        # Só valida se o campo for data de nascimento
+        if data_nascimento and idade_completa(data_nascimento) < 20:
+            flash('Personal deve ter pelo menos 20 anos completos.', 'error')
+            return redirect(url_for('personais.gestao_personal'))
+
         try:
             if acao == 'incluir':
                 cursor.execute("""
-                    INSERT INTO personal (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (nome, email, especialidade, id_unidade_db, senha))
+                    INSERT INTO personal (Nome_Personal, Email_Personal, Especialidade, ID_Unidade, Senha_Personal, DataNascimento, Telefone, CPF, Genero, Bio, CertificadoNome, CertificadoCodigo, CertificadoEmissor, CertificadoData)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (nome, email, especialidade, id_unidade_db, senha, data_nascimento, telefone, cpf, genero, bio, certificado_nome, certificado_codigo, certificado_emissor, certificado_data))
                 flash("Personal incluído com sucesso!", "success")
 
             elif acao == 'editar':
                 if senha:
                     cursor.execute("""
                         UPDATE personal
-                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, Senha_Personal=%s
+                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, Senha_Personal=%s, DataNascimento=%s, Telefone=%s, CPF=%s, Genero=%s, Bio=%s, CertificadoNome=%s, CertificadoCodigo=%s, CertificadoEmissor=%s, CertificadoData=%s
                         WHERE ID_Personal=%s
-                    """, (nome, email, especialidade, id_unidade_db, senha, id))
+                    """, (nome, email, especialidade, id_unidade_db, senha, data_nascimento, telefone, cpf, genero, bio, certificado_nome, certificado_codigo, certificado_emissor, certificado_data, id))
                 else:
                     cursor.execute("""
                         UPDATE personal
-                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s
+                        SET Nome_Personal=%s, Email_Personal=%s, Especialidade=%s, ID_Unidade=%s, DataNascimento=%s, Telefone=%s, CPF=%s, Genero=%s, Bio=%s, CertificadoNome=%s, CertificadoCodigo=%s, CertificadoEmissor=%s, CertificadoData=%s
                         WHERE ID_Personal=%s
-                    """, (nome, email, especialidade, id_unidade_db, id))
+                    """, (nome, email, especialidade, id_unidade_db, data_nascimento, telefone, cpf, genero, bio, certificado_nome, certificado_codigo, certificado_emissor, certificado_data, id))
                 flash("Personal alterado com sucesso!", "warning")
 
             elif acao == 'remover':

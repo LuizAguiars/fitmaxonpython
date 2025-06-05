@@ -179,6 +179,21 @@
         <input type="email" name="email" id="editEmail" placeholder="Email">
         <input type="text" name="especialidade" id="editEspecialidade" placeholder="Especialidade">
         <input type="password" name="senha" id="editSenha" placeholder="Senha (deixe em branco para não alterar)">
+        <label>Data de Nascimento:</label>
+        <input type="date" name="data_nascimento" id="editDataNascimento" placeholder="Data de Nascimento">
+        <input type="text" name="telefone" id="editTelefone" placeholder="Telefone">
+        <input type="text" name="cpf" id="editCpf" placeholder="CPF">
+        <select name="genero" id="editGenero">
+          <option value="">Gênero</option>
+          <option value="M">Masculino</option>
+          <option value="F">Feminino</option>
+          <option value="O">Outro</option>
+        </select>
+        <input type="text" name="certificado_nome" id="editCertificadoNome" placeholder="Nome do Certificado">
+        <input type="text" name="certificado_codigo" id="editCertificadoCodigo" placeholder="Código do Certificado">
+        <input type="text" name="certificado_emissor" id="editCertificadoEmissor" placeholder="Emissor do Certificado">
+        <label>Data do Certificado:</label>
+        <input type="date" name="certificado_data" id="editCertificadoData" placeholder="Data do Certificado">
         <select name="id_unidade" id="editUnidade" required>
           <option value="">Selecione a Unidade</option>
           {% for unidade in unidades_disponiveis %}
@@ -203,6 +218,22 @@
         <input type="email" name="email" placeholder="Email" required>
         <input type="text" name="especialidade" placeholder="Especialidade" required>
         <input type="password" name="senha" placeholder="Senha" required>
+        <label style="margin-top:6px;">Data de Nascimento:</label>
+        <input type="date" name="data_nascimento" class="validar-idade-personal" placeholder="Data de Nascimento">
+
+        <input type="text" name="telefone" placeholder="Telefone">
+        <input type="text" name="cpf" placeholder="CPF">
+        <select name="genero">
+          <option value="">Gênero</option>
+          <option value="M">Masculino</option>
+          <option value="F">Feminino</option>
+          <option value="O">Outro</option>
+        </select>
+        <input type="text" name="certificado_nome" placeholder="Nome do Certificado">
+        <input type="text" name="certificado_codigo" placeholder="Código do Certificado">
+        <input type="text" name="certificado_emissor" placeholder="Emissor do Certificado">
+        <label>Data do Certificado:</label>
+        <input type="date" name="certificado_data" placeholder="Data do Certificado">
         <select name="id_unidade" required>
           <option value="">Selecione a Unidade</option>
           {% for unidade in unidades_disponiveis %}
@@ -228,6 +259,23 @@
       document.getElementById('menuResponsivo').classList.remove('ativo');
       document.getElementById('btnMenuHamburguer').classList.remove('menu-oculto');
       document.getElementById('menuOverlay').classList.remove('ativo');
+    }
+
+    // Preencher corretamente o select de unidade ao abrir modal de edição
+    function abrirModalEditarPersonal(id) {
+      const linha = document.querySelector('tr[data-id="' + id + '"]');
+      if (!linha) return;
+      document.getElementById('editId').value = id;
+      document.getElementById('editNome').value = linha.dataset.nome || '';
+      document.getElementById('editEmail').value = linha.dataset.email || '';
+      document.getElementById('editEspecialidade').value = linha.dataset.especialidade || '';
+      // Selecionar unidade corretamente
+      const unidadeId = linha.dataset.unidade;
+      const selectUnidade = document.getElementById('editUnidade');
+      if (selectUnidade && unidadeId) {
+        selectUnidade.value = unidadeId;
+      }
+      abrirModal('modalEditar');
     }
   </script>
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
