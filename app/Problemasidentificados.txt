@@ -1,6 +1,6 @@
 Cadastro está aceitando nome com espaço em branco, // Verificado e o campo nome não aceita espaço em branco
 Gestão de unidades conferido(tudo correto),
-Gestão de personal na lista de adicionar personal não aparece a unidade, // Verificado e a unidade aparece normalmente
+Gestão de personal na lista de adicionar personal não aparece a unidade, // Não Verificado 
 Gestão de usuários esta aceitando letras no telefone e não da o formato de telefone, está aceitando espaços em branco antes e depois do nome, após o @ esta dando pra colocar numero, letras (forma incorreta e não esta alertando), após o incluir da pra mudar o cpf do usuário no editar, // Ajustado o telefone, apos arroba sempre aceita numero burro do krl, é claro que da pra mudar o cpf a porra do editar serve pra isso
 Gestão de equipamento  aceitando espaços em branco em seu incluir, // Ajuste realizado e funcionando
 
