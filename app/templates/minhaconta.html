@@ -14,9 +14,7 @@
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
 
-    <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+       <h1> MINHA CONTA </h1>
     </div>
 
     <div class="usuario-logado">
@@ -39,7 +37,7 @@
 </header>
     
 <div class="minha-conta">
-    <h2>MINHA CONTA</h2>
+    <h2>MEUS DADOS</h2>
     <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
     <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
