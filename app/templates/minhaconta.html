@@ -35,7 +35,11 @@
   </nav>
   
 </header>
-    
+
+
+
+
+
 <div class="minha-conta">
     <h2>MEUS DADOS</h2>
     <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
@@ -144,7 +148,13 @@
                     <div style="font-size: 1em;"><b>Peso:</b> {{ info.Peso or '-' }} kg</div>
                 </div>
                 <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
-                    <div style="font-size: 1em;"><b>Gordura:</b> {{ info.GorduraCorporal or '-' }}%</div>
+                    <div style="font-size: 1em; text-align: center; width: 100%;">
+                        <b>Gordura:</b> {{ info.GorduraCorporal or '-' }}%
+                        <br>
+                        <span class="gordura-class" style="font-size:0.95em; color:#111; font-weight:bold; display:inline-block; margin-top:2px; text-align:center; width:100%;">
+                            {{ info.ClassificacaoGordura if info.ClassificacaoGordura is not none else '-' }}
+                        </span>
+                    </div>
                     <div style="font-size: 1em;"><b>Braço:</b> {{ info.Perimetro_Braquial or '-' }} cm</div>
                     <div style="font-size: 1em;"><b>Abdômen:</b> {{ info.Perimetro_Abdominal or '-' }} cm</div>
                 </div>
@@ -154,11 +164,11 @@
                     <div style="font-size: 1em;"><b>Quadril:</b> {{ info.Perimetro_Quadril or '-' }} cm</div>
                 </div>
                 <div style="margin: 8px 0 4px 0; text-align: center;">
-                    <span style="font-size: 2em; font-weight: bold; color: #232b4a;">{{ info.IMC or '-' }}</span>
-                    <span {% if imc_color %}style="color: {{ imc_color }}; display: block; font-size: 1em; font-weight: bold; margin-top: 2px; letter-spacing: 1px;"{% else %}style="display: block; font-size: 1em; font-weight: bold; margin-top: 2px; letter-spacing: 1px;"{% endif %}>{{ imc_class }}</span>
+                    <span class="imc">{{ info.IMC or '-' }}</span>
+                    <span class="imc-class" {% if imc_color %}style="color: {{ imc_color }};"{% endif %}>{{ imc_class }}</span>
                 </div>
                 {% if info.Observacoes %}
-                <div style="margin-top: 6px; color: #555; font-size: 0.98em; text-align: center; background: #f9f9f9; border-radius: 6px; padding: 4px 8px;">{{ info.Observacoes }}</div>
+                <div class="observacoes">{{ info.Observacoes }}</div>
                 {% endif %}
             </div>
         {% endfor %}
@@ -259,6 +269,44 @@ if (btnFecharInfoFisica) {
   btnFecharInfoFisica.addEventListener('click', function() {
     painelInfoFisica.classList.remove('painel-info-fisica-aberto');
     painelInfoFisica.classList.add('painel-info-fisica-fechado');
+  });
+}
+
+// Atualiza painel lateral de informações físicas ao salvar o modal
+const formInfoUsuario2 = document.querySelector('#modalInfoUsuario form');
+if (formInfoUsuario2) {
+  formInfoUsuario2.addEventListener('submit', function(e) {
+    if (!validarCamposInfoUsuario()) {
+      e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    const formData = new FormData(formInfoUsuario2);
+    fetch(formInfoUsuario2.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.text())
+    .then(html => {
+      // Atualiza o painel lateral com o novo HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const novoPainel = doc.querySelector('#painel-info-fisica .painel-info-fisica-conteudo');
+      if (novoPainel) {
+        document.querySelector('#painel-info-fisica .painel-info-fisica-conteudo').innerHTML = novoPainel.innerHTML;
+      }
+      // Atualiza as notificações (flash messages)
+      const novasFlash = doc.querySelectorAll('.flash-messages, .flash-message');
+      if (novasFlash && novasFlash.length > 0) {
+        novasFlash.forEach(function(msg) {
+          document.body.insertAdjacentHTML('afterbegin', msg.outerHTML);
+        });
+      }
+      fecharModal('modalInfoUsuario');
+    })
+    .catch(() => {
+      alert('Erro ao salvar informações físicas.');
+    });
   });
 }
 </script>

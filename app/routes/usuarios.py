@@ -63,11 +63,45 @@ def minha_conta():
         quadril = request.form.get('quadril') or None
         imc = request.form.get('imc') or None
         obs = request.form.get('observacoes') or None
+        classificacao_gordura = None
+        # Buscar sexo do usuário para classificar gordura
+        sexo_usuario = usuario.get('sexo_user') if usuario else None
         try:
+            # Classificação de gordura corporal
+            if gordura is not None and sexo_usuario is not None and gordura != '':
+                try:
+                    gordura_f = float(gordura)
+                except ValueError:
+                    gordura_f = None
+                if gordura_f is not None:
+                    if sexo_usuario == 'M':
+                        if gordura_f < 6:
+                            classificacao_gordura = 'Muito baixo'
+                        elif gordura_f < 14:
+                            classificacao_gordura = 'Atleta / Excelente'
+                        elif gordura_f < 18:
+                            classificacao_gordura = 'Bom / Fitness'
+                        elif gordura_f < 25:
+                            classificacao_gordura = 'Normal'
+                        else:
+                            classificacao_gordura = 'Alto / Obesidade'
+                    elif sexo_usuario == 'F':
+                        if gordura_f < 16:
+                            classificacao_gordura = 'Muito baixo'
+                        elif gordura_f < 24:
+                            classificacao_gordura = 'Atleta / Excelente'
+                        elif gordura_f < 31:
+                            classificacao_gordura = 'Bom / Fitness'
+                        elif gordura_f < 37:
+                            classificacao_gordura = 'Normal'
+                        else:
+                            classificacao_gordura = 'Alto / Obesidade'
+                    else:
+                        classificacao_gordura = 'Não classificado'
             cursor.execute("""
-                INSERT INTO info_usuario (ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs))
+                INSERT INTO info_usuario (ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes, ClassificacaoGordura)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs, classificacao_gordura))
             db.commit()
             flash('Informações físicas adicionadas com sucesso!', 'success')
         except Exception as e:
@@ -517,17 +551,59 @@ def inserir_info():
         if altura and peso and altura > 0:
             imc = round(peso / (altura ** 2), 2)
 
-        # Conexão com o banco
+        # Buscar o sexo do usuário
         from db import get_db_connection
         db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT sexo_user FROM usuario WHERE ID_User = %s", (user_id,))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            sexo_usuario = user_data['sexo_user']
+        else:
+            sexo_usuario = None  # Caso não encontre, não classifica
+
+        # Classificar gordura corporal
+        classificacao_gordura = None
+        if gordura is not None and sexo_usuario is not None:
+            if sexo_usuario == 'M':
+                if gordura < 6:
+                    classificacao_gordura = 'Muito baixo'
+                elif gordura < 14:
+                    classificacao_gordura = 'Atleta / Excelente'
+                elif gordura < 18:
+                    classificacao_gordura = 'Bom / Fitness'
+                elif gordura < 25:
+                    classificacao_gordura = 'Normal'
+                else:
+                    classificacao_gordura = 'Alto / Obesidade'
+            elif sexo_usuario == 'F':
+                if gordura < 16:
+                    classificacao_gordura = 'Muito baixo'
+                elif gordura < 24:
+                    classificacao_gordura = 'Atleta / Excelente'
+                elif gordura < 31:
+                    classificacao_gordura = 'Bom / Fitness'
+                elif gordura < 37:
+                    classificacao_gordura = 'Normal'
+                else:
+                    classificacao_gordura = 'Alto / Obesidade'
+            else:
+                classificacao_gordura = 'Não classificado'
+
+        # Inserir no banco de dados
         cursor = db.cursor()
         cursor.execute("""
             INSERT INTO info_usuario (
-                ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes, DataMedicao
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico,
+                Perimetro_Cintura, Perimetro_Quadril, IMC, ClassificacaoGordura, Observacoes, DataMedicao
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         """, (
-            user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs
+            user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril,
+            imc, classificacao_gordura, obs
         ))
+
         db.commit()
         cursor.close()
         db.close()

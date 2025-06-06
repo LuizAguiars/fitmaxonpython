@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Ajuste no modal editar personal e na data de emissao do certificado %DATAHORA%"
+git commit -m "ajustes nas informacoes de usuarios %DATAHORA%"
 
 
 
