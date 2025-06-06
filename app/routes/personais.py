@@ -51,9 +51,18 @@ def gestao_personal():
                 ((hoje.month, hoje.day) < (nasc.month, nasc.day))
             return idade
         # Só valida se o campo for data de nascimento
-        if data_nascimento and idade_completa(data_nascimento) < 20:
-            flash('Personal deve ter pelo menos 20 anos completos.', 'error')
-            return redirect(url_for('personais.gestao_personal'))
+        if data_nascimento:
+            if idade_completa(data_nascimento) < 20:
+                flash('Personal deve ter pelo menos 20 anos completos.', 'error')
+                return redirect(url_for('personais.gestao_personal'))
+
+        # Validação opcional de formato para certificado_data (não obrigatória)
+        if certificado_data:
+            try:
+                datetime.strptime(certificado_data, '%Y-%m-%d')
+            except ValueError:
+                flash('Data do certificado inválida.', 'error')
+                return redirect(url_for('personais.gestao_personal'))
 
         try:
             if acao == 'incluir':
@@ -90,13 +99,6 @@ def gestao_personal():
 
     unidade_filtro = request.args.get('unidade', '')
     especialidade_filtro = request.args.get('especialidade', '')
-    # nome_personal_filtro = request.args.get('nome_personal', '')  # Removido
-
-    # Buscar todos os nomes dos personais para o dropdown
-    # cursor.execute(
-    #     "SELECT DISTINCT Nome_Personal FROM PERSONAL ORDER BY Nome_Personal"
-    # )
-    # nomes_personais = cursor.fetchall()
 
     # Montar a query base
     query = """
@@ -106,10 +108,6 @@ def gestao_personal():
         WHERE 1=1
     """
     params = []
-
-    # if nome_personal_filtro:
-    #     query += " AND p.Nome_Personal = %s"
-    #     params.append(nome_personal_filtro)
 
     if unidade_filtro:
         query += " AND u.ID_Unidades = %s"
@@ -138,7 +136,6 @@ def gestao_personal():
         especialidades=especialidades,
         unidade_filtro=unidade_filtro,
         especialidade_filtro=especialidade_filtro
-        # nomes_personais e nome_personal_filtro removidos
     )
 
 

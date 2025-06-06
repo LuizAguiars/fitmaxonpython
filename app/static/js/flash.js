@@ -56,19 +56,31 @@ function abrirModalRemover(id) {
 }
 
 function abrirModalEditarPersonal(id) {
-    const linha = document.querySelector(`tr[data-id='${id}']`);
-    if (!linha) return;
-
-    document.getElementById('editId').value = id;
-    document.getElementById('editNome').value = linha.dataset.nome || '';
-    document.getElementById('editEmail').value = linha.dataset.email || '';
-    document.getElementById('editEspecialidade').value = linha.dataset.especialidade || '';
-    document.getElementById('editUnidade').value = linha.dataset.unidade || '';
-
-    document.getElementById('infoId').textContent = id;
-    document.getElementById('infoNome').textContent = linha.dataset.nome || '';
-
-    abrirModal('modalEditar');
+  const linha = document.querySelector('tr[data-id="' + id + '"]');
+  if (!linha) return;
+  document.getElementById('editId').value = id;
+  document.getElementById('editNome').value = linha.dataset.nome || '';
+  document.getElementById('editEmail').value = linha.dataset.email || '';
+  document.getElementById('editEspecialidade').value = linha.dataset.especialidade || '';
+  // Novos campos:
+  document.getElementById('editDataNascimento').value = linha.dataset.nascimento || '';
+  document.getElementById('editTelefone').value = linha.dataset.telefone || '';
+  document.getElementById('editCpf').value = linha.dataset.cpf || '';
+  document.getElementById('editGenero').value = linha.dataset.genero || '';
+  document.getElementById('editCertificadoNome').value = linha.dataset.certificadonome || '';
+  document.getElementById('editCertificadoCodigo').value = linha.dataset.certificadocodigo || '';
+  document.getElementById('editCertificadoEmissor').value = linha.dataset.certificadoemissor || '';
+  document.getElementById('editCertificadoData').value = linha.dataset.certificadodata || '';
+  // Unidade
+  const unidadeId = linha.dataset.unidade;
+  const selectUnidade = document.getElementById('editUnidade');
+  if (selectUnidade && unidadeId) {
+    selectUnidade.value = unidadeId;
+  }
+  // Info do modal
+  document.getElementById('infoId').textContent = id;
+  document.getElementById('infoNome').textContent = linha.dataset.nome || '';
+  abrirModal('modalEditar');
 }
 
 function abrirModalRemoverPersonal(id) {
@@ -272,52 +284,54 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   const capacidadeSelect = document.getElementById('capacidade');
 
-  capacidadeSelect.addEventListener('change', () => {
-    const capacidade = capacidadeSelect.value;
-    const urlParams = new URLSearchParams(window.location.search);
+  if (capacidadeSelect) {
+    capacidadeSelect.addEventListener('change', () => {
+      const capacidade = capacidadeSelect.value;
+      const urlParams = new URLSearchParams(window.location.search);
 
-    if (capacidade.toLowerCase() === 'todas' || capacidade === '') {
-      urlParams.delete('capacidade');
-    } else {
-      urlParams.set('capacidade', capacidade);
-    }
+      if (capacidade.toLowerCase() === 'todas' || capacidade === '') {
+        urlParams.delete('capacidade');
+      } else {
+        urlParams.set('capacidade', capacidade);
+      }
 
-    fetch(`/gestao-unidades?${urlParams.toString()}`)
-      .then(response => response.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const novaTabela = doc.querySelector('.tabela-unidades-container');
-        const tabelaAtual = document.querySelector('.tabela-unidades-container');
+      fetch(`/gestao-unidades?${urlParams.toString()}`)
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const novaTabela = doc.querySelector('.tabela-unidades-container');
+          const tabelaAtual = document.querySelector('.tabela-unidades-container');
 
-        if (novaTabela && tabelaAtual) {
-          tabelaAtual.innerHTML = novaTabela.innerHTML;
-        }
-
-        // Preservar os valores dos filtros existentes
-        const filtrosAtuais = doc.querySelectorAll('.filtros-container select');
-        filtrosAtuais.forEach(filtro => {
-          const filtroAtual = document.querySelector(`#${filtro.id}`);
-          if (filtroAtual) {
-            filtroAtual.value = filtro.value;
+          if (novaTabela && tabelaAtual) {
+            tabelaAtual.innerHTML = novaTabela.innerHTML;
           }
-        });
 
-        // Atualizar o valor do filtro de capacidade
+          // Preservar os valores dos filtros existentes
+          const filtrosAtuais = doc.querySelectorAll('.filtros-container select');
+          filtrosAtuais.forEach(filtro => {
+            const filtroAtual = document.querySelector(`#${filtro.id}`);
+            if (filtroAtual) {
+              filtroAtual.value = filtro.value;
+            }
+          });
+
+          capacidadeSelect.value = capacidade;
+        })
+        .catch(error => console.error('Erro ao atualizar tabela:', error));
+    });
+
+    // Garantir que o valor do filtro seja mantido ao carregar a página
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const capacidade = urlParams.get('capacidade');
+      if (capacidade) {
         capacidadeSelect.value = capacidade;
-      })
-      .catch(error => console.error('Erro ao atualizar tabela:', error));
-  });
-
-  // Garantir que o valor do filtro seja mantido ao carregar a página
-  window.addEventListener('load', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const capacidade = urlParams.get('capacidade');
-    if (capacidade) {
-      capacidadeSelect.value = capacidade;
-    }
-  });
+      }
+    });
+  }
 });
+
 
 function formatarTelefone(input) {
   let valor = input.value.replace(/\D/g, '');
@@ -336,8 +350,3 @@ function formatarTelefone(input) {
 
   input.value = valor;
 }
-
-
-
-
-

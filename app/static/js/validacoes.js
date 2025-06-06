@@ -302,9 +302,27 @@ document.addEventListener("DOMContentLoaded", function() {
           formValido = false;
         }
 
-        if (campo.type === 'date' && !validarData(campo.value)) {
-          campo.setCustomValidity('Data inválida');
-          formValido = false;
+        // Validação de datas
+        if (campo.type === 'date') {
+          // Só valida idade mínima para data_nascimento
+          if (isPersonalForm && campo.name === 'data_nascimento') {
+            if (!validarIdadeMinima(campo.value, 20)) {
+              campo.setCustomValidity('Personal deve ter pelo menos 20 anos completos.');
+              formValido = false;
+            } else {
+              campo.setCustomValidity('');
+            }
+          } else if (campo.name !== 'data_nascimento') {
+            // Para outros campos date (ex: certificado_data), só valida se é uma data válida (não futura)
+            const dataObj = new Date(campo.value);
+            const hoje = new Date();
+            if (isNaN(dataObj.getTime()) || dataObj > hoje) {
+              campo.setCustomValidity('Data inválida');
+              formValido = false;
+            } else {
+              campo.setCustomValidity('');
+            }
+          }
         }
 
         if (campo.name === 'valor' && !validarValor(campo.value)) {
@@ -315,14 +333,6 @@ document.addEventListener("DOMContentLoaded", function() {
         if (campo.name === 'capacidade' && !validarCapacidade(campo.value)) {
           campo.setCustomValidity('Capacidade inválida');
           formValido = false;
-        }
-
-        // Validação de idade mínima para personal
-        if (isPersonalForm && campo.type === 'date' && campo.name === 'data_nascimento') {
-          if (!validarIdadeMinima(campo.value, 20)) {
-            campo.setCustomValidity('Personal deve ter pelo menos 20 anos completos.');
-            formValido = false;
-          }
         }
       });
 

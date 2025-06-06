@@ -129,7 +129,18 @@
           data-nome="{{ personal.Nome_Personal }}"
           data-email="{{ personal.Email_Personal }}"
           data-especialidade="{{ personal.Especialidade }}"
-          data-unidade="{{ personal.ID_Unidade }}">
+          data-unidade="{{ personal.ID_Unidade }}"
+          data-nascimento="{{ personal.DataNascimento }}"
+          data-telefone="{{ personal.Telefone }}"
+          data-cpf="{{ personal.CPF }}"
+          data-genero="{{ personal.Genero }}"
+          data-bio="{{ personal.Bio }}"
+          data-certificadonome="{{ personal.CertificadoNome }}"
+          data-certificadocodigo="{{ personal.CertificadoCodigo }}"
+          data-certificadoemissor="{{ personal.CertificadoEmissor }}"
+          data-certificadodata="{{ personal.CertificadoData }}"
+          >
+
           <td>{{ personal.ID_Personal }}</td>
           <td>{{ personal.Nome_Personal }}</td>
           <td>{{ personal.Email_Personal }}</td>
@@ -261,22 +272,6 @@
       document.getElementById('menuOverlay').classList.remove('ativo');
     }
 
-    // Preencher corretamente o select de unidade ao abrir modal de edição
-    function abrirModalEditarPersonal(id) {
-      const linha = document.querySelector('tr[data-id="' + id + '"]');
-      if (!linha) return;
-      document.getElementById('editId').value = id;
-      document.getElementById('editNome').value = linha.dataset.nome || '';
-      document.getElementById('editEmail').value = linha.dataset.email || '';
-      document.getElementById('editEspecialidade').value = linha.dataset.especialidade || '';
-      // Selecionar unidade corretamente
-      const unidadeId = linha.dataset.unidade;
-      const selectUnidade = document.getElementById('editUnidade');
-      if (selectUnidade && unidadeId) {
-        selectUnidade.value = unidadeId;
-      }
-      abrirModal('modalEditar');
-    }
   </script>
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
