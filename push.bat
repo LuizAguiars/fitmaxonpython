@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "atualizacao de requerimets.txt atualize o seu no local %DATAHORA%"
+git commit -m "atualizacao de conta de usuario atualize requirements.txt %DATAHORA%"
 
 
 

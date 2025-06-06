@@ -139,4 +139,27 @@ document.addEventListener('DOMContentLoaded', function() {
   const peso = document.querySelector('#modalInfoUsuario input[name="peso"]');
   if (altura) altura.addEventListener('input', atualizarIMCModal);
   if (peso) peso.addEventListener('input', atualizarIMCModal);
+
+  // Painel lateral de informações físicas
+  var btnAbrir = document.getElementById('btn-abrir-info-fisica');
+  var painel = document.getElementById('painel-info-fisica');
+  var btnFechar = document.getElementById('btn-fechar-info-fisica');
+  if (btnAbrir && painel) {
+    btnAbrir.addEventListener('click', function() {
+      painel.classList.add('aberto');
+    });
+  }
+  if (btnFechar && painel) {
+    btnFechar.addEventListener('click', function() {
+      painel.classList.remove('aberto');
+    });
+  }
+  // Fecha ao clicar fora do painel
+  document.addEventListener('mousedown', function(ev) {
+    if (painel && painel.classList.contains('aberto')) {
+      if (!painel.contains(ev.target) && ev.target !== btnAbrir) {
+        painel.classList.remove('aberto');
+      }
+    }
+  });
 });

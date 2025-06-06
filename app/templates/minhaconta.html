@@ -42,7 +42,13 @@
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
     <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
     <p><strong>CPF:</strong> {{ usuario.cpf_user }}</p>
-    <p><strong>Endereço:</strong> {{ usuario.endereco_user or 'Não informado' }}</p>
+    <p><strong>Endereço:</strong> 
+        {% if usuario.logradouro_user or usuario.numero_user or usuario.bairro_user or usuario.cidade_user or usuario.estado_user %}
+            {{ usuario.logradouro_user or '' }}{% if usuario.logradouro_user and usuario.numero_user %}, {% endif %}{{ usuario.numero_user or '' }}{% if usuario.bairro_user %} - {{ usuario.bairro_user }}{% endif %}{% if usuario.cidade_user %}, {{ usuario.cidade_user }}{% endif %}{% if usuario.estado_user %} - {{ usuario.estado_user }}{% endif %}
+        {% else %}
+            Não informado
+        {% endif %}
+    </p>
     <p><strong>CEP:</strong> {{ usuario.CEP_USER or 'Não informado' }}</p>
     <p><strong>Sexo:</strong> 
         {% if usuario.sexo_user == 'M' %}Masculino
@@ -51,12 +57,57 @@
     </p>
     <p><strong>Status:</strong> {{ usuario.status_cliente }}</p>
     <p><strong>Mensalidade:</strong> 
-        {% if usuario.pagou_mes_atual %}Paga{% else %}Em aberto{% endif %}
+        {% if usuario.pagou_mes_atual %}
+            <span style="color:#388e3c;font-weight:bold;">Paga</span>
+            <br>
+            <span style="color:#fff;font-size:1em;">Mensalidade de <b style="color:#ffd600;">{{ mes_nome }}</b> paga.<br>Próximo vencimento: <b style="color:#ffd600;">{{ proximo_vencimento }}</b></span>
+        {% else %}
+            <span style="color:#d32f2f;font-weight:bold;">Em aberto</span>
+        {% endif %}
     </p>
+    <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalEditarConta')">Editar Conta</button>
 </div>
 
-<div class="minha-conta" style="margin-top:32px;">
-    <h2>INFORMAÇÕES FÍSICAS</h2>
+<!-- MODAL EDITAR CONTA -->
+<div id="modalEditarConta" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Editar Informações da Conta</h2>
+    <form method="POST" action="{{ url_for('usuarios.minha_conta') }}">
+      <input type="hidden" name="acao" value="editar_conta">
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <input type="text" name="nome" id="editNome" placeholder="Nome" value="{{ usuario.Nome_User }}" required>
+        <input type="email" name="email" id="editEmail" placeholder="Email" value="{{ usuario.Email_user }}" required>
+        <input type="password" name="senha" id="editSenha" placeholder="Nova Senha (deixe em branco para não alterar)">
+        <input type="tel" name="telefone" id="editTelefone" placeholder="Telefone" value="{{ usuario.telefone_user }}">
+        <input type="text" name="logradouro" id="editLogradouro" placeholder="Rua" value="{{ usuario.logradouro_user }}">
+        <input type="text" name="numero" id="editNumero" placeholder="Número" value="{{ usuario.numero_user }}">
+        <input type="text" name="bairro" id="editBairro" placeholder="Bairro" value="{{ usuario.bairro_user }}">
+        <input type="text" name="cidade" id="editCidade" placeholder="Cidade" value="{{ usuario.cidade_user }}">
+        <input type="text" name="estado" id="editEstado" placeholder="UF" maxlength="2" value="{{ usuario.estado_user }}">
+        <input type="text" name="cep" id="editCEP" placeholder="CEP" maxlength="9" value="{{ usuario.CEP_USER }}">
+        <select name="id_plano" id="editPlano" required>
+          <option value="">Plano</option>
+          {% for plano in planos %}
+          <option value="{{ plano.ID_PLANO }}" {% if usuario.ID_PLANO == plano.ID_PLANO %}selected{% endif %}>{{ plano.nome_plano }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="margin-top:16px; display:flex; gap:12px;">
+        <button type="submit" class="confirmar">Salvar</button>
+        <button type="button" class="cancelar" onclick="fecharModal('modalEditarConta')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Botão flutuante para abrir painel lateral de informações físicas -->
+<button id="btn-abrir-info-fisica" style="position:fixed;left:0;top:40%;z-index:1200;background:#001f5b;color:#fff;font-size:1.1em;font-weight:bold;padding:18px 12px 18px 8px;border-radius:0 16px 16px 0;border:none;box-shadow:2px 2px 8px #0003;cursor:pointer;transition:background 0.2s;">INFORMAÇÕES FÍSICAS</button>
+
+<!-- Painel lateral de informações físicas -->
+<div id="painel-info-fisica" class="painel-info-fisica-fechado">
+  <div class="painel-info-fisica-conteudo">
+    <button id="btn-fechar-info-fisica" style="position:absolute;top:12px;right:18px;font-size:1.6em;background:none;border:none;color:#001f5b;cursor:pointer;">&times;</button>
+    <h2 style="margin-top:0;">INFORMAÇÕES FÍSICAS</h2>
     {% if datas_medicao and datas_medicao|length > 0 %}
     <form method="get" style="margin-bottom:18px; text-align:center;">
         <select name="data_medicao" id="data_medicao" onchange="this.form.submit()" style="padding:6px 14px; border-radius:6px; font-size:1em;">
@@ -116,6 +167,7 @@
         <p style="color:#888;">Nenhum dado físico cadastrado.</p>
     {% endif %}
     <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalInfoUsuario')">Adicionar Valor</button>
+  </div>
 </div>
 
 <!-- MODAL DE INFORMAÇÕES FÍSICAS -->
@@ -188,6 +240,25 @@ if (formInfoUsuario) {
     if (!validarCamposInfoUsuario()) {
       e.preventDefault();
     }
+  });
+}
+
+// Ações do botão flutuante e painel lateral de informações físicas
+const btnAbrirInfoFisica = document.getElementById('btn-abrir-info-fisica');
+const painelInfoFisica = document.getElementById('painel-info-fisica');
+const btnFecharInfoFisica = document.getElementById('btn-fechar-info-fisica');
+
+if (btnAbrirInfoFisica) {
+  btnAbrirInfoFisica.addEventListener('click', function() {
+    painelInfoFisica.classList.remove('painel-info-fisica-fechado');
+    painelInfoFisica.classList.add('painel-info-fisica-aberto');
+  });
+}
+
+if (btnFecharInfoFisica) {
+  btnFecharInfoFisica.addEventListener('click', function() {
+    painelInfoFisica.classList.remove('painel-info-fisica-aberto');
+    painelInfoFisica.classList.add('painel-info-fisica-fechado');
   });
 }
 </script>

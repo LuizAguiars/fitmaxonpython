@@ -15,6 +15,42 @@ def minha_conta():
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
 
+    # --- Mensalidade: checa expiração automática ---
+    cursor.execute("""
+        SELECT u.*, p.duracao_meses
+        FROM usuario u
+        LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO
+        WHERE u.ID_User = %s
+    """, (user_id,))
+    usuario = cursor.fetchone()
+    mensalidade_expirada = False
+    try:
+        if usuario and usuario.get('pagou_mes_atual') and usuario.get('data_pagamento_mes') and usuario.get('duracao_meses'):
+            data_pagamento = usuario['data_pagamento_mes']
+            if data_pagamento and str(data_pagamento) != 'None':
+                if isinstance(data_pagamento, str):
+                    data_pagamento = datetime.strptime(
+                        data_pagamento, '%Y-%m-%d').date()
+                meses = int(usuario['duracao_meses'])
+                # Cálculo seguro de meses (sem extrapolar datas)
+                try:
+                    from dateutil.relativedelta import relativedelta
+                    data_expira = data_pagamento + relativedelta(months=meses)
+                except ImportError:
+                    # Fallback: 30 dias por mês
+                    data_expira = data_pagamento + timedelta(days=meses*30)
+                hoje = datetime.now().date()
+                if hoje >= data_expira:
+                    cursor.execute(
+                        "UPDATE usuario SET pagou_mes_atual=0, data_pagamento_mes=NULL WHERE ID_User=%s", (user_id,))
+                    db.commit()
+                    usuario['pagou_mes_atual'] = 0
+                    usuario['data_pagamento_mes'] = None
+                    mensalidade_expirada = True
+    except Exception as e:
+        # Se der erro, não expira nada, só segue
+        pass
+
     # Processa inclusão de info_usuario
     if request.method == 'POST' and request.form.get('acao') == 'incluir_info_usuario':
         altura = request.form.get('altura') or None
@@ -38,14 +74,6 @@ def minha_conta():
             db.rollback()
             flash(f'Erro ao adicionar informações físicas: {str(e)}', 'error')
 
-    cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
-               logradouro_user, numero_user, bairro_user, cidade_user, estado_user
-        FROM usuario
-        WHERE ID_User = %s
-    """, (user_id,))
-    usuario = cursor.fetchone()
-
     # Monta endereço formatado
     if usuario:
         partes = []
@@ -60,6 +88,29 @@ def minha_conta():
         if usuario.get('estado_user'):
             partes.append(usuario['estado_user'])
         usuario['endereco_formatado'] = ', '.join(partes) if partes else None
+
+    # Cálculo do próximo vencimento e nome do mês, se pago
+    mes_nome = None
+    proximo_vencimento = None
+    if usuario and usuario.get('pagou_mes_atual') and usuario.get('data_pagamento_mes') and usuario.get('duracao_meses'):
+        data_pagamento = usuario['data_pagamento_mes']
+        if data_pagamento and str(data_pagamento) != 'None':
+            if isinstance(data_pagamento, str):
+                data_pagamento = datetime.strptime(
+                    data_pagamento, '%Y-%m-%d').date()
+            meses = int(usuario['duracao_meses'])
+            try:
+                from dateutil.relativedelta import relativedelta
+                data_venc = data_pagamento + relativedelta(months=meses)
+            except ImportError:
+                data_venc = data_pagamento + timedelta(days=meses*30)
+            proximo_vencimento = data_venc.strftime('%d/%m/%Y')
+            # Mês em português
+            meses_pt = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+            mes_idx = data_pagamento.month - 1
+            mes_nome = meses_pt[mes_idx].capitalize(
+            ) if 0 <= mes_idx < 12 else data_pagamento.strftime('%B')
 
     # Buscar aulas agendadas e concluídas
     cursor.execute("""
@@ -95,8 +146,47 @@ def minha_conta():
     else:
         infos_filtradas = infos_usuario[:1]  # só o mais recente
 
+    # Processa edição de conta (modal)
+    if request.method == 'POST' and request.form.get('acao') == 'editar_conta':
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        telefone = request.form.get('telefone')
+        logradouro = request.form.get('logradouro')
+        numero = request.form.get('numero')
+        bairro = request.form.get('bairro')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
+        cep = request.form.get('cep')
+        id_plano = request.form.get('id_plano')
+        try:
+            update_fields = [
+                'Nome_User=%s', 'Email_user=%s', 'telefone_user=%s',
+                'logradouro_user=%s', 'numero_user=%s', 'bairro_user=%s',
+                'cidade_user=%s', 'estado_user=%s', 'CEP_USER=%s', 'ID_PLANO=%s'
+            ]
+            params = [nome, email, telefone, logradouro, numero,
+                      bairro, cidade, estado, cep, id_plano, user_id]
+            if senha:
+                update_fields.insert(2, 'Senha_User=%s')
+                params.insert(2, senha)
+            cursor.execute(f"""
+                UPDATE usuario SET {', '.join(update_fields)} WHERE ID_User=%s
+            """, tuple(params))
+            db.commit()
+            flash('Dados da conta atualizados com sucesso!', 'success')
+            return redirect(url_for('usuarios.minha_conta'))
+        except Exception as e:
+            db.rollback()
+            flash(f'Erro ao atualizar dados da conta: {str(e)}', 'error')
+            return redirect(url_for('usuarios.minha_conta'))
+
+    # Buscar todos os planos para o modal de edição de conta
+    cursor.execute("SELECT * FROM plano")
+    planos = cursor.fetchall()
+
     db.close()
-    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida)
+    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida, mes_nome=mes_nome, proximo_vencimento=proximo_vencimento, planos=planos)
 
 
 # Adicionando lógica para filtrar por plano e status
@@ -444,3 +534,19 @@ def inserir_info():
         return 'Informações físicas inseridas com sucesso!'
     except Exception as e:
         return f'Erro ao inserir informações físicas: {str(e)}'
+
+
+@usuarios_bp.route('/pagar-mensalidade', methods=['POST'])
+def pagar_mensalidade():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para pagar a mensalidade.", "error")
+        return redirect(url_for('auth.login'))
+    user_id = session['usuario']
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "UPDATE usuario SET pagou_mes_atual=1, data_pagamento_mes=CURDATE() WHERE ID_User=%s", (user_id,))
+    db.commit()
+    db.close()
+    flash('Mensalidade paga com sucesso! Aproveite seu plano.', 'success')
+    return redirect(url_for('usuarios.minha_conta'))
