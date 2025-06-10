@@ -228,3 +228,71 @@ def relatorio_personal():
         tipos_mais_usados=tipos_mais_usados,
         usuarios_unidade=usuarios_unidade
     )
+
+@relatorios_bp.route('/relatorios/usuarios', methods=['GET'])
+def relatorio_usuarios():
+    conn = get_db_connection()
+    if conn is None:
+        return "Erro ao conectar ao banco de dados", 500
+
+    cursor = conn.cursor(dictionary=True)
+
+    # Consulta peso médio por unidade, pegando o peso da última medição de cada usuário
+    cursor.execute('''
+        SELECT un.Nome_Unidade, AVG(info.Peso) AS peso_medio
+        FROM (
+            SELECT ID_User, Peso
+            FROM info_usuario iu1
+            WHERE DataMedicao = (
+                SELECT MAX(DataMedicao)
+                FROM info_usuario iu2
+                WHERE iu2.ID_User = iu1.ID_User
+            )
+        ) AS info
+        JOIN usuario us ON info.ID_User = us.ID_User
+        JOIN unidades un ON us.Unidade_Prox_ID = un.ID_Unidades
+        GROUP BY un.Nome_Unidade
+    ''')
+
+    pesos_unidade = cursor.fetchall()
+
+    # Novo: consulta para pegar o IMC mais recente de cada usuário
+    cursor.execute('''
+        SELECT iu1.ID_User, iu1.IMC
+        FROM info_usuario iu1
+        WHERE iu1.DataMedicao = (
+            SELECT MAX(iu2.DataMedicao)
+            FROM info_usuario iu2
+            WHERE iu2.ID_User = iu1.ID_User
+        )
+        AND iu1.IMC IS NOT NULL
+    ''')
+    imc_usuarios = cursor.fetchall()
+
+    # Classificação IMC
+    def classificar_imc(imc):
+        if imc < 18.5:
+            return "Abaixo do peso"
+        elif imc < 25:
+            return "Peso normal"
+        elif imc < 30:
+            return "Sobrepeso"
+        else:
+            return "Obesidade"
+
+    from collections import Counter
+    categorias = [classificar_imc(u['IMC']) for u in imc_usuarios if u['IMC'] is not None]
+    contagem = Counter(categorias)
+    imc_categorias = [
+        {"categoria": cat, "quantidade": contagem.get(cat, 0)}
+        for cat in ["Abaixo do peso", "Peso normal", "Sobrepeso", "Obesidade"]
+    ]
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'relatorios_usuarios.html',
+        pesos_unidade=pesos_unidade,
+        imc_categorias=imc_categorias
+    )

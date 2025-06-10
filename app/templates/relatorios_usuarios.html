@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Relatório de Usuários - Fitmax Gym</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios1.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+ .relatorio-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 32px 28px 24px 28px;
+      margin: 32px auto 24px auto;
+      max-width: 900px;
+      color: #222;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .relatorio-card h2 {
+      color: #222;
+      font-size: 1.5rem;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .relatorio-card p, .relatorio-card td, .relatorio-card th {
+      color: #444;
+      font-size: 1.08rem;
+    }
+    .relatorio-card table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 10px;
+      background: #fafbfc;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .relatorio-card th, .relatorio-card td {
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .relatorio-card th {
+      background: #f2f3f5;
+      color: #222;
+      font-weight: 500;
+    }
+    .relatorio-card tr:nth-child(even) {
+      background: #f7f8fa;
+    }
+    .relatorio-card tr:nth-child(odd) {
+      background: #fff;
+    }
+    .relatorio-card canvas {
+      background: #fff;
+      border-radius: 12px;
+      margin-top: 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    </div>
+    <nav class="menu-logado">
+        <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
+        <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
+        <a href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
+        <a href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
+    </nav>
+</header>
+<main>
+    <form method="get" action="" class="relatorio-card">
+        <label for="unidade_id"><strong>Filtrar por Unidade:</strong></label>
+        <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            {% for unidade in pesos_unidade %}
+                <option value="{{ unidade.Nome_Unidade }}" {% if request.args.get('unidade_id') == unidade.Nome_Unidade %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    <section class="relatorio-card">
+        <h1>Relatório de Peso Médio por Unidade</h1>
+        <canvas id="graficoPeso" width="600" height="400"></canvas>
+        <table>
+            <thead>
+                <tr>
+                    <th>Unidade</th>
+                    <th>Peso Médio (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for unidade in pesos_unidade %}
+                <tr>
+                    <td>{{ unidade.Nome_Unidade }}</td>
+                    <td>{{ unidade.peso_medio|round(2) if unidade.peso_medio else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">Nenhum dado encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <section class="relatorio-card">
+        <h2>Distribuição dos Alunos por Categoria de IMC</h2>
+        <canvas id="graficoIMC" width="600" height="400"></canvas>
+        <table>
+            <thead>
+                <tr>
+                    <th>Categoria</th>
+                    <th>Quantidade de Alunos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in imc_categorias %}
+                <tr>
+                    <td>{{ cat.categoria }}</td>
+                    <td>{{ cat.quantidade }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">Nenhum dado encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+<script>
+    const nomesUnidades = {{ pesos_unidade | map(attribute='Nome_Unidade') | list | tojson }};
+    const pesosMedios = {{ pesos_unidade | map(attribute='peso_medio') | list | tojson }};
+
+    const ctx = document.getElementById('graficoPeso').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: nomesUnidades,
+            datasets: [{
+                label: 'Peso Médio (kg)',
+                data: pesosMedios,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Peso Médio por Unidade',
+                    font: { size: 18 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Peso Médio (kg)'
+                    }
+                }
+            }
+        }
+    });
+
+    const imcCategorias = {{ imc_categorias | map(attribute='categoria') | list | tojson }};
+    const imcQuantidades = {{ imc_categorias | map(attribute='quantidade') | list | tojson }};
+
+    const ctxIMC = document.getElementById('graficoIMC').getContext('2d');
+    new Chart(ctxIMC, {
+        type: 'bar',
+        data: {
+            labels: imcCategorias,
+            datasets: [{
+                label: 'Quantidade de Alunos',
+                data: imcQuantidades,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Distribuição dos Alunos por IMC',
+                    font: { size: 18 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Quantidade de Alunos'
+                    }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
