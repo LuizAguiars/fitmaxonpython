@@ -123,7 +123,7 @@ def concluir_aula():
                         {equipamentos_html}
                         <br>
                         👉 <a href='https://www.google.com/maps/search/?api=1&query={endereco_formatado}' target='_blank'>Ver no Google Maps</a><br><br>
-                        <b>Ajude-nos a melhorar:</b> <a href='{url_for('feedbacks.feedbackstar', _external=True)}?id_treino={id_agenda}'>Clique aqui para avaliar sua experiência</a>
+                        <b>Ajude-nos a melhorar:</b> <a href='{url_for('feedbacks.feedbacks', _external=True)}?id_treino={id_agenda}'>Clique aqui para avaliar sua experiência</a>
                       </p>
                       <div style='text-align: right;'><img src='cid:logo1' alt='Logo Fitmax' width='120'></div>
                     </div>

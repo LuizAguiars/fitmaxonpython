@@ -160,7 +160,8 @@ def relatorio_equipamentos():
     cursor.execute(
         "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
-        horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
+        # Fix: use lowercase keys to match MySQL/Python dict output
+        horarios_unidade[row['id_unidades']] = row['horario_funcionamento_id']
 
     horarios_funcionamento = {}
     if unidade_id and horarios_unidade.get(int(unidade_id)):
@@ -341,15 +342,7 @@ def relatorio_equipamentos():
     cursor.execute(
         "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
-        horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
-
-    horarios_funcionamento = {}
-    if unidade_id and horarios_unidade.get(int(unidade_id)):
-        cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
-                       (horarios_unidade[int(unidade_id)],))
-        horario = cursor.fetchone()
-        if horario:
-            horarios_funcionamento = horario
+        horarios_unidade[row['id_unidades']] = row['horario_funcionamento_id']
 
     # Relatório de ociosidade por equipamento no mês
     from datetime import datetime, timedelta
@@ -404,7 +397,7 @@ def relatorio_equipamentos():
                     if atual < fim_dia:
                         total_ocioso += (fim_dia - atual).total_seconds() // 60
             ociosidade_mensal.append({
-                'nome': eq['Nome_Equipamento'],
+                'nome': eq['Equipamento'],
                 'minutos_ocioso': int(total_ocioso),
                 'horas_ocioso': round(total_ocioso/60, 2)
             })
