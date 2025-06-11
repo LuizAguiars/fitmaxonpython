@@ -1,10 +1,6 @@
 VALIDAÇÕES DOS CAMPOS JÁ VERIFICADAS:
 GESTÃO UNIDADES:
-(Incluir unidade) Campos Nome, Logradouro, cidade, estado estão aceitando numero e os campos numero e CNPJ estão aceitando letra 
-
-(Editar unidade) Os mesmos campos com os mesmos erros citados anteriormente
-
-/////OUTRAS VALIDAÇÕES CORRETAS/////
+/////VALIDAÇÕES CORRETAS E AJUSTADAS/////
 
 GESTÃO PERSONAIS::
 (Incluir personais) Campos telefone e código emissor aceitando letra, campos nome certificado e emissor certificado aceitando número

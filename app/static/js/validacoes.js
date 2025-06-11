@@ -465,3 +465,60 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// ===== Validações específicas para inclusão/edição de unidade =====
+
+// Permitir apenas letras e espaços para Nome, Logradouro, Cidade, Estado
+document.addEventListener('DOMContentLoaded', function() {
+  // Nome da unidade (apenas letras e espaços)
+  document.querySelectorAll('input[name="nome"]').forEach(input => {
+    const form = input.closest('form');
+    const isUnidadeForm = form && (form.action.includes('unidade') || form.action.includes('gerenciar_unidade'));
+    if (isUnidadeForm) {
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+        this.setCustomValidity(this.value.length > 0 ? '' : 'Nome inválido');
+      });
+    }
+  });
+
+  // Logradouro (apenas letras e espaços)
+  document.querySelectorAll('input[name="logradouro"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Logradouro inválido');
+    });
+  });
+
+  // Cidade (apenas letras e espaços)
+  document.querySelectorAll('input[name="cidade"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Cidade inválida');
+    });
+  });
+
+  // Estado (apenas letras e espaços)
+  document.querySelectorAll('input[name="estado"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Estado inválido');
+    });
+  });
+
+  // Número (apenas números)
+  document.querySelectorAll('input[name="numero"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Número inválido');
+    });
+  });
+
+  // CNPJ (apenas números, 14 dígitos)
+  document.querySelectorAll('input[name="cnpj"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 14);
+      this.setCustomValidity(this.value.length === 14 ? '' : 'CNPJ deve ter 14 dígitos numéricos');
+    });
+  });
+});
