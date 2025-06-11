@@ -23,4 +23,19 @@ GESTÃO EQUIPAMENTOS:
 (Editar equipamentos) Os mesmos campos com os mesmos erros citados anteriormente
 
 GESTÃO PLANOS: 
-VALIDAÇÕES CORRETAS
+VALIDAÇÕES CORRETAS/////
+
+AGENDAR AULA:
+VALIDAÇÕES CORRETAS/////
+
+MINHA CONTA:
+(Editar conta) O campo telefone esta aceitando letras
+
+/////OUTRAS VALIDAÇÕES CORRETAS/////
+
+INFORMAÇÕES FISICAS:
+VALIDAÇÕES CORRETAS/////
+
+GESTÃO DE TREINO PADRAO:
+VALIDAÇÕES CORRETAS/////
+

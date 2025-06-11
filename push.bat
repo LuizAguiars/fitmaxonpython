@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Anotação dos erros de validação
+git commit -m "Anotação dos erros de validação e alguns ajustes feitos
  %DATAHORA%"
 
 
