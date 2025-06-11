@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from db import get_db_connection
 from datetime import datetime, date, timedelta, time
 
@@ -295,3 +295,127 @@ def agendar():
     conn.close()
 
     return render_template('agendar.html', personais=personais, treinos=treinos, unidades=unidades)
+
+
+@agendar_bp.route('/api/horarios_disponiveis', methods=['GET'])
+def horarios_disponiveis():
+    from datetime import datetime, timedelta, time
+    id_unidade = request.args.get('unidade')
+    id_personal = request.args.get('personal')
+    id_treino = request.args.get('tipo_treino')
+    data = request.args.get('data')
+    if not all([id_unidade, id_personal, id_treino, data]):
+        return jsonify({'horarios': [], 'erro': 'Preencha todos os campos'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Buscar duração da aula
+        cursor.execute("""
+            SELECT COALESCE(SUM(tempo_minutos), 0) as duracao_total
+            FROM equipamentos_por_tipo_treino
+            WHERE idtipo_de_treino = %s
+        """, (id_treino,))
+        row_dur = cursor.fetchone()
+        duracao_aula = int(
+            row_dur['duracao_total']) if row_dur and row_dur['duracao_total'] is not None else 0
+        if duracao_aula == 0:
+            return jsonify({'horarios': [], 'erro': 'Tipo de treino sem duração configurada.'}), 400
+
+        # Descobre o dia da semana em português
+        data_obj = datetime.strptime(data, "%Y-%m-%d").date()
+        dia_semana = data_obj.strftime('%A')
+        dia_semana_map = {
+            'Monday': 'Segunda',
+            'Tuesday': 'Terca',
+            'Wednesday': 'Quarta',
+            'Thursday': 'Quinta',
+            'Friday': 'Sexta',
+            'Saturday': 'Sabado',
+            'Sunday': 'Domingo'
+        }
+        dia_em_portugues = dia_semana_map[dia_semana]
+        # Busca o horário de funcionamento da unidade para o dia
+        cursor.execute("""
+            SELECT Hora_Inicio, Hora_Fim FROM horarios_funcionamento
+            WHERE FIND_IN_SET(%s, Dias_Semana)
+        """, (dia_em_portugues,))
+        horario_func = cursor.fetchone()
+        if not horario_func:
+            return jsonify({'horarios': [], 'erro': 'A unidade não funciona neste dia da semana.'}), 200
+        hora_inicio_func = horario_func['Hora_Inicio']
+        hora_fim_func = horario_func['Hora_Fim']
+        # Corrige tipos: pode vir como timedelta, time ou string
+
+        def to_time(h):
+            if isinstance(h, time):
+                return h
+            elif isinstance(h, timedelta):
+                return (datetime.min + h).time()
+            elif isinstance(h, datetime):
+                return h.time()
+            elif isinstance(h, str):
+                h = h.strip()
+                try:
+                    return datetime.strptime(h, "%H:%M:%S").time()
+                except ValueError:
+                    return datetime.strptime(h, "%H:%M").time()
+            raise TypeError("Hora inválida")
+        hora_inicio_func = to_time(hora_inicio_func)
+        hora_fim_func = to_time(hora_fim_func)
+        # Corrige caso o horário de fechamento seja depois da meia-noite
+        hora_inicio_func_dt = datetime.combine(data_obj, hora_inicio_func)
+        hora_fim_func_dt = datetime.combine(data_obj, hora_fim_func)
+        if hora_fim_func <= hora_inicio_func:
+            hora_fim_func_dt += timedelta(days=1)
+        # Gera todos os horários possíveis
+        horarios_possiveis = []
+        atual = hora_inicio_func_dt
+        agora = datetime.now()
+        while atual + timedelta(minutes=duracao_aula) <= hora_fim_func_dt:
+            # Se for hoje, só mostra horários futuros
+            if data_obj > agora.date() or (data_obj == agora.date() and atual.time() >= agora.time()):
+                horarios_possiveis.append(atual.time().strftime('%H:%M'))
+            atual += timedelta(minutes=15)  # intervalos de 15 minutos
+        # Busca agendamentos do personal nesse dia
+        cursor.execute("""
+            SELECT HoraTreino, DuracaoAula FROM agendar_treino
+            WHERE ID_Personal = %s AND DataTreino = %s AND status IN ('Agendado', 'Concluído')
+        """, (id_personal, data_obj))
+        agendamentos = cursor.fetchall()
+        horarios_disponiveis = []
+        for h in horarios_possiveis:
+            inicio_novo = datetime.combine(
+                data_obj, datetime.strptime(h, '%H:%M').time())
+            fim_novo = inicio_novo + timedelta(minutes=duracao_aula)
+            conflito = False
+            for ag in agendamentos:
+                hora_existente = ag['HoraTreino']
+                if isinstance(hora_existente, timedelta):
+                    hora_existente = (datetime.min + hora_existente).time()
+                elif isinstance(hora_existente, str):
+                    try:
+                        hora_existente = datetime.strptime(
+                            hora_existente, '%H:%M:%S').time()
+                    except ValueError:
+                        hora_existente = datetime.strptime(
+                            hora_existente, '%H:%M').time()
+                elif isinstance(hora_existente, datetime):
+                    hora_existente = hora_existente.time()
+                # else: já é time
+                inicio_existente = datetime.combine(data_obj, hora_existente)
+                duracao_existente = int(
+                    ag['DuracaoAula']) if ag['DuracaoAula'] is not None else 0
+                fim_existente = inicio_existente + \
+                    timedelta(minutes=duracao_existente)
+                if (inicio_novo < fim_existente and fim_novo > inicio_existente):
+                    conflito = True
+                    break
+            if not conflito:
+                horarios_disponiveis.append(h)
+        return jsonify({'horarios': horarios_disponiveis})
+    except Exception as e:
+        return jsonify({'horarios': [], 'erro': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()

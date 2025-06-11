@@ -221,5 +221,126 @@
       }, 7000);
     });
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const horaInput = document.getElementById('hora');
+      const unidadeSelect = document.getElementById('unidade');
+      const personalSelect = document.getElementById('personal');
+      const treinoSelect = document.getElementById('tipo_treino');
+      const dataInput = document.getElementById('data');
+      const avisoDiv = document.createElement('div');
+      avisoDiv.id = 'aviso-horarios';
+      avisoDiv.style.color = '#e74c3c';
+      avisoDiv.style.fontWeight = 'bold';
+      avisoDiv.style.textAlign = 'center';
+      avisoDiv.style.marginTop = '8px';
+      horaInput.parentNode.insertBefore(avisoDiv, horaInput.nextSibling);
+
+      function limparHorarios() {
+        horaInput.innerHTML = '';
+        horaInput.value = '';
+        avisoDiv.textContent = '';
+      }
+
+      function carregarHorarios() {
+        limparHorarios();
+        if (!unidadeSelect.value || !personalSelect.value || !treinoSelect.value || !dataInput.value) return;
+        fetch(`/api/horarios_disponiveis?unidade=${unidadeSelect.value}&personal=${personalSelect.value}&tipo_treino=${treinoSelect.value}&data=${dataInput.value}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res.horarios && res.horarios.length > 0) {
+              horaInput.innerHTML = '';
+              res.horarios.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.textContent = h;
+                horaInput.appendChild(opt);
+              });
+              avisoDiv.textContent = '';
+              horaInput.disabled = false;
+            } else {
+              avisoDiv.textContent = res.erro || 'Este personal não possui horários disponíveis neste dia.';
+              horaInput.innerHTML = '';
+              horaInput.disabled = true;
+            }
+          })
+          .catch(() => {
+            avisoDiv.textContent = 'Erro ao buscar horários.';
+            horaInput.innerHTML = '';
+            horaInput.disabled = true;
+          });
+      }
+
+      [unidadeSelect, personalSelect, treinoSelect].forEach(el => {
+        el.addEventListener('change', carregarHorarios);
+      });
+      dataInput.addEventListener('change', carregarHorarios);
+      dataInput.addEventListener('input', carregarHorarios); // Busca ao digitar data
+
+      // Troca input time por select
+      const horaParent = horaInput.parentNode;
+      // Adiciona label acima do select de horários
+      const horariosLabel = document.createElement('label');
+      horariosLabel.textContent = 'Horários disponíveis:';
+      horariosLabel.style.display = 'block';
+      horariosLabel.style.fontWeight = 'bold';
+      horariosLabel.style.marginBottom = '4px';
+      horariosLabel.style.color = '#222'; // preto
+      horaParent.insertBefore(horariosLabel, horaInput);
+      const selectHora = document.createElement('select');
+      selectHora.id = 'hora';
+      selectHora.name = 'hora';
+      selectHora.required = true;
+      selectHora.style.width = '100%';
+      selectHora.style.padding = '8px';
+      selectHora.style.borderRadius = '6px';
+      selectHora.style.border = '1px solid #ccc';
+      horaParent.replaceChild(selectHora, horaInput);
+
+      // Atualiza referências após troca
+      const horaSelect = document.getElementById('hora');
+
+      function limparHorarios() {
+        horaSelect.innerHTML = '';
+        horaSelect.value = '';
+        avisoDiv.textContent = '';
+      }
+
+      function carregarHorarios() {
+        limparHorarios();
+        if (!unidadeSelect.value || !personalSelect.value || !treinoSelect.value || !dataInput.value) return;
+        fetch(`/api/horarios_disponiveis?unidade=${unidadeSelect.value}&personal=${personalSelect.value}&tipo_treino=${treinoSelect.value}&data=${dataInput.value}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res.horarios && res.horarios.length > 0) {
+              horaSelect.innerHTML = '';
+              res.horarios.forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h;
+                opt.textContent = h;
+                horaSelect.appendChild(opt);
+              });
+              avisoDiv.textContent = '';
+              horaSelect.disabled = false;
+            } else {
+              avisoDiv.textContent = res.erro || 'Este personal não possui horários disponíveis neste dia.';
+              horaSelect.innerHTML = '';
+              horaSelect.disabled = true;
+            }
+          })
+          .catch(() => {
+            avisoDiv.textContent = 'Erro ao buscar horários.';
+            horaSelect.innerHTML = '';
+            horaSelect.disabled = true;
+          });
+      }
+
+      [unidadeSelect, personalSelect, treinoSelect].forEach(el => {
+        el.addEventListener('change', carregarHorarios);
+      });
+      dataInput.addEventListener('change', carregarHorarios);
+      dataInput.addEventListener('input', carregarHorarios); // Busca ao digitar data
+    });
+  </script>
 </body>
 </html>
