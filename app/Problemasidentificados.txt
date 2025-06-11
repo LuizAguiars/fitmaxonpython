@@ -1,11 +1,30 @@
-Cadastro está aceitando nome com espaço em branco, // Verificado e o campo nome não aceita espaço em branco
-Gestão de unidades conferido(tudo correto),
-Gestão de personal na lista de adicionar personal não aparece a unidade, // Não Verificado 
-Gestão de usuários esta aceitando letras no telefone e não da o formato de telefone, está aceitando espaços em branco antes e depois do nome, após o @ esta dando pra colocar numero, letras (forma incorreta e não esta alertando), após o incluir da pra mudar o cpf do usuário no editar, // Ajustado o telefone, apos arroba sempre aceita numero burro do krl, é claro que da pra mudar o cpf a porra do editar serve pra isso
-Gestão de equipamento  aceitando espaços em branco em seu incluir, // Ajuste realizado e funcionando
+VALIDAÇÕES DOS CAMPOS JÁ VERIFICADAS:
+GESTÃO UNIDADES:
+(Incluir unidade) Campos Nome, Logradouro, cidade, estado estão aceitando numero e os campos numero e CNPJ estão aceitando letra 
 
+(Editar unidade) Os mesmos campos com os mesmos erros citados anteriormente
 
+/////OUTRAS VALIDAÇÕES CORRETAS/////
 
-<--Verificar em todos-->
-Data nascimento, data( esta aceitando anos tanto distantes ex.2222, tanto passadas, ex. 0985,)
-Campos onde e possível digitar, estão aceitando espaço em branco(Confirmar todos)
+GESTÃO PERSONAIS::
+(Incluir personais) Campos telefone e código emissor aceitando letra, campos nome certificado e emissor certificado aceitando número
+
+(Editar personais) Os mesmos campos com os mesmos erros citados anteriormente
+
+/////OUTRAS VALIDAÇÕES CORRETAS/////
+
+GESTÃO USUÁRIOS:
+(Incluir usuários) Campo número aceitando letras, Campos cidade e UF aceitando número e campo data aceitando datas futuras
+
+(editar usuários) Os mesmos campos com os mesmos erros citados anteriormente, além do campo telefone que também está aceitando letras
+
+/////OUTRAS VALIDAÇÕES CORRETAS/////
+
+GESTÃO EQUIPAMENTOS: 
+
+(Incluir equipamentos) Em data da compra aceita datas futuras 
+
+(Editar equipamentos) Os mesmos campos com os mesmos erros citados anteriormente
+
+GESTÃO PLANOS: 
+VALIDAÇÕES CORRETAS
