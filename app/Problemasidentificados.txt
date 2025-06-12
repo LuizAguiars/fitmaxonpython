@@ -26,7 +26,7 @@ GESTÃO PLANOS:
 VALIDAÇÕES CORRETAS/////
 
 AGENDAR AULA:
-VALIDAÇÕES CORRETAS/////
+Dropdown selecionar treino e horarios disponiveil não estão funcionando
 
 MINHA CONTA:
 (Editar conta) O campo telefone esta aceitando letras
@@ -39,3 +39,5 @@ VALIDAÇÕES CORRETAS/////
 GESTÃO DE TREINO PADRAO:
 VALIDAÇÕES CORRETAS/////
 
+RELATORIOS DE EQUIPAMENTOS:
+Dropdown filtrar por unidade não esta funcionando
