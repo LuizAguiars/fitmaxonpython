@@ -215,8 +215,7 @@ def relatorio_personal():
         ''', [unidade_id] if unidade_id else [])
         usuarios_unidade = cursor.fetchall()
 
-    # Tabela de ociosidade dos personais
-    # 1. Buscar todos os personais (filtrando unidade se necessário)
+    # Tabela de ociosidade dos personais (ajustado para o dia)
     if unidade_id:
         cursor.execute("SELECT * FROM personal WHERE ID_Unidade = %s", (unidade_id,))
     else:
@@ -232,46 +231,94 @@ def relatorio_personal():
             WHERE ID_Personal = %s AND Ativo = 1
         ''', (personal['ID_Personal'],))
         horarios = cursor.fetchall()
-        minutos_disponivel_total = 0
         minutos_disponivel_por_semana = 0
         dias_set = set()
+        minutos_disponivel_por_dia = {}
         for h in horarios:
             h1 = datetime.strptime(str(h['Hora_Inicio']), "%H:%M:%S")
             h2 = datetime.strptime(str(h['Hora_Fim']), "%H:%M:%S")
             minutos = int((h2 - h1).total_seconds() // 60)
             minutos_disponivel_por_semana += minutos
             dias_set.add(h['Dia_Semana'])
+            # Acumula por dia da semana
+            if h['Dia_Semana'] not in minutos_disponivel_por_dia:
+                minutos_disponivel_por_dia[h['Dia_Semana']] = 0
+            minutos_disponivel_por_dia[h['Dia_Semana']] += minutos
+
         # Tempo disponível diário (média por dia com horário)
         dias_com_horario = len(dias_set) if dias_set else 1
         minutos_disponivel_diario = minutos_disponivel_por_semana // dias_com_horario if dias_com_horario else 0
 
-        # Tempo utilizado: soma da duração das aulas agendadas no mês/unidade
-        query_aulas = '''
+        # --- Filtro de unidade aplicado corretamente nas queries de aulas ---
+        if mes:
+            hoje = datetime.now()
+            ano, mes_num = mes.split('-')
+            if int(ano) == hoje.year and int(mes_num) == hoje.month:
+                data_dia = hoje.strftime("%Y-%m-%d")
+                ultimo_dia = hoje.day
+            else:
+                data_dia = f"{ano}-{mes_num}-01"
+                from calendar import monthrange
+                ultimo_dia = monthrange(int(ano), int(mes_num))[1]
+        else:
+            data_dia = datetime.now().strftime("%Y-%m-%d")
+            ultimo_dia = datetime.now().day
+
+        # Tempo utilizado no dia (com filtro de unidade)
+        query_aulas_dia = '''
             SELECT SUM(ag.DuracaoAula) as minutos
             FROM agendar_treino ag
-            WHERE ag.ID_Personal = %s
+            WHERE ag.ID_Personal = %s AND ag.DataTreino = %s
         '''
-        query_params = [personal['ID_Personal']]
+        query_params_dia = [personal['ID_Personal'], data_dia]
         if unidade_id:
-            query_aulas += ' AND ag.ID_Unidade_Treino = %s'
-            query_params.append(unidade_id)
-        if mes:
-            query_aulas += ' AND DATE_FORMAT(ag.DataTreino, "%%Y-%%m") = %s'
-            query_params.append(mes)
-        cursor.execute(query_aulas, query_params)
-        minutos_utilizado = cursor.fetchone()['minutos'] or 0
+            query_aulas_dia += ' AND ag.ID_Unidade_Treino = %s'
+            query_params_dia.append(unidade_id)
+        cursor.execute(query_aulas_dia, query_params_dia)
+        minutos_utilizado_dia = cursor.fetchone()['minutos'] or 0
 
-        # Tempo ocioso = disponível semanal - utilizado no período
-        tempo_ocioso = max(0, minutos_disponivel_por_semana - minutos_utilizado)
+        tempo_ocioso_dia = max(0, minutos_disponivel_diario - minutos_utilizado_dia)
+
+        # Tempo utilizado no mês até o dia atual (com filtro de unidade)
+        if mes:
+            ano, mes_num = mes.split('-')
+            if int(ano) == datetime.now().year and int(mes_num) == datetime.now().month:
+                dia_final = datetime.now().day
+            else:
+                from calendar import monthrange
+                dia_final = monthrange(int(ano), int(mes_num))[1]
+            data_inicio_mes = f"{ano}-{mes_num}-01"
+            data_fim_mes = f"{ano}-{mes_num}-{dia_final:02d}"
+        else:
+            hoje = datetime.now()
+            data_inicio_mes = hoje.replace(day=1).strftime("%Y-%m-%d")
+            data_fim_mes = hoje.strftime("%Y-%m-%d")
+            dia_final = hoje.day
+
+        query_aulas_mes = '''
+            SELECT SUM(ag.DuracaoAula) as minutos
+            FROM agendar_treino ag
+            WHERE ag.ID_Personal = %s AND ag.DataTreino BETWEEN %s AND %s
+        '''
+        query_params_mes = [personal['ID_Personal'], data_inicio_mes, data_fim_mes]
+        if unidade_id:
+            query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
+            query_params_mes.append(unidade_id)
+        cursor.execute(query_aulas_mes, query_params_mes)
+        minutos_utilizado_mes = cursor.fetchone()['minutos'] or 0
+
+        tempo_ocioso_mensal = max(0, minutos_disponivel_diario * dia_final - minutos_utilizado_mes)
 
         tempo_ocioso_personais.append({
             "Nome_Personal": personal['Nome_Personal'],
             "tempo_disponivel": minutos_disponivel_diario,
             "tempo_disponivel_horas": f"{minutos_disponivel_diario//60}h {minutos_disponivel_diario%60}min",
-            "tempo_utilizado": minutos_utilizado,
-            "tempo_utilizado_horas": f"{minutos_utilizado//60}h {minutos_utilizado%60}min",
-            "tempo_ocioso": tempo_ocioso,
-            "tempo_ocioso_horas": f"{tempo_ocioso//60}h {tempo_ocioso%60}min"
+            "tempo_utilizado": minutos_utilizado_dia,
+            "tempo_utilizado_horas": f"{minutos_utilizado_dia//60}h {minutos_utilizado_dia%60}min",
+            "tempo_ocioso": tempo_ocioso_dia,
+            "tempo_ocioso_horas": f"{tempo_ocioso_dia//60}h {tempo_ocioso_dia%60}min",
+            "tempo_ocioso_mensal": tempo_ocioso_mensal,
+            "tempo_ocioso_mensal_horas": f"{tempo_ocioso_mensal//60}h {tempo_ocioso_mensal%60}min"
         })
 
     cursor.close()

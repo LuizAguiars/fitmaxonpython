@@ -90,7 +90,7 @@
 <main>
   <form method="get" action="" class="relatorio-card">
     <label for="unidade_id"><strong>Filtrar por Unidade:</strong></label>
-    <select name="unidade_id" id="unidade_id">
+    <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for unidade in unidades %}
         <option value="{{ unidade.ID_Unidades }}" {% if unidade_id == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>

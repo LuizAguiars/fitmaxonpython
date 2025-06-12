@@ -84,7 +84,7 @@
   </nav>
 </header>
 <main>
-  <form id="filtro-unidade-mes-form" method="get" action="" class="relatorio-card">
+  <form id="filtro-unidade-mes-form" method="get" action="" class="relatorio-card" autocomplete="off">
     <label for="unidade_id"><strong>Filtrar por Unidade:</strong></label>
     <select name="unidade_id" id="unidade_id">
       <option value="">Todas</option>
@@ -93,7 +93,7 @@
       {% endfor %}
     </select>
     <label for="mes" style="margin-left:20px;"><strong>Filtrar por Mês:</strong></label>
-    <input type="month" name="mes" id="mes" value="{{ mes }}" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #ccc;" autocomplete="off" min="2000-01" max="2099-12">
+    <input type="month" name="mes" id="mes" value="{{ mes }}" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #ccc;" min="2000-01" max="2099-12">
   </form>
 
   <section class="relatorio-card">
@@ -158,7 +158,8 @@
           <th onclick="ordenarTabela(0)">Personal</th>
           <th onclick="ordenarTabela(1)">Tempo Disponível Diário</th>
           <th onclick="ordenarTabela(2)">Tempo de Trabalho Semanal</th>
-          <th onclick="ordenarTabela(3)">Tempo Ocioso</th>
+          <th onclick="ordenarTabela(3)">Tempo Ocioso do Dia</th>
+          <th>Tempo Ocioso Mensal</th>
         </tr>
       </thead>
       <tbody>
@@ -168,9 +169,10 @@
             <td data-valor="{{ personal.tempo_disponivel }}">{{ personal.tempo_disponivel }}min / {{ personal.tempo_disponivel_horas }}</td>
             <td data-valor="{{ personal.tempo_utilizado }}">{{ personal.tempo_utilizado }}min / {{ personal.tempo_utilizado_horas }}</td>
             <td data-valor="{{ personal.tempo_ocioso }}">{{ personal.tempo_ocioso }}min / {{ personal.tempo_ocioso_horas }}</td>
+            <td data-valor="{{ personal.tempo_ocioso_mensal }}">{{ personal.tempo_ocioso_mensal }}min / {{ personal.tempo_ocioso_mensal_horas }}</td>
           </tr>
         {% else %}
-          <tr><td colspan="4">Nenhum dado encontrado.</td></tr>
+          <tr><td colspan="5">Nenhum dado encontrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -215,54 +217,17 @@
     }
   });
 
-  // AJAX para filtro de unidade e mês
+  // Remover AJAX e usar apenas submit automático para evitar problemas de atualização do filtro
   document.addEventListener('DOMContentLoaded', function() {
-    var form = document.getElementById('filtro-unidade-mes-form');
     var unidadeSelect = document.getElementById('unidade_id');
     var mesInput = document.getElementById('mes');
-    function atualizarRelatorio() {
-      const params = new URLSearchParams(new FormData(form)).toString();
-      fetch(window.location.pathname + '?' + params, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-      .then(resp => resp.text())
-      .then(html => {
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(html, 'text/html');
-        var mainNovo = doc.querySelector('main');
-        var mainAtual = document.querySelector('main');
-        if (mainNovo && mainAtual) {
-          mainAtual.innerHTML = mainNovo.innerHTML;
-        }
-        // Reaplicar eventos AJAX após atualização do DOM
-        attachAjaxEvents();
-      });
+    var form = document.getElementById('filtro-unidade-mes-form');
+    if (unidadeSelect) {
+      unidadeSelect.onchange = function() { form.submit(); };
     }
-    function attachAjaxEvents() {
-      var form = document.getElementById('filtro-unidade-mes-form');
-      var unidadeSelect = document.getElementById('unidade_id');
-      var mesInput = document.getElementById('mes');
-      if (unidadeSelect) {
-        unidadeSelect.onchange = atualizarRelatorio;
-      }
-      if (mesInput) {
-        mesInput.onchange = atualizarRelatorio;
-        mesInput.onkeydown = function(e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            atualizarRelatorio();
-          }
-        };
-      }
-      // Permitir submit com Enter no form inteiro
-      if (form) {
-        form.onsubmit = function(e) {
-          e.preventDefault();
-          atualizarRelatorio();
-        };
-      }
+    if (mesInput) {
+      mesInput.onchange = function() { form.submit(); };
     }
-    attachAjaxEvents();
   });
 
   // Ordenação da tabela de tempo ocioso (decrescente por padrão)
