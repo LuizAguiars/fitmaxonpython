@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "adicao de horario personal final
+git commit -m "Barras de pesquisas removidas
  %DATAHORA%"
 
 

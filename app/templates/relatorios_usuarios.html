@@ -62,10 +62,19 @@
 <header>
     <div class="logo">
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    </div>
+
+    <div class="search-container">
+      <h1>RELATÓRIO DE PERSONAL</h1>
+    </div>
+
+    <div class="usuario-logado">
+    <p>Olá, {{ nome }} 👋</p>
         <form method="POST" action="{{ url_for('auth.logout') }}">
-            <button type="submit" style="margin-left: 1700px;">Sair</button>
+            <button type="submit">Sair</button>
         </form>
     </div>
+
     <nav class="menu-logado">
         <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
         <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
