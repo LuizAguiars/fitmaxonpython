@@ -440,35 +440,109 @@
         document.getElementById('modalHorarioPersonal').addEventListener('show', carregarModelosHorario);
       }
       function preencherCamposComModelo(horarios) {
+        const dias = ['Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'];
         const tbody = document.getElementById('tbodyHorariosPersonal');
-        // Para cada dia presente no objeto retornado
-        Object.keys(horarios).forEach(dia => {
+        if (!tbody) return;
+        dias.forEach(dia => {
           // Remove linhas extras
           let linhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
           for (let i = linhas.length - 1; i > 0; i--) linhas[i].remove();
           linhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
+          // Limpa valores
+          linhas[0].querySelector('.inicio-intervalo').value = '';
+          linhas[0].querySelector('.fim-intervalo').value = '';
           // Preenche intervalos do modelo
           const intervalos = horarios[dia] || [];
           intervalos.forEach((itv, idx) => {
-            const ini = formatHora(itv.inicio || itv.Hora_Inicio || '');
-            const fim = formatHora(itv.fim || itv.Hora_Fim || '');
             if (idx === 0) {
-              linhas[0].querySelector('.inicio-intervalo').value = ini;
-              linhas[0].querySelector('.fim-intervalo').value = fim;
+              linhas[0].querySelector('.inicio-intervalo').value = itv.inicio;
+              linhas[0].querySelector('.fim-intervalo').value = itv.fim;
             } else {
-              linhas[0].querySelector('.btn-add-intervalo').click();
-              const novasLinhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
-              if (novasLinhas[idx]) {
-                novasLinhas[idx].querySelector('.inicio-intervalo').value = ini;
-                novasLinhas[idx].querySelector('.fim-intervalo').value = fim;
-              }
+              // Adiciona nova linha se necessário
+              const nova = linhas[0].cloneNode(true);
+              nova.querySelector('.inicio-intervalo').value = itv.inicio;
+              nova.querySelector('.fim-intervalo').value = itv.fim;
+              // Ajusta names
+              nova.querySelector('.inicio-intervalo').setAttribute('name', `horarios[${dia}][${idx}][inicio]`);
+              nova.querySelector('.fim-intervalo').setAttribute('name', `horarios[${dia}][${idx}][fim]`);
+              // Remove célula do dia das linhas extras
+              if (nova.querySelector('.td-dia')) nova.querySelector('.td-dia').remove();
+              // Mostra botão remover
+              nova.querySelector('.btn-remover-intervalo').style.display = '';
+              // Ajusta botão add/remover
+              nova.querySelector('.btn-add-intervalo').style.display = 'none';
+              tbody.insertBefore(nova, linhas[linhas.length-1].nextSibling);
+              linhas.push(nova);
             }
           });
+          // Se não houver intervalos, limpa campos
+          if (intervalos.length === 0) {
+            linhas[0].querySelector('.inicio-intervalo').value = '';
+            linhas[0].querySelector('.fim-intervalo').value = '';
+          }
+          // Ajusta rowspan
+          if (linhas[0].querySelector('.td-dia'))
+            linhas[0].querySelector('.td-dia').setAttribute('rowspan', linhas.length);
         });
       }
       </script>
     </div>
   </div>
+
+  <!-- MODAL VISUALIZAR HORÁRIO DO PERSONAL -->
+  <div id="modalVisualizarHorario" class="modal-overlay">
+    <div class="modal-box" style="max-width: 420px; width: 96vw; padding: 28px 24px; margin: 40px auto; border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,0.18); background: #fff;">
+      <h2 style="text-align:center; margin-bottom:18px;">Horário de Trabalho do Personal</h2>
+      <div style="display:flex; flex-direction:column; gap:12px; align-items:center;">
+        <label for="selectVisualizarPersonal" style="align-self:flex-start;">Personal:</label>
+        <select id="selectVisualizarPersonal" style="width:100%; max-width:320px;">
+          <option value="">Selecione o Personal</option>
+          {% for personal in personais %}
+            <option value="{{ personal.ID_Personal }}">{{ personal.Nome_Personal }}</option>
+          {% endfor %}
+        </select>
+        <div id="tabelaHorarioVisualizar" style="width:100%; margin-top:18px;"></div>
+      </div>
+      <div style="text-align:center; margin-top:18px;">
+        <button type="button" class="cancelar" onclick="fecharModal('modalVisualizarHorario')">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  // Botão para abrir o modal de visualização de horário
+  const btnVerHorario = document.createElement('button');
+  btnVerHorario.textContent = '👁️ Ver Horário';
+  btnVerHorario.className = 'btn azul';
+  btnVerHorario.style.marginLeft = '8px';
+  btnVerHorario.onclick = function() { abrirModal('modalVisualizarHorario'); };
+  document.querySelector('.botoes-menu-bar').appendChild(btnVerHorario);
+
+  // Função para buscar e exibir o horário do personal
+  function carregarHorarioPersonalVisualizar() {
+    const idPersonal = document.getElementById('selectVisualizarPersonal').value;
+    const tabelaDiv = document.getElementById('tabelaHorarioVisualizar');
+    tabelaDiv.innerHTML = '';
+    if (!idPersonal) return;
+    // Busca horários via AJAX
+    fetch(`/api/horarios-personal?personal=${idPersonal}&unidade=`)
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (!res.horarios || res.horarios.length === 0) {
+          tabelaDiv.innerHTML = '<div style="color:#e74c3c; text-align:center;">Nenhum horário cadastrado para este personal.</div>';
+          return;
+        }
+        // Monta tabela
+        let html = '<table style="width:100%; border-collapse:collapse; background:#fafbfc; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.04);">';
+        html += '<thead><tr><th>Dia</th><th>Início</th><th>Fim</th></tr></thead><tbody>';
+        res.horarios.forEach(function(h) {
+          html += `<tr><td>${h.dia_semana}</td><td>${h.hora_inicio}</td><td>${h.hora_fim}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        tabelaDiv.innerHTML = html;
+      });
+  }
+  document.getElementById('selectVisualizarPersonal').addEventListener('change', carregarHorarioPersonalVisualizar);
+  </script>
 
   <script>
     function abrirMenu() {

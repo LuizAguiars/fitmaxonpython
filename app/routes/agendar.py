@@ -335,6 +335,7 @@ def horarios_disponiveis():
             'Sunday': 'Domingo'
         }
         dia_em_portugues = dia_semana_map[dia_semana]
+
         # Busca o horário de funcionamento da unidade para o dia
         cursor.execute("""
             SELECT Hora_Inicio, Hora_Fim FROM horarios_funcionamento
@@ -343,9 +344,6 @@ def horarios_disponiveis():
         horario_func = cursor.fetchone()
         if not horario_func:
             return jsonify({'horarios': [], 'erro': 'A unidade não funciona neste dia da semana.'}), 200
-        hora_inicio_func = horario_func['Hora_Inicio']
-        hora_fim_func = horario_func['Hora_Fim']
-        # Corrige tipos: pode vir como timedelta, time ou string
 
         def to_time(h):
             if isinstance(h, time):
@@ -361,22 +359,42 @@ def horarios_disponiveis():
                 except ValueError:
                     return datetime.strptime(h, "%H:%M").time()
             raise TypeError("Hora inválida")
-        hora_inicio_func = to_time(hora_inicio_func)
-        hora_fim_func = to_time(hora_fim_func)
-        # Corrige caso o horário de fechamento seja depois da meia-noite
+        hora_inicio_func = to_time(horario_func['Hora_Inicio'])
+        hora_fim_func = to_time(horario_func['Hora_Fim'])
         hora_inicio_func_dt = datetime.combine(data_obj, hora_inicio_func)
         hora_fim_func_dt = datetime.combine(data_obj, hora_fim_func)
         if hora_fim_func <= hora_inicio_func:
             hora_fim_func_dt += timedelta(days=1)
-        # Gera todos os horários possíveis
-        horarios_possiveis = []
-        atual = hora_inicio_func_dt
+
+        # Busca os intervalos de trabalho do personal para o dia
+        cursor.execute("""
+            SELECT Hora_Inicio, Hora_Fim FROM personal_horario
+            WHERE ID_Personal = %s AND Dia_Semana = %s AND Ativo = 1
+        """, (id_personal, dia_em_portugues))
+        intervalos_trabalho = cursor.fetchall()
+        if not intervalos_trabalho:
+            return jsonify({'horarios': [], 'erro': 'Este personal não trabalha neste dia.'}), 200
+
         agora = datetime.now()
-        while atual + timedelta(minutes=duracao_aula) <= hora_fim_func_dt:
-            # Se for hoje, só mostra horários futuros
-            if data_obj > agora.date() or (data_obj == agora.date() and atual.time() >= agora.time()):
-                horarios_possiveis.append(atual.time().strftime('%H:%M'))
-            atual += timedelta(minutes=15)  # intervalos de 15 minutos
+        horarios_possiveis = []
+        # Para cada intervalo de trabalho do personal, gera horários possíveis na interseção com o funcionamento da unidade
+        for intervalo in intervalos_trabalho:
+            hora_inicio_p = to_time(intervalo['Hora_Inicio'])
+            hora_fim_p = to_time(intervalo['Hora_Fim'])
+            inicio_p_dt = datetime.combine(data_obj, hora_inicio_p)
+            fim_p_dt = datetime.combine(data_obj, hora_fim_p)
+            # Interseção com funcionamento da unidade
+            inicio_dt = max(hora_inicio_func_dt, inicio_p_dt)
+            fim_dt = min(hora_fim_func_dt, fim_p_dt)
+            if fim_dt <= inicio_dt:
+                continue  # Não há interseção
+            atual = inicio_dt
+            while atual + timedelta(minutes=duracao_aula) <= fim_dt:
+                # Se for hoje, só mostra horários futuros
+                if data_obj > agora.date() or (data_obj == agora.date() and atual.time() >= agora.time()):
+                    horarios_possiveis.append(atual.time().strftime('%H:%M'))
+                atual += timedelta(minutes=15)
+
         # Busca agendamentos do personal nesse dia
         cursor.execute("""
             SELECT HoraTreino, DuracaoAula FROM agendar_treino
@@ -402,7 +420,6 @@ def horarios_disponiveis():
                             hora_existente, '%H:%M').time()
                 elif isinstance(hora_existente, datetime):
                     hora_existente = hora_existente.time()
-                # else: já é time
                 inicio_existente = datetime.combine(data_obj, hora_existente)
                 duracao_existente = int(
                     ag['DuracaoAula']) if ag['DuracaoAula'] is not None else 0

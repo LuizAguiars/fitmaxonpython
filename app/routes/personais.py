@@ -253,9 +253,8 @@ def horario_personal():
 def api_horarios_personal():
     if 'usuario' not in session:
         return jsonify({'erro': 'Não autenticado'}), 401
-    id_unidade = request.args.get('unidade')
     id_personal = request.args.get('personal')
-    if not id_unidade or not id_personal:
+    if not id_personal:
         return jsonify({'horarios': []})
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
