@@ -296,3 +296,43 @@ def relatorio_usuarios():
         pesos_unidade=pesos_unidade,
         imc_categorias=imc_categorias
     )
+
+@relatorios_bp.route('/relatorios/equipamentos', methods=['GET'])
+def relatorio_equipamentos():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Buscar unidades para o filtro
+    cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
+    unidades = cursor.fetchall() 
+    print("DEBUG unidades:", unidades)
+    
+    unidade_id = request.args.get('unidade_id', '')
+    mes = request.args.get('mes', '')
+
+    equipamentos_uso = []
+    mais_usado = None
+    menos_usado = None
+    ociosidade = []
+
+    # Exemplo: envie o nome da unidade selecionada (opcional)
+    unidade_nome = None
+    if unidade_id:
+        for u in unidades:
+            if str(u['ID_Unidades']) == str(unidade_id):
+                unidade_nome = u['Nome_Unidade']
+                break
+
+    cursor.close()
+    conn.close()
+    return render_template(
+        'relatorio_equipamentos.html',
+        unidades=unidades,
+        unidade_id=unidade_id,
+        unidade_nome=unidade_nome,
+        mes=mes,
+        equipamentos_uso=equipamentos_uso,
+        mais_usado=mais_usado,
+        menos_usado=menos_usado,
+        ociosidade=ociosidade
+    )
