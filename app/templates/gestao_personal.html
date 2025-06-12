@@ -258,7 +258,217 @@
     </div>
   </div>
 
-  
+  <!-- MODAL de HORÁRIO DE TRABALHO DO PERSONAL -->
+  <div id="modalHorarioPersonal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 540px; width: 96vw; padding: 28px 24px; margin: 40px auto; border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,0.18); background: #fff;">
+      <h2 style="text-align:center; margin-bottom:18px;">Horário de Trabalho do Personal</h2>
+      <form id="formHorarioPersonal" method="POST" action="{{ url_for('personais.horario_personal') }}">
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items:center;">
+          <label for="unidade_horario" style="align-self:flex-start;">Unidade:</label>
+          <select name="unidade" id="unidade_horario" required style="width:100%; max-width:320px;">
+            <option value="">Selecione a Unidade</option>
+            {% for unidade in unidades_disponiveis %}
+              <option value="{{ unidade.ID_Unidades }}">{{ unidade.Nome_Unidade }}</option>
+            {% endfor %}
+          </select>
+
+          <label for="personal_horario" style="align-self:flex-start;">Personal:</label>
+          <select name="personal" id="personal_horario" required style="width:100%; max-width:320px;">
+            <option value="">Selecione o Personal</option>
+            {% for personal in personais %}
+              <option value="{{ personal.ID_Personal }}" data-unidade="{{ personal.ID_Unidade }}">{{ personal.Nome_Personal }}</option>
+            {% endfor %}
+          </select>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px; width:100%; justify-content:center;">
+            <label for="selectModeloHorario" style="margin:0;">Aplicar modelo de horário:</label>
+            <select id="selectModeloHorario" style="min-width:180px;"></select>
+            <button type="button" id="btnSalvarComoModelo" class="btn azul" style="font-size:0.98em;">Salvar como modelo</button>
+          </div>
+
+          <label style="align-self:flex-start;">Horários por Dia da Semana:</label>
+          <div style="width:100%; max-width:420px; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; background:#fafbfc; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+              <thead>
+                <tr>
+                  <th style="text-align:left;">Dia</th>
+                  <th>Início</th>
+                  <th>Fim</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyHorariosPersonal" style="max-height:260px; overflow-y:auto; display:block; width:100%;">
+                {% set dias_semana = ['Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'] %}
+                {% for dia in dias_semana %}
+                <tr data-dia="{{ dia }}" class="linha-dia" style="display:table; width:100%; table-layout:fixed;">
+                  <td rowspan="1" class="td-dia">{{ dia }}</td>
+                  <td><input type="time" name="horarios[{{ dia }}][0][inicio]" class="inicio-intervalo" style="width:90px;"></td>
+                  <td><input type="time" name="horarios[{{ dia }}][0][fim]" class="fim-intervalo" style="width:90px;"></td>
+                  <td style="text-align:center;">
+                    <button type="button" class="btn-add-intervalo" data-dia="{{ dia }}" title="Adicionar intervalo" style="color:#27ae60; background:none; border:none; font-size:1.2em; cursor:pointer;">➕</button>
+                    <button type="button" class="btn-remover-intervalo" data-dia="{{ dia }}" style="color:#e74c3c; background:none; border:none; font-size:1.2em; cursor:pointer; display:none;">🗑️</button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="avisoHorarioPersonal" style="color:#e74c3c; font-weight:bold; margin-top:8px; text-align:center;"></div>
+        <div style="text-align:center; margin-top:18px;">
+          <button type="submit" class="confirmar">Salvar</button>
+          <button type="button" class="cancelar" onclick="fecharModal('modalHorarioPersonal')">Cancelar</button>
+        </div>
+      </form>
+      <div id="listaHorariosPersonal" style="margin-top:18px;"></div>
+      <script>
+      // Função para adicionar intervalos extras por dia (corrige rowspan e visual)
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-add-intervalo')) {
+          const dia = e.target.getAttribute('data-dia');
+          const tbody = document.getElementById('tbodyHorariosPersonal');
+          const linhas = tbody.querySelectorAll(`tr[data-dia='${dia}']`);
+          const idx = linhas.length;
+          const nova = linhas[0].cloneNode(true);
+          // Limpa valores
+          nova.querySelector('.inicio-intervalo').value = '';
+          nova.querySelector('.fim-intervalo').value = '';
+          // Ajusta names
+          nova.querySelector('.inicio-intervalo').setAttribute('name', `horarios[${dia}][${idx}][inicio]`);
+          nova.querySelector('.fim-intervalo').setAttribute('name', `horarios[${dia}][${idx}][fim]`);
+          // Remove célula do dia das linhas extras
+          if (nova.querySelector('.td-dia')) nova.querySelector('.td-dia').remove();
+          // Mostra botão remover
+          nova.querySelector('.btn-remover-intervalo').style.display = '';
+          // Ajusta botão add/remover
+          nova.querySelector('.btn-add-intervalo').style.display = 'none';
+          tbody.insertBefore(nova, linhas[linhas.length-1].nextSibling);
+          // Ajusta rowspan
+          linhas[0].querySelector('.td-dia').setAttribute('rowspan', linhas.length+1);
+        }
+        if (e.target.classList.contains('btn-remover-intervalo')) {
+          const tr = e.target.closest('tr');
+          const dia = tr.getAttribute('data-dia');
+          const tbody = document.getElementById('tbodyHorariosPersonal');
+          const linhas = tbody.querySelectorAll(`tr[data-dia='${dia}']`);
+          if (linhas.length > 1) {
+            tr.remove();
+            // Ajusta rowspan
+            const novasLinhas = tbody.querySelectorAll(`tr[data-dia='${dia}']`);
+            if (novasLinhas.length > 0) {
+              novasLinhas[0].querySelector('.td-dia').setAttribute('rowspan', novasLinhas.length);
+            }
+          }
+        }
+      });
+      // --- MODELOS DE HORÁRIO ---
+      function carregarModelosHorario() {
+        const unidadeId = document.getElementById('unidade_horario').value;
+        const select = document.getElementById('selectModeloHorario');
+        select.innerHTML = '<option value="">Selecione um modelo</option>';
+        if (!unidadeId) return;
+        fetch(`/listar-modelos-horario?id_unidade=${unidadeId}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res.modelos && res.modelos.length > 0) {
+              res.modelos.forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m.ID_Modelo;
+                opt.textContent = m.Nome + (m.ID_Unidade ? '' : ' (Global)');
+                select.appendChild(opt);
+              });
+            } else {
+              var opt = document.createElement('option');
+              opt.value = '';
+              opt.textContent = 'Nenhum modelo encontrado';
+              select.appendChild(opt);
+            }
+          })
+          .catch(() => {
+            var opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'Erro ao carregar modelos';
+            select.appendChild(opt);
+          });
+      }
+      document.getElementById('unidade_horario').addEventListener('change', carregarModelosHorario);
+      document.getElementById('selectModeloHorario').addEventListener('change', function() {
+        const idModelo = this.value;
+        if (!idModelo) return;
+        fetch(`/modelo-horario/${idModelo}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res.horarios) preencherCamposComModelo(res.horarios);
+          });
+      });
+      document.getElementById('btnSalvarComoModelo').addEventListener('click', function() {
+        const unidadeId = document.getElementById('unidade_horario').value;
+        if (!unidadeId) { alert('Selecione a unidade.'); return; }
+        const nome = prompt('Nome do modelo de horário:');
+        if (!nome) return;
+        // Monta objeto de horários igual ao backend
+        const dias = ['Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'];
+        const horarios = {};
+        dias.forEach(dia => {
+          const tbody = document.getElementById('tbodyHorariosPersonal');
+          const linhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
+          horarios[dia] = [];
+          linhas.forEach(linha => {
+            const ini = linha.querySelector('.inicio-intervalo').value;
+            const fim = linha.querySelector('.fim-intervalo').value;
+            if (ini && fim) horarios[dia].push({inicio: ini, fim: fim});
+          });
+        });
+        fetch('/salvar-modelo-horario', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({nome_modelo: nome, id_unidade: unidadeId, horarios: horarios})
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res.ok) {
+            alert('Modelo salvo com sucesso!');
+            carregarModelosHorario();
+          } else {
+            alert('Erro ao salvar modelo: ' + (res.erro || ''));
+          }
+        });
+      });
+      // Carregar modelos ao abrir modal
+      // Se houver evento customizado de show, mantenha, senão pode chamar ao abrir modal
+      if (document.getElementById('modalHorarioPersonal')) {
+        document.getElementById('modalHorarioPersonal').addEventListener('show', carregarModelosHorario);
+      }
+      function preencherCamposComModelo(horarios) {
+        const tbody = document.getElementById('tbodyHorariosPersonal');
+        // Para cada dia presente no objeto retornado
+        Object.keys(horarios).forEach(dia => {
+          // Remove linhas extras
+          let linhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
+          for (let i = linhas.length - 1; i > 0; i--) linhas[i].remove();
+          linhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
+          // Preenche intervalos do modelo
+          const intervalos = horarios[dia] || [];
+          intervalos.forEach((itv, idx) => {
+            const ini = formatHora(itv.inicio || itv.Hora_Inicio || '');
+            const fim = formatHora(itv.fim || itv.Hora_Fim || '');
+            if (idx === 0) {
+              linhas[0].querySelector('.inicio-intervalo').value = ini;
+              linhas[0].querySelector('.fim-intervalo').value = fim;
+            } else {
+              linhas[0].querySelector('.btn-add-intervalo').click();
+              const novasLinhas = Array.from(tbody.querySelectorAll(`tr[data-dia='${dia}']`));
+              if (novasLinhas[idx]) {
+                novasLinhas[idx].querySelector('.inicio-intervalo').value = ini;
+                novasLinhas[idx].querySelector('.fim-intervalo').value = fim;
+              }
+            }
+          });
+        });
+      }
+      </script>
+    </div>
+  </div>
 
   <script>
     function abrirMenu() {
@@ -272,6 +482,33 @@
       document.getElementById('menuOverlay').classList.remove('ativo');
     }
 
+    // Botão para abrir o modal de horário de trabalho
+    const btnHorarioPersonal = document.createElement('button');
+    btnHorarioPersonal.textContent = '⏰ Horário de Trabalho';
+    btnHorarioPersonal.className = 'btn azul';
+    btnHorarioPersonal.style.marginLeft = '8px';
+    btnHorarioPersonal.onclick = function() { abrirModal('modalHorarioPersonal'); };
+    document.querySelector('.botoes-menu-bar').appendChild(btnHorarioPersonal);
+
+    // Filtra personais por unidade no modal de horário
+    document.addEventListener('DOMContentLoaded', function() {
+      const unidadeSelect = document.getElementById('unidade_horario');
+      const personalSelect = document.getElementById('personal_horario');
+      if (unidadeSelect && personalSelect) {
+        unidadeSelect.addEventListener('change', function() {
+          const unidadeId = this.value;
+          Array.from(personalSelect.options).forEach(opt => {
+            if (!opt.value) { opt.style.display = ''; return; }
+            if (opt.getAttribute('data-unidade') === unidadeId) {
+              opt.style.display = '';
+            } else {
+              opt.style.display = 'none';
+            }
+          });
+          personalSelect.value = '';
+        });
+      }
+    });
   </script>
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>

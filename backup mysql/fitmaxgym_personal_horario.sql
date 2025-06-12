@@ -16,27 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `regiao`
+-- Table structure for table `personal_horario`
 --
 
-DROP TABLE IF EXISTS `regiao`;
+DROP TABLE IF EXISTS `personal_horario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `regiao` (
-  `ID_Regiao` int NOT NULL AUTO_INCREMENT,
-  `Nome_Regiao` varchar(50) NOT NULL,
-  PRIMARY KEY (`ID_Regiao`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `personal_horario` (
+  `ID_Horario` int NOT NULL AUTO_INCREMENT,
+  `ID_Personal` int NOT NULL,
+  `Dia_Semana` enum('Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo') DEFAULT NULL,
+  `Hora_Inicio` time NOT NULL,
+  `Hora_Fim` time NOT NULL,
+  `Ativo` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`ID_Horario`),
+  KEY `ID_Personal` (`ID_Personal`),
+  CONSTRAINT `personal_horario_ibfk_1` FOREIGN KEY (`ID_Personal`) REFERENCES `personal` (`ID_Personal`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `regiao`
+-- Dumping data for table `personal_horario`
 --
 
-LOCK TABLES `regiao` WRITE;
-/*!40000 ALTER TABLE `regiao` DISABLE KEYS */;
-INSERT INTO `regiao` VALUES (1,'Norte'),(2,'Sul'),(3,'Leste'),(4,'Oeste');
-/*!40000 ALTER TABLE `regiao` ENABLE KEYS */;
+LOCK TABLES `personal_horario` WRITE;
+/*!40000 ALTER TABLE `personal_horario` DISABLE KEYS */;
+INSERT INTO `personal_horario` VALUES (1,5,'Segunda','07:00:00','12:00:00',1),(2,5,'Segunda','13:00:00','18:00:00',1),(3,5,'Terca','07:00:00','12:00:00',1),(4,5,'Terca','13:00:00','18:00:00',1),(5,5,'Quarta','07:00:00','12:00:00',1),(6,5,'Quarta','13:00:00','18:00:00',1),(7,5,'Quinta','07:00:00','12:00:00',1),(8,5,'Quinta','13:00:00','18:00:00',1),(9,5,'Sexta','07:00:00','12:00:00',1),(10,5,'Sexta','13:00:00','18:00:00',1);
+/*!40000 ALTER TABLE `personal_horario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -48,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-11 22:20:24
+-- Dump completed on 2025-06-11 22:20:25

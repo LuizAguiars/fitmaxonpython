@@ -38,7 +38,7 @@ CREATE TABLE `plano` (
 
 LOCK TABLES `plano` WRITE;
 /*!40000 ALTER TABLE `plano` DISABLE KEYS */;
-INSERT INTO `plano` VALUES (1,'Medio','Plano intermediário com acesso limitado a recursos premium',1,75.90),(2,'Full','Plano completo com todos os recursos disponíveis',6,600.00),(3,'Basic','Plano Básico, com horas limitadas',1,45.90),(4,'unlocked','unlocked',99999,99999.00);
+INSERT INTO `plano` VALUES (1,'Medio','Plano intermediário com acesso limitado a recursos premium',1,0.10),(2,'Full','Plano completo com todos os recursos disponíveis',6,0.60),(3,'Basic','Plano Básico, com horas limitadas',1,0.02),(4,'unlocked','unlocked',12,1.00);
 /*!40000 ALTER TABLE `plano` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-05 18:00:37
+-- Dump completed on 2025-06-11 22:20:25

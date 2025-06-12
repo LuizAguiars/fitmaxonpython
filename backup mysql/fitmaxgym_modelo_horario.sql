@@ -16,27 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `regiao`
+-- Table structure for table `modelo_horario`
 --
 
-DROP TABLE IF EXISTS `regiao`;
+DROP TABLE IF EXISTS `modelo_horario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `regiao` (
-  `ID_Regiao` int NOT NULL AUTO_INCREMENT,
-  `Nome_Regiao` varchar(50) NOT NULL,
-  PRIMARY KEY (`ID_Regiao`)
+CREATE TABLE `modelo_horario` (
+  `ID_Modelo` int NOT NULL AUTO_INCREMENT,
+  `Nome` varchar(100) NOT NULL,
+  `Descricao` varchar(255) DEFAULT NULL,
+  `ID_Unidade` int DEFAULT NULL,
+  PRIMARY KEY (`ID_Modelo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `regiao`
+-- Dumping data for table `modelo_horario`
 --
 
-LOCK TABLES `regiao` WRITE;
-/*!40000 ALTER TABLE `regiao` DISABLE KEYS */;
-INSERT INTO `regiao` VALUES (1,'Norte'),(2,'Sul'),(3,'Leste'),(4,'Oeste');
-/*!40000 ALTER TABLE `regiao` ENABLE KEYS */;
+LOCK TABLES `modelo_horario` WRITE;
+/*!40000 ALTER TABLE `modelo_horario` DISABLE KEYS */;
+INSERT INTO `modelo_horario` VALUES (1,'Domingo a Domingo 6:00 as 13:00h',NULL,5),(2,'14 ás 22 dom. - dom.',NULL,5),(3,'Segunda - Sexta 6 - 11 * 12 - 18',NULL,5),(4,'Teste',NULL,5);
+/*!40000 ALTER TABLE `modelo_horario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

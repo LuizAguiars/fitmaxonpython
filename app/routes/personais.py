@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from db import get_db_connection
 
 personais_bp = Blueprint('personais', __name__)
@@ -123,7 +123,8 @@ def gestao_personal():
     cursor.execute("SELECT DISTINCT Especialidade FROM PERSONAL")
     especialidades = cursor.fetchall()
 
-    cursor.execute("SELECT ID_Unidades AS ID_Unidades, Nome_Unidade AS Nome_Unidade FROM unidades")
+    cursor.execute(
+        "SELECT ID_Unidades AS ID_Unidades, Nome_Unidade AS Nome_Unidade FROM unidades")
     unidades_disponiveis = cursor.fetchall()
 
     cursor.close()
@@ -151,3 +152,222 @@ def listar_nomes_personais():
     conn.close()
 
     return render_template('listar_nomes_personais.html', nomes_personais=nomes_personais)
+
+
+@personais_bp.route('/horario-personal', methods=['POST'])
+def horario_personal():
+    if 'usuario' not in session:
+        flash("Você precisa estar logado para acessar a gestão de personais.", "error")
+        return redirect(url_for('personais.gestao_personal'))
+
+    id_unidade = request.form.get('unidade')
+    id_personal = request.form.get('personal')
+    from collections import defaultdict
+    dias_semana = ['Segunda', 'Terca', 'Quarta',
+                   'Quinta', 'Sexta', 'Sabado', 'Domingo']
+    # Monta dict: horarios[dia] = [ {inicio, fim, ativo}, ... ]
+    horarios_dict = defaultdict(list)
+    for dia in dias_semana:
+        idx = 0
+        while True:
+            inicio = request.form.get(f'horarios[{dia}][{idx}][inicio]')
+            fim = request.form.get(f'horarios[{dia}][{idx}][fim]')
+            if inicio is None and fim is None:
+                break
+            # Salva se ambos preenchidos
+            if inicio and fim:
+                horarios_dict[dia].append({'inicio': inicio, 'fim': fim})
+            idx += 1
+
+    if not id_unidade or not id_personal:
+        flash('Selecione unidade e personal.', 'error')
+        return redirect(url_for('personais.gestao_personal'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    from datetime import datetime, time, timedelta
+
+    def to_time(h):
+        if not h:
+            return None
+        if isinstance(h, time):
+            return h
+        elif isinstance(h, timedelta):
+            return (datetime.min + h).time()
+        elif isinstance(h, datetime):
+            return h.time()
+        elif isinstance(h, str):
+            h = h.strip()
+            try:
+                return datetime.strptime(h, "%H:%M:%S").time()
+            except ValueError:
+                return datetime.strptime(h, "%H:%M").time()
+        raise TypeError("Hora inválida")
+    try:
+        erros = []
+        inseridos = 0
+        for dia, intervalos in horarios_dict.items():
+            if not intervalos:
+                continue
+            # Buscar horário de funcionamento da unidade para o dia
+            cursor.execute("""
+                SELECT Hora_Inicio, Hora_Fim FROM horarios_funcionamento
+                WHERE FIND_IN_SET(%s, Dias_Semana)
+            """, (dia,))
+            horario_func = cursor.fetchone()
+            if not horario_func:
+                erros.append(f'{dia}: Unidade não funciona nesse dia.')
+                continue
+            hora_inicio_func = to_time(horario_func['Hora_Inicio'])
+            hora_fim_func = to_time(horario_func['Hora_Fim'])
+            # Remove todos os horários antigos do personal para o dia
+            cursor.execute(
+                "DELETE FROM personal_horario WHERE ID_Personal=%s AND Dia_Semana=%s", (id_personal, dia))
+            for info in intervalos:
+                hora_inicio = to_time(info['inicio'])
+                hora_fim = to_time(info['fim'])
+                if not hora_inicio or not hora_fim or hora_inicio < hora_inicio_func or hora_fim > hora_fim_func or hora_fim <= hora_inicio:
+                    erros.append(
+                        f'{dia}: Horário {info["inicio"]}-{info["fim"]} inválido ou fora do funcionamento da unidade.')
+                    continue
+                cursor.execute("""
+                    INSERT INTO personal_horario (ID_Personal, Dia_Semana, Hora_Inicio, Hora_Fim)
+                    VALUES (%s, %s, %s, %s)
+                """, (id_personal, dia, hora_inicio, hora_fim))
+                inseridos += 1
+        conn.commit()
+        if inseridos:
+            flash(f'{inseridos} horário(s) cadastrado(s) com sucesso!', 'success')
+        if erros:
+            flash('Ocorreram erros em alguns dias: ' + '; '.join(erros), 'error')
+    except Exception as e:
+        conn.rollback()
+        flash(f'Erro ao cadastrar horários: {str(e)}', 'error')
+    finally:
+        cursor.close()
+        conn.close()
+    return redirect(url_for('personais.gestao_personal'))
+
+
+@personais_bp.route('/api/horarios-personal')
+def api_horarios_personal():
+    if 'usuario' not in session:
+        return jsonify({'erro': 'Não autenticado'}), 401
+    id_unidade = request.args.get('unidade')
+    id_personal = request.args.get('personal')
+    if not id_unidade or not id_personal:
+        return jsonify({'horarios': []})
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT Dia_Semana, DATE_FORMAT(Hora_Inicio, '%H:%i') as hora_inicio, DATE_FORMAT(Hora_Fim, '%H:%i') as hora_fim
+        FROM personal_horario
+        WHERE ID_Personal=%s
+    """, (id_personal,))
+    horarios = [
+        {'dia_semana': row['Dia_Semana'],
+            'hora_inicio': row['hora_inicio'], 'hora_fim': row['hora_fim']}
+        for row in cursor.fetchall()
+    ]
+    cursor.close()
+    conn.close()
+    return jsonify({'horarios': horarios})
+
+
+@personais_bp.route('/salvar-modelo-horario', methods=['POST'])
+def salvar_modelo_horario():
+    if 'usuario' not in session:
+        return jsonify({'erro': 'Não autenticado'}), 401
+    data = request.get_json()
+    nome_modelo = data.get('nome_modelo')
+    id_unidade = data.get('id_unidade')
+    horarios = data.get('horarios')  # dict: {dia: [{inicio, fim}, ...], ...}
+    if not nome_modelo or not id_unidade or not horarios:
+        return jsonify({'erro': 'Dados incompletos'}), 400
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            INSERT INTO modelo_horario (Nome, ID_Unidade)
+            VALUES (%s, %s)
+        """, (nome_modelo, id_unidade))
+        id_modelo = cursor.lastrowid
+        for dia, intervalos in horarios.items():
+            for intervalo in intervalos:
+                cursor.execute("""
+                    INSERT INTO modelo_horario_intervalo (ID_Modelo, Dia_Semana, Hora_Inicio, Hora_Fim)
+                    VALUES (%s, %s, %s, %s)
+                """, (id_modelo, dia, intervalo['inicio'], intervalo['fim']))
+        conn.commit()
+        return jsonify({'ok': True, 'id_modelo': id_modelo})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'erro': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@personais_bp.route('/listar-modelos-horario', methods=['GET'])
+def listar_modelos_horario():
+    if 'usuario' not in session:
+        return jsonify({'erro': 'Não autenticado'}), 401
+    id_unidade = request.args.get('id_unidade')
+    if id_unidade is not None and id_unidade != '':
+        try:
+            id_unidade_int = int(id_unidade)
+        except Exception:
+            id_unidade_int = None
+    else:
+        id_unidade_int = None
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Modelos globais (ID_Unidade IS NULL) ou da unidade
+        if id_unidade_int is not None:
+            cursor.execute("""
+                SELECT ID_Modelo, Nome, ID_Unidade
+                FROM modelo_horario
+                WHERE ID_Unidade = %s OR ID_Unidade IS NULL
+                ORDER BY Nome
+            """, (id_unidade_int,))
+        else:
+            cursor.execute("""
+                SELECT ID_Modelo, Nome, ID_Unidade
+                FROM modelo_horario
+                WHERE ID_Unidade IS NULL
+                ORDER BY Nome
+            """)
+        modelos = cursor.fetchall()
+        return jsonify({'modelos': modelos})
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@personais_bp.route('/modelo-horario/<int:id_modelo>', methods=['GET'])
+def get_modelo_horario(id_modelo):
+    if 'usuario' not in session:
+        return jsonify({'erro': 'Não autenticado'}), 401
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT Dia_Semana, Hora_Inicio, Hora_Fim
+            FROM modelo_horario_intervalo
+            WHERE ID_Modelo = %s
+            ORDER BY FIELD(Dia_Semana, 'Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'), Hora_Inicio
+        """, (id_modelo,))
+        intervalos = cursor.fetchall()
+        # Organiza por dia
+        horarios = {}
+        for row in intervalos:
+            dia = row['Dia_Semana']
+            if dia not in horarios:
+                horarios[dia] = []
+            horarios[dia].append({'inicio': str(row['Hora_Inicio'])[
+                                 :5], 'fim': str(row['Hora_Fim'])[:5]})
+        return jsonify({'horarios': horarios})
+    finally:
+        cursor.close()
+        conn.close()

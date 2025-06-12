@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "ajuste na regra e tela de agendar aulas
+git commit -m "adicao de horario personal (ainda nao esta pronto)
  %DATAHORA%"
 
 
