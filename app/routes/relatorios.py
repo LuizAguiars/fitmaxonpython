@@ -215,6 +215,65 @@ def relatorio_personal():
         ''', [unidade_id] if unidade_id else [])
         usuarios_unidade = cursor.fetchall()
 
+    # Tabela de ociosidade dos personais
+    # 1. Buscar todos os personais (filtrando unidade se necessário)
+    if unidade_id:
+        cursor.execute("SELECT * FROM personal WHERE ID_Unidade = %s", (unidade_id,))
+    else:
+        cursor.execute("SELECT * FROM personal")
+    todos_personais = cursor.fetchall()
+
+    tempo_ocioso_personais = []
+    for personal in todos_personais:
+        # Tempo disponível diário: soma dos horários cadastrados para o personal
+        cursor.execute('''
+            SELECT Dia_Semana, Hora_Inicio, Hora_Fim
+            FROM personal_horario
+            WHERE ID_Personal = %s AND Ativo = 1
+        ''', (personal['ID_Personal'],))
+        horarios = cursor.fetchall()
+        minutos_disponivel_total = 0
+        minutos_disponivel_por_semana = 0
+        dias_set = set()
+        for h in horarios:
+            h1 = datetime.strptime(str(h['Hora_Inicio']), "%H:%M:%S")
+            h2 = datetime.strptime(str(h['Hora_Fim']), "%H:%M:%S")
+            minutos = int((h2 - h1).total_seconds() // 60)
+            minutos_disponivel_por_semana += minutos
+            dias_set.add(h['Dia_Semana'])
+        # Tempo disponível diário (média por dia com horário)
+        dias_com_horario = len(dias_set) if dias_set else 1
+        minutos_disponivel_diario = minutos_disponivel_por_semana // dias_com_horario if dias_com_horario else 0
+
+        # Tempo utilizado: soma da duração das aulas agendadas no mês/unidade
+        query_aulas = '''
+            SELECT SUM(ag.DuracaoAula) as minutos
+            FROM agendar_treino ag
+            WHERE ag.ID_Personal = %s
+        '''
+        query_params = [personal['ID_Personal']]
+        if unidade_id:
+            query_aulas += ' AND ag.ID_Unidade_Treino = %s'
+            query_params.append(unidade_id)
+        if mes:
+            query_aulas += ' AND DATE_FORMAT(ag.DataTreino, "%%Y-%%m") = %s'
+            query_params.append(mes)
+        cursor.execute(query_aulas, query_params)
+        minutos_utilizado = cursor.fetchone()['minutos'] or 0
+
+        # Tempo ocioso = disponível semanal - utilizado no período
+        tempo_ocioso = max(0, minutos_disponivel_por_semana - minutos_utilizado)
+
+        tempo_ocioso_personais.append({
+            "Nome_Personal": personal['Nome_Personal'],
+            "tempo_disponivel": minutos_disponivel_diario,
+            "tempo_disponivel_horas": f"{minutos_disponivel_diario//60}h {minutos_disponivel_diario%60}min",
+            "tempo_utilizado": minutos_utilizado,
+            "tempo_utilizado_horas": f"{minutos_utilizado//60}h {minutos_utilizado%60}min",
+            "tempo_ocioso": tempo_ocioso,
+            "tempo_ocioso_horas": f"{tempo_ocioso//60}h {tempo_ocioso%60}min"
+        })
+
     cursor.close()
     conn.close()
     return render_template(
@@ -226,8 +285,10 @@ def relatorio_personal():
         menos_personal=menos_personal,
         lista_personais=lista_personais,
         tipos_mais_usados=tipos_mais_usados,
-        usuarios_unidade=usuarios_unidade
+        usuarios_unidade=usuarios_unidade,
+        tempo_ocioso_personais=tempo_ocioso_personais
     )
+
 
 @relatorios_bp.route('/relatorios/usuarios', methods=['GET'])
 def relatorio_usuarios():
