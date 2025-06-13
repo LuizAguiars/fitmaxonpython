@@ -334,25 +334,13 @@ def relatorio_personal():
             query_params_mes = [personal['ID_Personal'], data_str]
             if unidade_id:
                 query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
-                query_params_mes.append(unidade_id) 
+                query_params_mes.append(unidade_id)
             cursor.execute(query_aulas_mes, query_params_mes)
             minutos_utilizado_mes += cursor.fetchone()['minutos'] or 0
 
-        query_aulas_mes = '''
-            SELECT SUM(ag.DuracaoAula) as minutos
-            FROM agendar_treino ag
-            WHERE ag.ID_Personal = %s AND ag.DataTreino BETWEEN %s AND %s
-        '''
-        query_params_mes = [personal['ID_Personal'],
-                            data_inicio_mes, data_fim_mes]
-        if unidade_id:
-            query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
-            query_params_mes.append(unidade_id)
-        cursor.execute(query_aulas_mes, query_params_mes)
-        minutos_utilizado_mes = cursor.fetchone()['minutos'] or 0
-
+        # Corrigido: tempo ocioso mensal = minutos_disponivel_mensal - minutos_utilizado_mes
         tempo_ocioso_mensal = max(
-            0, minutos_disponivel_diario * dia_final - minutos_utilizado_mes)
+            0, minutos_disponivel_mensal - minutos_utilizado_mes)
 
         tempo_ocioso_personais.append({
             "Nome_Personal": personal['Nome_Personal'],
