@@ -99,6 +99,7 @@ def gestao_personal():
 
     unidade_filtro = request.args.get('unidade', '')
     especialidade_filtro = request.args.get('especialidade', '')
+    genero_filtro = request.args.get('genero', '')
 
     # Montar a query base
     query = """
@@ -116,6 +117,10 @@ def gestao_personal():
     if especialidade_filtro:
         query += " AND p.Especialidade = %s"
         params.append(especialidade_filtro)
+
+    if genero_filtro:
+        query += " AND p.Genero = %s"
+        params.append(genero_filtro)
 
     cursor.execute(query, params)
     personais = cursor.fetchall()
@@ -136,7 +141,8 @@ def gestao_personal():
         unidades_disponiveis=unidades_disponiveis,
         especialidades=especialidades,
         unidade_filtro=unidade_filtro,
-        especialidade_filtro=especialidade_filtro
+        especialidade_filtro=especialidade_filtro,
+        genero_filtro=genero_filtro
     )
 
 

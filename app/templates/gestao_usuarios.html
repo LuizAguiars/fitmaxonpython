@@ -103,13 +103,22 @@
             {% endfor %}
           </select>
         </div>
-        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
           <label for="bairro" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Bairro:</label>
           <select name="bairro" id="bairro" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
             <option value="">Todos</option>
             {% for bairro in bairros %}
               <option value="{{ bairro }}" {% if bairro_filtro == bairro %}selected{% endif %}>{{ bairro }}</option>
             {% endfor %}
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="sexo" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Sexo:</label>
+          <select name="sexo" id="sexo" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todos</option>
+            <option value="M" {% if sexo_filtro == 'M' %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if sexo_filtro == 'F' %}selected{% endif %}>Feminino</option>
+            <option value="O" {% if sexo_filtro == 'O' %}selected{% endif %}>Outro</option>
           </select>
         </div>
       </div>
@@ -141,9 +150,9 @@
           <th style="text-align:center;">Cidade</th>
           <th style="text-align:center;">Estado</th>
           <th style="text-align:center;">Plano</th>
+          <th style="text-align:center;">Sexo</th>
           <th style="text-align:center;">Status</th>  
           <th style="text-align:center;">Ações</th>
-          
         </tr>
       </thead>
       <tbody>
@@ -173,6 +182,9 @@
           <td>{{ usuario.cidade_user }}</td>
           <td>{{ usuario.estado_user }}</td>
           <td>{{ usuario.nome_plano }}</td>
+          <td>
+            {% if usuario.sexo_user == 'M' %}Masculino{% elif usuario.sexo_user == 'F' %}Feminino{% elif usuario.sexo_user == 'O' %}Outro{% else %}-{% endif %}
+          </td>
           <td>{{ usuario.status_cliente }}</td>
           <td>
             <button class="btn-acao editar" type="button" onclick="abrirModalEditarUsuario('{{ usuario.ID_User }}')" title="Editar">✏️</button>

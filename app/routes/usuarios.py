@@ -56,7 +56,7 @@ def minha_conta():
         altura = request.form.get('altura') or None
         peso = request.form.get('peso') or None
         gordura = request.form.get('gordura') or None
-        braquial = request.form.get('braquial') or None
+        braquial = request.form.get('abdominal') or None
         abdominal = request.form.get('abdominal') or None
         toracico = request.form.get('toracico') or None
         cintura = request.form.get('cintura') or None
@@ -308,6 +308,7 @@ def gestao_usuarios():
     status_filtro = request.args.get('status', '')
     cidade_filtro = request.args.get('cidade', '')
     bairro_filtro = request.args.get('bairro', '')
+    sexo_filtro = request.args.get('sexo', '')
 
     query = """
         SELECT u.*, un.Nome_Unidade, p.nome_plano
@@ -333,6 +334,10 @@ def gestao_usuarios():
     if bairro_filtro:
         query += " AND u.bairro_user = %s"
         params.append(bairro_filtro)
+
+    if sexo_filtro:
+        query += " AND u.sexo_user = %s"
+        params.append(sexo_filtro)
 
     cursor.execute(query, params)
     usuarios = cursor.fetchall()
@@ -369,7 +374,8 @@ def gestao_usuarios():
         cidade_filtro=cidade_filtro,
         bairro_filtro=bairro_filtro,
         cidades=cidades,
-        bairros=bairros
+        bairros=bairros,
+        sexo_filtro=sexo_filtro
     )
 
 

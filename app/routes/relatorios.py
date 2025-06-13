@@ -245,26 +245,68 @@ def relatorio_personal():
                 minutos_disponivel_por_dia[h['Dia_Semana']] = 0
             minutos_disponivel_por_dia[h['Dia_Semana']] += minutos
 
-        # Tempo disponível diário (média por dia com horário)
-        dias_com_horario = len(dias_set) if dias_set else 1
-        minutos_disponivel_diario = minutos_disponivel_por_semana // dias_com_horario if dias_com_horario else 0
+        # Dias da semana que o personal trabalha
+        dias_com_horario = list(minutos_disponivel_por_dia.keys())
 
-        # --- Filtro de unidade aplicado corretamente nas queries de aulas ---
+        # --- Determinar o período do relatório ---
         if mes:
             hoje = datetime.now()
             ano, mes_num = mes.split('-')
-            if int(ano) == hoje.year and int(mes_num) == hoje.month:
-                data_dia = hoje.strftime("%Y-%m-%d")
-                ultimo_dia = hoje.day
+            ano = int(ano)
+            mes_num = int(mes_num)
+            if ano == hoje.year and mes_num == hoje.month:
+                dia_final = hoje.day
             else:
-                data_dia = f"{ano}-{mes_num}-01"
                 from calendar import monthrange
-                ultimo_dia = monthrange(int(ano), int(mes_num))[1]
+                dia_final = monthrange(ano, mes_num)[1]
+            data_inicio_mes = f"{ano}-{mes_num:02d}-01"
+            data_fim_mes = f"{ano}-{mes_num:02d}-{dia_final:02d}"
         else:
-            data_dia = datetime.now().strftime("%Y-%m-%d")
-            ultimo_dia = datetime.now().day
+            hoje = datetime.now()
+            ano = hoje.year
+            mes_num = hoje.month
+            dia_final = hoje.day
+            data_inicio_mes = hoje.replace(day=1).strftime("%Y-%m-%d")
+            data_fim_mes = hoje.strftime("%Y-%m-%d")
 
-        # Tempo utilizado no dia (com filtro de unidade)
+        # --- Calcular dias do mês em que o personal trabalha ---
+        import calendar
+        dias_trabalho_no_mes = []
+        for dia in range(1, dia_final + 1):
+            data = datetime(ano, mes_num, dia)
+            nome_dia = data.strftime('%A')
+            # Traduzir nome do dia para português para bater com o banco
+            dias_semana_pt = {
+                'Monday': 'Segunda',
+                'Tuesday': 'Terca',
+                'Wednesday': 'Quarta',
+                'Thursday': 'Quinta',
+                'Friday': 'Sexta',
+                'Saturday': 'Sabado',
+                'Sunday': 'Domingo'
+            }
+            nome_dia_pt = dias_semana_pt[nome_dia]
+            if nome_dia_pt in minutos_disponivel_por_dia:
+                dias_trabalho_no_mes.append((data.strftime("%Y-%m-%d"), nome_dia_pt))
+
+        # --- Tempo disponível mensal: soma dos minutos disponíveis nos dias que trabalha ---
+        minutos_disponivel_mensal = sum(minutos_disponivel_por_dia[dia_semana] for _, dia_semana in dias_trabalho_no_mes)
+
+        # Tempo disponível diário (média por dia com horário)
+        minutos_disponivel_diario = 0
+        if dias_trabalho_no_mes:
+            # Pega o primeiro dia do mês que ele trabalha para mostrar como "diário"
+            minutos_disponivel_diario = minutos_disponivel_por_dia[dias_trabalho_no_mes[0][1]]
+        else:
+            minutos_disponivel_diario = 0
+
+        # --- Tempo utilizado no dia (com filtro de unidade) ---
+        # Pega o último dia do filtro (ou hoje)
+        if dias_trabalho_no_mes:
+            data_dia = dias_trabalho_no_mes[-1][0]
+        else:
+            data_dia = data_fim_mes
+
         query_aulas_dia = '''
             SELECT SUM(ag.DuracaoAula) as minutos
             FROM agendar_treino ag
@@ -279,35 +321,22 @@ def relatorio_personal():
 
         tempo_ocioso_dia = max(0, minutos_disponivel_diario - minutos_utilizado_dia)
 
-        # Tempo utilizado no mês até o dia atual (com filtro de unidade)
-        if mes:
-            ano, mes_num = mes.split('-')
-            if int(ano) == datetime.now().year and int(mes_num) == datetime.now().month:
-                dia_final = datetime.now().day
-            else:
-                from calendar import monthrange
-                dia_final = monthrange(int(ano), int(mes_num))[1]
-            data_inicio_mes = f"{ano}-{mes_num}-01"
-            data_fim_mes = f"{ano}-{mes_num}-{dia_final:02d}"
-        else:
-            hoje = datetime.now()
-            data_inicio_mes = hoje.replace(day=1).strftime("%Y-%m-%d")
-            data_fim_mes = hoje.strftime("%Y-%m-%d")
-            dia_final = hoje.day
+        # --- Tempo utilizado no mês (apenas nos dias que trabalha) ---
+        minutos_utilizado_mes = 0
+        for data_str, _ in dias_trabalho_no_mes:
+            query_aulas_mes = '''
+                SELECT SUM(ag.DuracaoAula) as minutos
+                FROM agendar_treino ag
+                WHERE ag.ID_Personal = %s AND ag.DataTreino = %s
+            '''
+            query_params_mes = [personal['ID_Personal'], data_str]
+            if unidade_id:
+                query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
+                query_params_mes.append(unidade_id) 
+            cursor.execute(query_aulas_mes, query_params_mes)
+            minutos_utilizado_mes += cursor.fetchone()['minutos'] or 0
 
-        query_aulas_mes = '''
-            SELECT SUM(ag.DuracaoAula) as minutos
-            FROM agendar_treino ag
-            WHERE ag.ID_Personal = %s AND ag.DataTreino BETWEEN %s AND %s
-        '''
-        query_params_mes = [personal['ID_Personal'], data_inicio_mes, data_fim_mes]
-        if unidade_id:
-            query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
-            query_params_mes.append(unidade_id)
-        cursor.execute(query_aulas_mes, query_params_mes)
-        minutos_utilizado_mes = cursor.fetchone()['minutos'] or 0
-
-        tempo_ocioso_mensal = max(0, minutos_disponivel_diario * dia_final - minutos_utilizado_mes)
+        tempo_ocioso_mensal = max(0, minutos_disponivel_mensal - minutos_utilizado_mes)
 
         tempo_ocioso_personais.append({
             "Nome_Personal": personal['Nome_Personal'],
@@ -412,9 +441,8 @@ def relatorio_equipamentos():
 
     # Buscar unidades para o filtro
     cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
-    unidades = cursor.fetchall() 
-    print("DEBUG unidades:", unidades)
-    
+    unidades = cursor.fetchall()
+
     unidade_id = request.args.get('unidade_id', '')
     mes = request.args.get('mes', '')
 
@@ -423,7 +451,7 @@ def relatorio_equipamentos():
     menos_usado = None
     ociosidade = []
 
-    # Exemplo: envie o nome da unidade selecionada (opcional)
+    # Nome da unidade selecionada
     unidade_nome = None
     if unidade_id:
         for u in unidades:

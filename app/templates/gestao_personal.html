@@ -84,13 +84,22 @@
             {% endfor %}
           </select>
         </div>
-        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+        <div style="background: rgba(20,24,38,0.92); box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
           <label for="especialidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Especialidade:</label>
           <select name="especialidade" id="especialidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
             <option value="">Todas</option>
             {% for especialidade in especialidades %}
               <option value="{{ especialidade.Especialidade }}" {% if especialidade_filtro == especialidade.Especialidade %}selected{% endif %}>{{ especialidade.Especialidade }}</option>
             {% endfor %}
+          </select>
+        </div>
+        <div style="background: rgba(20,24,38,0.92); border-radius: 0 10px 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.10); padding: 4px 14px; display: flex; align-items: center;">
+          <label for="genero" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Sexo:</label>
+          <select name="genero" id="genero" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+            <option value="">Todos</option>
+            <option value="M" {% if genero_filtro == 'M' %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if genero_filtro == 'F' %}selected{% endif %}>Feminino</option>
+            <option value="O" {% if genero_filtro == 'O' %}selected{% endif %}>Outro</option>
           </select>
         </div>
       </div>
@@ -118,6 +127,7 @@
           <th id="th-nome">Nome</th>
           <th id="th-email">Email</th>
           <th id="th-especialidade">Especialidade</th>
+          <th id="th-genero">Sexo</th>
           <th id="th-unidade">Unidade</th>
           <th id="th-acoes">Ações</th>
         </tr>
@@ -145,6 +155,9 @@
           <td>{{ personal.Nome_Personal }}</td>
           <td>{{ personal.Email_Personal }}</td>
           <td>{{ personal.Especialidade }}</td>
+          <td>
+            {% if personal.Genero == 'M' %}Masculino{% elif personal.Genero == 'F' %}Feminino{% elif personal.Genero == 'O' %}Outro{% else %}-{% endif %}
+          </td>
           <td>{{ personal.Nome_Unidade }}</td>
           <td>
             <button class="btn-acao editar" onclick="abrirModalEditarPersonal('{{ personal.ID_Personal }}')" title="Editar">✏️</button>
