@@ -93,7 +93,9 @@
     <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for unidade in unidades %}
-        <option value="{{ unidade.ID_Unidades }}" {% if unidade_id == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+        <option value="{{ unidade.ID_Unidades if unidade.ID_Unidades is defined else unidade.id_unidades }}" {% if unidade_id == (unidade.ID_Unidades|string if unidade.ID_Unidades is defined else unidade.id_unidades|string) %}selected{% endif %}>
+          {{ unidade.Nome_Unidade if unidade.Nome_Unidade is defined else unidade.nome_unidade if unidade.nome_unidade is defined else 'Sem nome' }}
+        </option>
       {% endfor %}
     </select>
     {% if unidade_nome %}<span style="margin-left:10px;">Unidade selecionada: <b>{{ unidade_nome }}</b></span>{% endif %}

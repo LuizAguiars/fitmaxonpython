@@ -427,8 +427,10 @@ def relatorio_equipamentos():
     unidade_nome = None
     if unidade_id:
         for u in unidades:
-            if str(u['ID_Unidades']) == str(unidade_id):
-                unidade_nome = u['Nome_Unidade']
+            uid = u.get('ID_Unidades') if 'ID_Unidades' in u else u.get('id_unidades')
+            nome = u.get('Nome_Unidade') if 'Nome_Unidade' in u else u.get('nome_unidade')
+            if str(uid) == str(unidade_id):
+                unidade_nome = nome
                 break
 
     cursor.close()
