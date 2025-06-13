@@ -153,6 +153,7 @@ def relatorio_personal():
 
     # Unidades para filtro
     cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
+
     unidades = cursor.fetchall()
     unidade_id = request.args.get('unidade_id', '')
     mes = request.args.get('mes', '')
@@ -288,10 +289,12 @@ def relatorio_personal():
             }
             nome_dia_pt = dias_semana_pt[nome_dia]
             if nome_dia_pt in minutos_disponivel_por_dia:
-                dias_trabalho_no_mes.append((data.strftime("%Y-%m-%d"), nome_dia_pt))
+                dias_trabalho_no_mes.append(
+                    (data.strftime("%Y-%m-%d"), nome_dia_pt))
 
         # --- Tempo disponível mensal: soma dos minutos disponíveis nos dias que trabalha ---
-        minutos_disponivel_mensal = sum(minutos_disponivel_por_dia[dia_semana] for _, dia_semana in dias_trabalho_no_mes)
+        minutos_disponivel_mensal = sum(
+            minutos_disponivel_por_dia[dia_semana] for _, dia_semana in dias_trabalho_no_mes)
 
         # Tempo disponível diário (média por dia com horário)
         minutos_disponivel_diario = 0
@@ -454,9 +457,20 @@ def relatorio_equipamentos():
     mes = request.args.get('mes', '')
 
     equipamentos_uso = []
-    mais_usado = None
-    menos_usado = None
-    ociosidade = []
+    # Exemplo de consulta (ajuste conforme sua lógica real):
+    # cursor.execute("""
+    #     SELECT e.Nome_Equipamento, SUM(ue.tempo_utilizado_minutos) as total_minutos
+    #     FROM equipamentos e
+    #     LEFT JOIN uso_equipamentos ue ON e.ID_equipamentos = ue.id_equipamento
+    #     GROUP BY e.ID_equipamentos
+    # """)
+    # resultado_sql = cursor.fetchall()
+    # for row in resultado_sql:
+    #     equipamentos_uso.append({
+    #         'nome': row.get('Nome_Equipamento') or row.get('nome_equipamento'),
+    #         'total_minutos': row.get('total_minutos', 0) or 0,
+    #         'total_horas': round((row.get('total_minutos', 0) or 0) / 60, 2)
+    #     })
 
     # Nome da unidade selecionada
     unidade_nome = None
@@ -470,8 +484,169 @@ def relatorio_equipamentos():
                 unidade_nome = nome
                 break
 
+    # Consulta real de uso dos equipamentos, considerando filtro de mês e unidade
+    filtros_sql = []
+    params_sql = []
+    if unidade_id:
+        filtros_sql.append('e.ID_unidade_equipamento = %s')
+        params_sql.append(unidade_id)
+    if mes:
+        filtros_sql.append('DATE_FORMAT(ue.data_uso, "%Y-%m") = %s')
+        params_sql.append(mes)
+    where_clause = f'WHERE {' AND '.join(filtros_sql)}' if filtros_sql else ''
+    cursor.execute(f'''
+        SELECT e.Nome_Equipamento, SUM(ue.tempo_utilizado_minutos) as total_minutos
+        FROM equipamentos e
+        LEFT JOIN uso_equipamentos ue ON e.ID_equipamentos = ue.id_equipamento
+        {where_clause}
+        GROUP BY e.ID_equipamentos
+    ''', params_sql)
+    resultado_sql = cursor.fetchall()
+    equipamentos_uso = []
+    for row in resultado_sql:
+        equipamentos_uso.append({
+            'nome': row.get('Nome_Equipamento') or row.get('nome_equipamento'),
+            'total_minutos': row.get('total_minutos', 0) or 0,
+            'total_horas': round((row.get('total_minutos', 0) or 0) / 60, 2)
+        })
+
+    # Equipamento mais usado
+    mais_usado = None
+    if equipamentos_uso:
+        mais_usado = max(equipamentos_uso, key=lambda x: x['total_minutos'])
+    # Equipamento menos usado
+    menos_usado = None
+    if equipamentos_uso:
+        menos_usado = min(equipamentos_uso, key=lambda x: x['total_minutos'])
+
+    # --- Cálculo de ociosidade dos equipamentos ---
+    from datetime import datetime, timedelta
+    import calendar
+
+    # confirmar que a função foi chamada
+    print("DEBUG: Entrou na função relatorio_equipamentos")
+
+    # Buscar todas as unidades com Horario_Funcionamento_ID
+    cursor.execute(
+        "SELECT ID_Unidades, Nome_Unidade, Horario_Funcionamento_ID FROM unidades")
+    unidades = cursor.fetchall()
+
+    # DEBUG → verificar se veio corretamente
+    print(f"DEBUG UNIDADES LISTA → {unidades}")
+
+    # Buscar todos os equipamentos da unidade (ou de todas as unidades)
+    if unidade_id:
+        cursor.execute(
+            "SELECT * FROM equipamentos WHERE ID_unidade_equipamento = %s", (unidade_id,))
+    else:
+        cursor.execute("SELECT * FROM equipamentos")
+    equipamentos_info = cursor.fetchall()
+
+    # verificar se vieram equipamentos
+    print(
+        f"DEBUG: Total de equipamentos encontrados: {len(equipamentos_info)}")
+
+    # Buscar todos os horários de funcionamento
+    cursor.execute("SELECT * FROM horarios_funcionamento")
+    horarios_funcionamento = {h['ID_Horario']: h for h in cursor.fetchall()}
+
+    # Determinar o período do relatório
+    hoje = datetime.now()
+    if mes:
+        ano, mes_num = map(int, mes.split('-'))
+        if ano == hoje.year and mes_num == hoje.month:
+            dia_final = hoje.day
+        else:
+            dia_final = calendar.monthrange(ano, mes_num)[1]
+        data_inicio = datetime(ano, mes_num, 1)
+        data_fim = datetime(ano, mes_num, dia_final)
+    else:
+        data_inicio = hoje.replace(day=1)
+        data_fim = hoje
+
+    dias_periodo = (data_fim - data_inicio).days + 1
+
+    # Montar ociosidade
+    ociosidade = []
+    for eq in equipamentos_info:
+        id_eq = eq['ID_equipamentos']
+        nome_eq = eq.get('Nome_Equipamento') or eq.get(
+            'descricao_equipamentos')
+        id_unidade = eq['ID_unidade_equipamento']
+
+        horario_id = None
+        for u in unidades:
+            uid = u.get('ID_Unidades')
+            if str(uid) == str(id_unidade):
+                horario_id = u.get('Horario_Funcionamento_ID')
+                break
+
+        print(
+            f"DEBUG → Equipamento: {nome_eq} → id_unidade: {id_unidade} → horario_id encontrado: {horario_id}")
+
+        horario = horarios_funcionamento.get(horario_id)
+        minutos_disponivel_total = 0
+
+        if horario:
+            # ajuste correto para SET → não usar split!
+            dias_semana = set(horario['Dias_Semana']
+                              ) if horario['Dias_Semana'] else set()
+            hora_inicio = horario['Hora_Inicio']
+            hora_fim = horario['Hora_Fim']
+
+            # Loop corrigido com weekday()
+            for i in range(dias_periodo):
+                dia = data_inicio + timedelta(days=i)
+                dia_semana_idx = dia.weekday()  # 0 = Monday
+                dias_semana_pt_lista = [
+                    'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado', 'Domingo']
+                nome_dia_pt = dias_semana_pt_lista[dia_semana_idx]
+
+                # mostrar se o dia está batendo
+                print(
+                    f"DEBUG DIA: {dia.strftime('%Y-%m-%d')} → {nome_dia_pt} → dias_semana banco: {dias_semana}")
+
+                if nome_dia_pt in dias_semana and hora_inicio and hora_fim:
+                    # tratamento correto → funciona com timedelta ou time
+                    minutos_inicio = hora_inicio.total_seconds() // 60
+                    minutos_fim = hora_fim.total_seconds() // 60
+                    minutos_disponivel_total += max(0,
+                                                    minutos_fim - minutos_inicio)
+
+        # Buscar tempo total utilizado no mês → data_uso é DATETIME, fazer comparação com hora cheia
+        cursor.execute("""
+            SELECT SUM(tempo_utilizado_minutos) as total_usado
+            FROM uso_equipamentos
+            WHERE id_equipamento = %s AND data_uso >= %s AND data_uso <= %s
+        """, (
+            id_eq,
+            data_inicio.strftime('%Y-%m-%d 00:00:00'),
+            data_fim.strftime('%Y-%m-%d 23:59:59')
+        ))
+        result = cursor.fetchone()
+
+        # ← conversão de Decimal para float para evitar erro:
+        total_usado = float(result['total_usado']
+                            ) if result and result['total_usado'] else 0
+
+        minutos_ocioso = max(0, minutos_disponivel_total - total_usado)
+
+        print(
+            f"DEBUG → Equipamento: {nome_eq} | Disponível: {minutos_disponivel_total} min | Usado: {total_usado} min | Ocioso: {minutos_ocioso} min")
+
+        ociosidade.append({
+            'nome': nome_eq,
+            'minutos_ocioso': minutos_ocioso,
+            'horas_ocioso': round(minutos_ocioso / 60, 2)
+        })
+
+    # ver a lista completa no final
+    print(
+        f"DEBUG FINAL → Lista ociosidade com {len(ociosidade)} itens: {ociosidade}")
+
     cursor.close()
     conn.close()
+
     return render_template(
         'relatorio_equipamentos.html',
         unidades=unidades,

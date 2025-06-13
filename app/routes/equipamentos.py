@@ -106,15 +106,15 @@ def gestao_equipamentos():
     )
 
 
-@equipamentos_bp.route('/relatorio-equipamentos', methods=['GET'])
-def relatorio_equipamentos():
-    if 'usuario' not in session:
-        flash(
-            "Você precisa estar logado para acessar o relatório de equipamentos.", "error")
-        return redirect(url_for('auth.login'))
+# @equipamentos_bp.route('/relatorio-equipamentos', methods=['GET'])
+# def relatorio_equipamentos():
+#     if 'usuario' not in session:
+#         flash(
+#             "Você precisa estar logado para acessar o relatório de equipamentos.", "error")
+#         return redirect(url_for('auth.login'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
 
     # Buscar unidades para o filtro
     cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
@@ -403,7 +403,7 @@ def relatorio_equipamentos():
                     if atual < fim_dia:
                         total_ocioso += (fim_dia - atual).total_seconds() // 60
             ociosidade_mensal.append({
-                'nome': eq['Equipamento'],
+                'nome': eq.get('Nome_Equipamento') or eq.get('nome_equipamento'),
                 'minutos_ocioso': int(total_ocioso),
                 'horas_ocioso': round(total_ocioso/60, 2)
             })

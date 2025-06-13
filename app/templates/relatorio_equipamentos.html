@@ -105,22 +105,23 @@
   </form>
 
   <section class="relatorio-card">
-    <h2>Equipamento Mais Usado</h2>
-    {% if mais_usado %}
-      <p><b>{{ mais_usado.Nome_Equipamento }}</b> ({{ (mais_usado.total_minutos // 60) }}h {{ (mais_usado.total_minutos % 60) }}min)</p>
-    {% else %}
-      <p>Nenhum dado encontrado.</p>
-    {% endif %}
-  </section>
+  <h2>Equipamento Mais Usado</h2>
+  {% if mais_usado %}
+    <p><b>{{ mais_usado.nome }}</b> ({{ (mais_usado.total_minutos // 60) }}h {{ (mais_usado.total_minutos % 60) }}min)</p>
+  {% else %}
+    <p>Nenhum dado encontrado.</p>
+  {% endif %}
+</section>
 
-  <section class="relatorio-card">
-    <h2>Equipamento Menos Usado</h2>
-    {% if menos_usado %}
-      <p><b>{{ menos_usado.Nome_Equipamento }}</b> ({{ (menos_usado.total_minutos // 60) }}h {{ (menos_usado.total_minutos % 60) }}min)</p>
-    {% else %}
-      <p>Nenhum dado encontrado.</p>
-    {% endif %}
-  </section>
+<section class="relatorio-card">
+  <h2>Equipamento Menos Usado</h2>
+  {% if menos_usado %}
+    <p><b>{{ menos_usado.nome }}</b> ({{ (menos_usado.total_minutos // 60) }}h {{ (menos_usado.total_minutos % 60) }}min)</p>
+  {% else %}
+    <p>Nenhum dado encontrado.</p>
+  {% endif %}
+</section>
+
 
   <section class="relatorio-card">
     <h2>Todos os Equipamentos e Totais de Uso</h2>
