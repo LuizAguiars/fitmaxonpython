@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "drpdown corrigido e atualizado em %DATAHORA%"
+git commit -m "dropdown corrigido e atualizado em %DATAHORA%"
  %DATAHORA%"
 
 

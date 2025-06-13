@@ -217,7 +217,8 @@ def relatorio_personal():
 
     # Tabela de ociosidade dos personais (ajustado para o dia)
     if unidade_id:
-        cursor.execute("SELECT * FROM personal WHERE ID_Unidade = %s", (unidade_id,))
+        cursor.execute(
+            "SELECT * FROM personal WHERE ID_Unidade = %s", (unidade_id,))
     else:
         cursor.execute("SELECT * FROM personal")
     todos_personais = cursor.fetchall()
@@ -277,7 +278,8 @@ def relatorio_personal():
         cursor.execute(query_aulas_dia, query_params_dia)
         minutos_utilizado_dia = cursor.fetchone()['minutos'] or 0
 
-        tempo_ocioso_dia = max(0, minutos_disponivel_diario - minutos_utilizado_dia)
+        tempo_ocioso_dia = max(
+            0, minutos_disponivel_diario - minutos_utilizado_dia)
 
         # Tempo utilizado no mês até o dia atual (com filtro de unidade)
         if mes:
@@ -300,25 +302,27 @@ def relatorio_personal():
             FROM agendar_treino ag
             WHERE ag.ID_Personal = %s AND ag.DataTreino BETWEEN %s AND %s
         '''
-        query_params_mes = [personal['ID_Personal'], data_inicio_mes, data_fim_mes]
+        query_params_mes = [personal['ID_Personal'],
+                            data_inicio_mes, data_fim_mes]
         if unidade_id:
             query_aulas_mes += ' AND ag.ID_Unidade_Treino = %s'
             query_params_mes.append(unidade_id)
         cursor.execute(query_aulas_mes, query_params_mes)
         minutos_utilizado_mes = cursor.fetchone()['minutos'] or 0
 
-        tempo_ocioso_mensal = max(0, minutos_disponivel_diario * dia_final - minutos_utilizado_mes)
+        tempo_ocioso_mensal = max(
+            0, minutos_disponivel_diario * dia_final - minutos_utilizado_mes)
 
         tempo_ocioso_personais.append({
             "Nome_Personal": personal['Nome_Personal'],
             "tempo_disponivel": minutos_disponivel_diario,
-            "tempo_disponivel_horas": f"{minutos_disponivel_diario//60}h {minutos_disponivel_diario%60}min",
+            "tempo_disponivel_horas": f"{minutos_disponivel_diario//60}h {minutos_disponivel_diario % 60}min",
             "tempo_utilizado": minutos_utilizado_dia,
-            "tempo_utilizado_horas": f"{minutos_utilizado_dia//60}h {minutos_utilizado_dia%60}min",
+            "tempo_utilizado_horas": f"{minutos_utilizado_dia//60}h {minutos_utilizado_dia % 60}min",
             "tempo_ocioso": tempo_ocioso_dia,
-            "tempo_ocioso_horas": f"{tempo_ocioso_dia//60}h {tempo_ocioso_dia%60}min",
+            "tempo_ocioso_horas": f"{tempo_ocioso_dia//60}h {tempo_ocioso_dia % 60}min",
             "tempo_ocioso_mensal": tempo_ocioso_mensal,
-            "tempo_ocioso_mensal_horas": f"{tempo_ocioso_mensal//60}h {tempo_ocioso_mensal%60}min"
+            "tempo_ocioso_mensal_horas": f"{tempo_ocioso_mensal//60}h {tempo_ocioso_mensal % 60}min"
         })
 
     cursor.close()
@@ -389,7 +393,8 @@ def relatorio_usuarios():
             return "Obesidade"
 
     from collections import Counter
-    categorias = [classificar_imc(u['IMC']) for u in imc_usuarios if u['IMC'] is not None]
+    categorias = [classificar_imc(u['IMC'])
+                  for u in imc_usuarios if u['IMC'] is not None]
     contagem = Counter(categorias)
     imc_categorias = [
         {"categoria": cat, "quantidade": contagem.get(cat, 0)}
@@ -405,6 +410,7 @@ def relatorio_usuarios():
         imc_categorias=imc_categorias
     )
 
+
 @relatorios_bp.route('/relatorios/equipamentos', methods=['GET'])
 def relatorio_equipamentos():
     conn = get_db_connection()
@@ -412,9 +418,9 @@ def relatorio_equipamentos():
 
     # Buscar unidades para o filtro
     cursor.execute("SELECT ID_Unidades, Nome_Unidade FROM unidades")
-    unidades = cursor.fetchall() 
+    unidades = cursor.fetchall()
     print("DEBUG unidades:", unidades)
-    
+
     unidade_id = request.args.get('unidade_id', '')
     mes = request.args.get('mes', '')
 
@@ -427,8 +433,10 @@ def relatorio_equipamentos():
     unidade_nome = None
     if unidade_id:
         for u in unidades:
-            uid = u.get('ID_Unidades') if 'ID_Unidades' in u else u.get('id_unidades')
-            nome = u.get('Nome_Unidade') if 'Nome_Unidade' in u else u.get('nome_unidade')
+            uid = u.get('ID_Unidades') if 'ID_Unidades' in u else u.get(
+                'id_unidades')
+            nome = u.get('Nome_Unidade') if 'Nome_Unidade' in u else u.get(
+                'nome_unidade')
             if str(uid) == str(unidade_id):
                 unidade_nome = nome
                 break
