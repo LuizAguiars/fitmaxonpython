@@ -67,6 +67,9 @@
             <span style="color:#fff;font-size:1em;">Mensalidade de <b style="color:#ffd600;">{{ mes_nome }}</b> paga.<br>Próximo vencimento: <b style="color:#ffd600;">{{ proximo_vencimento }}</b></span>
         {% else %}
             <span style="color:#d32f2f;font-weight:bold;">Em aberto</span>
+            <form method="POST" action="{{ url_for('usuarios.pagar_mensalidade') }}" style="display:inline;">
+                <button type="submit" class="btn verde" style="margin-left:12px;">Pagar</button>
+            </form>
         {% endif %}
     </p>
     <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalEditarConta')">Editar Conta</button>
