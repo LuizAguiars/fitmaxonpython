@@ -127,8 +127,14 @@ def relatorio_equipamentos():
     if unidade_id:
         filtro_unidade = 'WHERE e.ID_unidade_equipamento = %s'
         params.append(unidade_id)
-        unidade_nome = next((u['Nome_Unidade'] for u in unidades if str(
-            u['ID_Unidades']) == unidade_id), None)
+        unidade_nome = next(
+            (
+                u.get('Nome_Unidade') or u.get('nome_unidade')
+                for u in unidades
+                if str(u.get('ID_Unidades') or u.get('id_unidades')) == str(unidade_id)
+            ),
+            None
+        )
 
     # Relatório: Equipamento mais usado e menos usado
     cursor.execute(f"""
