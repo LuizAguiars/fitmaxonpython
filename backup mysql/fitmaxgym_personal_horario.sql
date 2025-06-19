@@ -32,7 +32,7 @@ CREATE TABLE `personal_horario` (
   PRIMARY KEY (`ID_Horario`),
   KEY `ID_Personal` (`ID_Personal`),
   CONSTRAINT `personal_horario_ibfk_1` FOREIGN KEY (`ID_Personal`) REFERENCES `personal` (`ID_Personal`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `personal_horario` (
 
 LOCK TABLES `personal_horario` WRITE;
 /*!40000 ALTER TABLE `personal_horario` DISABLE KEYS */;
-INSERT INTO `personal_horario` VALUES (1,5,'Segunda','07:00:00','12:00:00',1),(2,5,'Segunda','13:00:00','18:00:00',1),(3,5,'Terca','07:00:00','12:00:00',1),(4,5,'Terca','13:00:00','18:00:00',1),(5,5,'Quarta','07:00:00','12:00:00',1),(6,5,'Quarta','13:00:00','18:00:00',1),(7,5,'Quinta','07:00:00','12:00:00',1),(8,5,'Quinta','13:00:00','18:00:00',1),(9,5,'Sexta','07:00:00','12:00:00',1),(10,5,'Sexta','13:00:00','18:00:00',1);
+INSERT INTO `personal_horario` VALUES (1,5,'Segunda','07:00:00','12:00:00',1),(2,5,'Segunda','13:00:00','18:00:00',1),(3,5,'Terca','07:00:00','12:00:00',1),(4,5,'Terca','13:00:00','18:00:00',1),(5,5,'Quarta','07:00:00','12:00:00',1),(6,5,'Quarta','13:00:00','18:00:00',1),(7,5,'Quinta','07:00:00','12:00:00',1),(8,5,'Quinta','13:00:00','18:00:00',1),(9,5,'Sexta','07:00:00','12:00:00',1),(10,5,'Sexta','13:00:00','18:00:00',1),(16,6,'Segunda','17:00:00','23:59:00',1),(17,6,'Terca','17:00:00','23:59:00',1),(18,6,'Quarta','17:00:00','23:59:00',1),(19,6,'Quinta','17:00:00','23:59:00',1),(20,6,'Sexta','17:00:00','23:59:00',1),(21,7,'Segunda','17:00:00','23:59:00',1),(22,7,'Terca','17:00:00','23:59:00',1),(23,7,'Quarta','17:00:00','23:59:00',1),(24,7,'Quinta','17:00:00','23:59:00',1),(25,7,'Sexta','17:00:00','23:59:00',1),(26,8,'Segunda','17:00:00','23:59:00',1),(27,8,'Terca','17:00:00','23:59:00',1),(28,8,'Quarta','17:00:00','23:59:00',1),(29,8,'Quinta','17:00:00','23:59:00',1),(30,8,'Sexta','17:00:00','23:59:00',1),(31,9,'Segunda','06:00:00','12:00:00',1),(32,9,'Terca','06:00:00','12:00:00',1),(33,9,'Quarta','06:00:00','12:00:00',1),(34,9,'Quinta','06:00:00','12:00:00',1),(35,9,'Sexta','06:00:00','12:00:00',1);
 /*!40000 ALTER TABLE `personal_horario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-11 22:20:25
+-- Dump completed on 2025-06-19 15:53:26

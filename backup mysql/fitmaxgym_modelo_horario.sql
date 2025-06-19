@@ -28,7 +28,7 @@ CREATE TABLE `modelo_horario` (
   `Descricao` varchar(255) DEFAULT NULL,
   `ID_Unidade` int DEFAULT NULL,
   PRIMARY KEY (`ID_Modelo`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,7 +37,7 @@ CREATE TABLE `modelo_horario` (
 
 LOCK TABLES `modelo_horario` WRITE;
 /*!40000 ALTER TABLE `modelo_horario` DISABLE KEYS */;
-INSERT INTO `modelo_horario` VALUES (1,'Domingo a Domingo 6:00 as 13:00h',NULL,5),(2,'14 ás 22 dom. - dom.',NULL,5),(3,'Segunda - Sexta 6 - 11 * 12 - 18',NULL,5),(4,'Teste',NULL,5);
+INSERT INTO `modelo_horario` VALUES (1,'Domingo a Domingo 6:00 as 13:00h',NULL,5),(2,'14 ás 22 dom. - dom.',NULL,5),(3,'Segunda - Sexta 6 - 11 * 12 - 18',NULL,5),(4,'Teste',NULL,5),(5,'seg - sex 17 - 23:59',NULL,5),(6,'segunda - sexta 6 - 12 h',NULL,5);
 /*!40000 ALTER TABLE `modelo_horario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-11 22:20:24
+-- Dump completed on 2025-06-19 15:53:24
