@@ -67,9 +67,6 @@
             <span style="color:#fff;font-size:1em;">Mensalidade de <b style="color:#ffd600;">{{ mes_nome }}</b> paga.<br>Próximo vencimento: <b style="color:#ffd600;">{{ proximo_vencimento }}</b></span>
         {% else %}
             <span style="color:#d32f2f;font-weight:bold;">Em aberto</span>
-            <form method="POST" action="{{ url_for('usuarios.pagar_mensalidade') }}" style="display:inline;">
-                <button type="submit" class="btn verde" style="margin-left:12px;">Pagar</button>
-            </form>
         {% endif %}
     </p>
     <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalEditarConta')">Editar Conta</button>
@@ -85,7 +82,7 @@
         <input type="text" name="nome" id="editNome" placeholder="Nome" value="{{ usuario.Nome_User }}" required>
         <input type="email" name="email" id="editEmail" placeholder="Email" value="{{ usuario.Email_user }}" required>
         <input type="password" name="senha" id="editSenha" placeholder="Nova Senha (deixe em branco para não alterar)">
-        <input type="tel" name="telefone" id="editTelefone" placeholder="Telefone" value="{{ usuario.telefone_user }}">
+        <input type="tel" name="telefone" id="editTelefone" placeholder="Telefone" value="{{ usuario.telefone_user }}" pattern="[0-9()\-\s]+" title="Digite apenas números" maxlength="20" oninput="this.value=this.value.replace(/[^0-9()\-\s]/g,'');">
         <input type="text" name="logradouro" id="editLogradouro" placeholder="Rua" value="{{ usuario.logradouro_user }}">
         <input type="text" name="numero" id="editNumero" placeholder="Número" value="{{ usuario.numero_user }}">
         <input type="text" name="bairro" id="editBairro" placeholder="Bairro" value="{{ usuario.bairro_user }}">
