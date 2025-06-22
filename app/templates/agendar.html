@@ -105,7 +105,9 @@
             <option value="">Selecione o Tipo de Treino</option>
             {% for t in treinos %}
               <option value="{{ t.idtipo_de_treino }}" data-unidade="{{ t.ID_Unidade }}">
-                {{ t.nome_tipo_treino }}{% if t.descricao %} - {{ t.descricao }}{% endif %}
+                {{ t.nome_tipo_treino }}
+                {% if t.equipamentos_info %} - <span style="color:#888; font-size:0.98em;">{{ t.equipamentos_info }}</span>{% endif %}
+                {% if t.descricao %} - {{ t.descricao }}{% endif %}
               </option>
             {% endfor %}
           </select>

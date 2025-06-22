@@ -71,7 +71,7 @@
     </div>
 
     <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
+        
         <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>
@@ -162,6 +162,7 @@
   </section>
 </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <script src="{{ url_for('static', filename='js/relatoriofeedback.js') }}"></script>
   <script src="{{ url_for('static', filename='js/comentarios_feedback.js') }}"></script>
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
@@ -191,6 +192,16 @@
             display: true,
             text: 'Total de Uso dos Equipamentos (em horas)',
             font: { size: 18 }
+          },
+          tooltip: { enabled: false }, // Desativa tooltip
+          datalabels: {
+            anchor: 'end',
+            align: 'start',
+            color: '#222',
+            font: { weight: 'bold', size: 14 },
+            formatter: function(value) {
+              return value;
+            }
           }
         },
         scales: {
@@ -203,8 +214,10 @@
             beginAtZero: true
           }
         }
-      }
+      },
+      plugins: [ChartDataLabels]
     });
   </script>
+  
 </body>
 </html>

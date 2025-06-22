@@ -5,6 +5,7 @@
     <title>Relatório de Usuários - Fitmax Gym</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios1.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <style>
  .relatorio-card {
       background: #fff;
@@ -141,90 +142,134 @@
         </table>
     </section>
 </main>
-<script>
-    const nomesUnidades = {{ pesos_unidade | map(attribute='Nome_Unidade') | list | tojson }};
-    const pesosMedios = {{ pesos_unidade | map(attribute='peso_medio') | list | tojson }};
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+    // Registrar o plugin para Chart.js 3+
+    if (window.Chart && window.ChartDataLabels) {
+      Chart.register(ChartDataLabels);
+    }
+    var nomesUnidades = JSON.parse('{{ pesos_unidade | map(attribute="Nome_Unidade") | list | tojson | safe }}');
+    var pesosMedios = JSON.parse('{{ pesos_unidade | map(attribute="peso_medio") | list | tojson | safe }}');
+    // Corrige: converte todos os valores para número ou null
+    pesosMedios = pesosMedios.map(v => (v === null || v === undefined || v === '' ? null : Number(v)));
+    var imcCategorias = JSON.parse('{{ imc_categorias | map(attribute="categoria") | list | tojson | safe }}');
+    var imcQuantidades = JSON.parse('{{ imc_categorias | map(attribute="quantidade") | list | tojson | safe }}');
 
-    const ctx = document.getElementById('graficoPeso').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: nomesUnidades,
-            datasets: [{
-                label: 'Peso Médio (kg)',
-                data: pesosMedios,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'Peso Médio por Unidade',
-                    font: { size: 18 }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Peso Médio (kg)'
-                    }
-                }
-            }
-        }
-    });
+    // Debug dos dados
+    console.log('nomesUnidades:', nomesUnidades);
+    console.log('pesosMedios:', pesosMedios);
+    console.log('imcCategorias:', imcCategorias);
+    console.log('imcQuantidades:', imcQuantidades);
 
-    const imcCategorias = {{ imc_categorias | map(attribute='categoria') | list | tojson }};
-    const imcQuantidades = {{ imc_categorias | map(attribute='quantidade') | list | tojson }};
+    var ctx = document.getElementById('graficoPeso').getContext('2d');
+    if (nomesUnidades.length && pesosMedios.length) {
+      new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: nomesUnidades,
+              datasets: [{
+                  label: 'Peso Médio (kg)',
+                  data: pesosMedios,
+                  backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              plugins: {
+                  legend: { display: false },
+                  title: {
+                      display: true,
+                      text: 'Peso Médio por Unidade',
+                      font: { size: 18 }
+                  },
+                  datalabels: {
+                      anchor: 'end',
+                      align: 'top',
+                      color: '#222',
+                      font: { weight: 'bold', size: 14 },
+                      formatter: function(value) {
+                        return (typeof value === 'number' && !isNaN(value)) ? value.toFixed(2) : '';
+                      }
+                  },
+                  tooltip: { enabled: false }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      title: {
+                          display: true,
+                          text: 'Peso Médio (kg)'
+                      }
+                  }
+              }
+          },
+          plugins: [ChartDataLabels]
+      });
+    } else {
+      ctx.font = '18px Arial';
+      ctx.fillText('Sem dados para exibir', 50, 200);
+    }
 
-    const ctxIMC = document.getElementById('graficoIMC').getContext('2d');
-    new Chart(ctxIMC, {
-        type: 'bar',
-        data: {
-            labels: imcCategorias,
-            datasets: [{
-                label: 'Quantidade de Alunos',
-                data: imcQuantidades,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.6)',
-                    'rgba(75, 192, 192, 0.6)',
-                    'rgba(255, 206, 86, 0.6)',
-                    'rgba(255, 99, 132, 0.6)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(255, 99, 132, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'Distribuição dos Alunos por IMC',
-                    font: { size: 18 }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Quantidade de Alunos'
-                    }
-                }
-            }
-        }
-    });
-</script>
+    var ctxIMC = document.getElementById('graficoIMC').getContext('2d');
+    if (imcCategorias.length && imcQuantidades.length) {
+      new Chart(ctxIMC, {
+          type: 'bar',
+          data: {
+              labels: imcCategorias,
+              datasets: [{
+                  label: 'Quantidade de Alunos',
+                  data: imcQuantidades,
+                  backgroundColor: [
+                      'rgba(54, 162, 235, 0.6)',
+                      'rgba(75, 192, 192, 0.6)',
+                      'rgba(255, 206, 86, 0.6)',
+                      'rgba(255, 99, 132, 0.6)'
+                  ],
+                  borderColor: [
+                      'rgba(54, 162, 235, 1)',
+                      'rgba(75, 192, 192, 1)',
+                      'rgba(255, 206, 86, 1)',
+                      'rgba(255, 99, 132, 1)'
+                  ],
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              plugins: {
+                  legend: { display: false },
+                  title: {
+                      display: true,
+                      text: 'Distribuição dos Alunos por IMC',
+                      font: { size: 18 }
+                  },
+                  datalabels: {
+                      anchor: 'end',
+                      align: 'top',
+                      color: '#222',
+                      font: { weight: 'bold', size: 14 },
+                      formatter: function(value) {
+                          return value;
+                      }
+                  },
+                  tooltip: { enabled: false }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      title: {
+                          display: true,
+                          text: 'Quantidade de Alunos'
+                      }
+                  }
+              }
+          },
+          plugins: [ChartDataLabels]
+      });
+    } else {
+      ctxIMC.font = '18px Arial';
+      ctxIMC.fillText('Sem dados para exibir', 50, 200);
+    }
+    </script>
 </body>
 </html>

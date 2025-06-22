@@ -288,8 +288,15 @@ def agendar():
         "SELECT ID_Personal, Nome_Personal, ID_Unidade FROM personal")
     personais = cursor.fetchall()
 
-    cursor.execute(
-        "SELECT idtipo_de_treino, nome_tipo_treino, descricao, ID_Unidade FROM tipo_de_treino")
+    # Buscar tipos de treino e seus equipamentos/tempos
+    cursor.execute('''
+        SELECT t.idtipo_de_treino, t.nome_tipo_treino, t.descricao, t.ID_Unidade,
+               GROUP_CONCAT(CONCAT(e.Nome_Equipamento, ' (', ep.tempo_minutos, 'min)') SEPARATOR ', ') AS equipamentos_info
+        FROM tipo_de_treino t
+        LEFT JOIN equipamentos_por_tipo_treino ep ON t.idtipo_de_treino = ep.idtipo_de_treino
+        LEFT JOIN equipamentos e ON ep.id_equipamento = e.ID_equipamentos
+        GROUP BY t.idtipo_de_treino
+    ''')
     treinos = cursor.fetchall()
 
     conn.close()

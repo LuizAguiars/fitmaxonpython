@@ -15,11 +15,11 @@
     </div>
 
     <div class="search-container">
-        <h1>TELA INICIAL</h1>
+        <h1>Bem Vindo a Fitmax, {{ nome }}</h1>
     </div>
 
     <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
+        
         <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>

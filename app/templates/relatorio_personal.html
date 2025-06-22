@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório de Personais - Fitmax Gym</title>
@@ -70,7 +71,7 @@
   </div>
   
   <div class="usuario-logado">
-    <p>Olá, {{ nome }} 👋</p>
+    
       <form method="POST" action="{{ url_for('auth.logout') }}">
         <button type="submit">Sair</button>
       </form>
@@ -202,7 +203,17 @@
           display: true,
           text: 'Total de Aulas por Personal',
           font: { size: 18 }
-        }
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: '#222',
+          font: { weight: 'bold', size: 14 },
+          formatter: function(value) {
+            return value;
+          }
+        },
+        tooltip: { enabled: false }
       },
       scales: {
         x: {
@@ -214,7 +225,8 @@
           beginAtZero: true
         }
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
 
   // Remover AJAX e usar apenas submit automático para evitar problemas de atualização do filtro
