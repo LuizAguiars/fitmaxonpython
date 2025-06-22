@@ -3,123 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitmax Gym</title>
-    
+    <title>ACADEMIAS FITMAX</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/inicial1.css') }}">
-
+    <style>
+      body {
+        /* ...existing code for background... */
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-family: 'Montserrat', Arial, sans-serif;
+        /* O fundo já está com opacidade escura via CSS existente */
+      }
+      .logo-central {
+        position: absolute;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        width: 120px;
+        height: auto;
+        animation: logoFadeIn 1.2s ease;
+      }
+      @keyframes logoFadeIn {
+        from { opacity: 0; transform: translateX(-50%) scale(0.7);}
+        to { opacity: 1; transform: translateX(-50%) scale(1);}
+      }
+      .auth-buttons {
+        position: absolute;
+        top: 40px;
+        right: 60px;
+        display: flex;
+        gap: 18px;
+        z-index: 2;
+      }
+      .auth-buttons a {
+        padding: 12px 28px;
+        border-radius: 30px;
+        background: linear-gradient(90deg, #ffb347 0%, #ffcc33 100%);
+        color: #222;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.08em;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        transition: background 0.3s, color 0.3s, transform 0.2s;
+        border: none;
+        outline: none;
+        letter-spacing: 1px;
+    }
+      .auth-buttons a:hover {
+        background: linear-gradient(90deg, #ffcc33 0%, #ffb347 100%);
+        color: #111;
+        transform: translateY(-2px) scale(1.04);
+      }
+      .main-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        margin-top: 60px;
+      }
+      .fitmax-title {
+        font-size: 2.7em;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: 2px;
+        margin-bottom: 18px;
+        text-align: center;
+        background: linear-gradient(90deg, #ffb347 30%, #fff 70%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: textGradientMove 2.5s linear infinite alternate;
+      }
+      @keyframes textGradientMove {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+      }
+      /* Remover .animated-text e animações antigas */
+      /* Cubo vertical apenas texto */
+      .cube-vertical {
+        width: 480px;
+        height: 140px;
+        perspective: 1200px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .cube-vertical-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 1s cubic-bezier(.77,0,.18,1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cube-vertical-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.35em;
+        font-weight: 500;
+        text-align: center;
+        backface-visibility: hidden;
+        opacity: 0.98;
+        left: 0;
+        top: 0;
+        padding: 0 18px;
+        background: none;
+        box-shadow: none;
+      }
+      .cube-vertical-face span {
+        display: block;
+        font-size: 1.1em;
+        margin-top: 8px;
+        color: #ffd700;
+        font-weight: 600;
+      }
+      .cube-vertical-face.front  { transform: rotateX(0deg) translateZ(70px);}
+      .cube-vertical-face.bottom { transform: rotateX(90deg) translateZ(70px);}
+      .cube-vertical-face.back   { transform: rotateX(180deg) translateZ(70px);}
+      .cube-vertical-face.top    { transform: rotateX(-90deg) translateZ(70px);}
+      @media (max-width: 600px) {
+        .cube-vertical { width: 98vw; height: 100px; }
+        .cube-vertical-face { font-size: 1em; }
+      }
+      /* Opcional: escurecer o fundo se necessário */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.55);
+        z-index: 1;
+        pointer-events: none;
+      }
+      .fitmax-title span {
+        display: inline-block;
+        opacity: 0;
+        transform: scale(0.9);
+        transition: opacity 0.6s, transform 0.7s cubic-bezier(.77,0,.18,1);
+        font-size: inherit;
+        font-weight: inherit;
+        background: inherit;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            
-            <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
-        </div>
-        <div class="search-container">
-            <input type="text" placeholder="Pesquisar..." />
-            <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
-        </div>
-        <div class="auth">
-            <a href="{{ url_for('auth.cadastro') }}">CRIE SUA CONTA</a>
-            <a href="{{ url_for('auth.login') }}">ENTRE</a>
-        </div>
-        <nav>
-           
-            <p class="business-hours">Seg - Sex: 06h às 22h | Sáb - Dom: 08h às 18h</p>
-            
-        </nav>
-    </header>
-    
-    <section class="banner">
-        <h1>Transforme seu Corpo, Supere seus Limites!</h1>
-        <p>Na Fitmax Gym, oferecemos a melhor estrutura para você alcançar seus objetivos.</p>
-    </section>
-    
-    <section class="benefits">
-        <div class="benefit">
-            <img src="{{ url_for('static', filename='IMG/academia.png') }}" alt="Equipamentos modernos">
-            <h3>Equipamentos Modernos</h3>
-            <p>Treine com o que há de melhor no mercado.</p>
-        </div>
-        <div class="benefit">
-            <img src="{{ url_for('static', filename='IMG/personal.png') }}" alt="PersonalTrainers">
-            <h3>Personal Trainers</h3>
-            <p>Profissionais preparados para te guiar.</p>
-        </div>
-        <div class="benefit">
-            <img src="{{ url_for('static', filename='IMG/halter.png') }}" alt="Ambiente motivador">
-            <h3>Ambiente Motivador</h3>
-            <p>Uma academia feita para você dar o seu melhor.</p>
-        </div>
-    </section>
-    
-    <section class="testimonials">
-        <h2>O que nossos alunos dizem</h2>
-        {% if depoimentos and depoimentos|length > 0 %}
-          <div class="depoimentos-carrossel" id="depoimentos-carrossel">
-            {% for d in depoimentos %}
-              <div class="depoimento-item{% if loop.first %} ativo{% endif %}">
-                <div style="color: #ffc107; font-size: 1.5em; font-weight: bold; margin-bottom: 8px;">{{ '★' * d.nota_user }}</div>
-                <div style="font-size:1.18em; color:#fff; margin-bottom: 10px;">"{{ d.Comentario }}"</div>
-                <div style="margin-top: 8px; color: #fff; font-size: 1.05em;">
-                  <b>{{ d.Nome_User }}</b>{% if d.cidade_user %}, {{ d.cidade_user }}{% endif %}
-                </div>
-              </div>
-            {% endfor %}
+    <img class="logo-central" src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
+    <div class="auth-buttons">
+        <a href="{{ url_for('auth.cadastro') }}">CRIE SUA CONTA</a>
+        <a href="{{ url_for('auth.login') }}">ENTRE</a>
+    </div>
+    <div class="main-content">
+        <div class="fitmax-title" id="fitmax-title"></div>
+        <div class="cube-vertical">
+          <div class="cube-vertical-inner" id="cube-vertical-inner">
+            <div class="cube-vertical-face front">
+              Transforme seu Corpo, Supere seus Limites!
+              <span>Na Fitmax Gym, oferecemos a melhor estrutura para você alcançar seus objetivos.</span>
+            </div>
+            <div class="cube-vertical-face bottom">
+              Seu Potencial Ilimitado, Nosso Suporte Completo.
+              <span>Na Fitmax Gym, transformamos desafios em conquistas ao seu lado.</span>
+            </div>
+            <div class="cube-vertical-face back">
+              Mais que Treino, um Novo Estilo de Vida.
+              <span>Na Fitmax Gym, você encontra a energia e o ambiente perfeitos para sua evolução.</span>
+            </div>
+            <div class="cube-vertical-face top">
+              Comece Sua Mudança Hoje, Alcance Seus Sonhos Amanhã.
+              <span>Na Fitmax Gym, sua jornada fitness ganha um novo nível de excelência.</span>
+            </div>
           </div>
-          <style>
-            .depoimentos-carrossel {
-              position: relative;
-              min-height: 120px;
-              overflow: hidden;
-            }
-            .depoimentos-carrossel .depoimento-item {
-              position: absolute;
-              left: 0; top: 0; width: 100%;
-              opacity: 0;
-              transform: translateX(100%);
-              transition: opacity 0.5s, transform 0.7s;
-              z-index: 1;
-              display: block;
-            }
-            .depoimentos-carrossel .depoimento-item.ativo {
-              opacity: 1;
-              transform: translateX(0);
-              z-index: 2;
-            }
-            .depoimentos-carrossel .depoimento-item.saindo {
-              opacity: 0;
-              transform: translateX(-100%);
-              z-index: 1;
-            }
-          </style>
-          <script>
-            let idx = 0;
-            const depoimentos = document.querySelectorAll('#depoimentos-carrossel .depoimento-item');
-            setInterval(() => {
-              const atual = depoimentos[idx];
-              atual.classList.remove('ativo');
-              atual.classList.add('saindo');
-              idx = (idx + 1) % depoimentos.length;
-              const proximo = depoimentos[idx];
-              proximo.classList.add('ativo');
-              setTimeout(() => {
-                atual.classList.remove('saindo');
-              }, 700);
-            }, 7000);
-          </script>
-        {% else %}
-          <blockquote style="color:#fff;">"A Fitmax Gym mudou minha vida! Ambiente incrível e excelentes profissionais."</blockquote>
-          <cite style="color:#fff;">- João Silva</cite>
-        {% endif %}
-    </section>
-    
-    
-    <footer>
-        <p><strong>SEDE</strong></p>
-        <p>AV. BACACHERI, 322, PORTÃO - CURITIBA / PR</p>
-        <p>FONE: (41) 99999-8888</p>
-    </footer>
-    <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+        </div>
+    </div>
+    <script>
+      // Rotação vertical do cubo a cada 5 segundos
+      const cubeV = document.getElementById('cube-vertical-inner');
+      let vside = 0;
+      setInterval(() => {
+        vside = (vside + 1) % 4;
+        cubeV.style.transform =
+          vside === 0 ? 'rotateX(0deg)' :
+          vside === 1 ? 'rotateX(-90deg)' :
+          vside === 2 ? 'rotateX(-180deg)' :
+          'rotateX(90deg)';
+      }, 5000);
 
+      // Efeito fade-in com escala (zoom) para cada letra
+      const titleText = "ACADEMIAS FITMAX";
+      const titleContainer = document.getElementById('fitmax-title');
+      titleContainer.innerHTML = '';
+
+      for (let i = 0; i < titleText.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = titleText[i] === ' ' ? '\u00A0' : titleText[i];
+        span.className = 'zoom-in';
+        span.style.opacity = 0;
+        span.style.transform = 'scale(0.7)';
+        titleContainer.appendChild(span);
+      }
+
+      const spans = titleContainer.querySelectorAll('span');
+      let idx = 0;
+      function animateTitle() {
+        if (idx < spans.length) {
+          const span = spans[idx];
+          span.style.opacity = 1;
+          span.style.transform = 'scale(1)';
+          idx++;
+          setTimeout(animateTitle, 80); // animação mais suave
+        }
+      }
+      setTimeout(animateTitle, 300); // pequeno delay inicial
+    </script>
+    <!-- ...existing background and scripts if needed... -->
 </body>
 </html>
