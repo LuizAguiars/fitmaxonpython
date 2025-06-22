@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "rework tela inicial  %DATAHORA%"
+git commit -m "rework tela inicial 2 (pequenos ajustes)  %DATAHORA%"
  %DATAHORA%"
 
 
