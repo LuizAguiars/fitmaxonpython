@@ -392,11 +392,14 @@ def minhas_aulas():
     mes = request.args.get('mes')
     tipo = request.args.get('tipo')
     status = request.args.get('status')
+
     try:
-        per_page = int(request.args.get('per_page', 8))  # padrão agora é 8
+        per_page = int(request.args.get('per_page', 8))  # padrão é 8
     except ValueError:
         per_page = 8
-    per_page = max(4, min(per_page, 16))
+    # Aceita apenas valores válidos: 4, 8, 12, 16, 32, 64, 128
+    if per_page not in [4, 8, 12, 16, 32, 64, 128]:
+        per_page = 8
     try:
         page = int(request.args.get('page', 1))
     except ValueError:
