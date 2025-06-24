@@ -11,7 +11,7 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "pagamento de mensalidade user  %DATAHORA%"
+git commit -m "referencial de apagar unidades  %DATAHORA%"
  %DATAHORA%"
 
 

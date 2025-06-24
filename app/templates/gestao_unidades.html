@@ -78,8 +78,11 @@
 <!-- notificação -->
 <div class="botoes-acoes" style="display:none"></div>
 <!-- filtro por quantidade de itens -->
-<div class="filtros-container" style="margin-bottom: -12px;">
-  <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
+<div class="filtros-container" style="margin-bottom: -12px;">  <form method="get" id="filtroItensPorPaginaForm" style="display: flex; align-items: center; gap: 6px; background: rgba(20,24,38,0.92); border-radius: 10px; padding: 4px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); position: relative; top: 18px; left: 0;">
+    <input type="hidden" name="cidade" value="{{ cidade_filtro }}">
+    <input type="hidden" name="bairro" value="{{ bairro_filtro }}">
+    <input type="hidden" name="capacidade" value="{{ capacidade_filtro }}">
+    <input type="hidden" name="status" value="{{ status_filtro }}">
     <label for="itensPorPagina" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Itens:</label>
     <select name="itensPorPagina" id="itensPorPagina" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="25" {% if itens_por_pagina == 25 %}selected{% endif %}>25</option>
@@ -106,28 +109,38 @@
       {% for bairro in bairros_disponiveis %}
         <option value="{{ bairro }}" {% if bairro_filtro == bairro %}selected{% endif %}>{{ bairro }}</option>
       {% endfor %}
-    </select>
-
-    <label for="capacidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Capacidade:</label>
+    </select>    <label for="capacidade" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Capacidade:</label>
     <select name="capacidade" id="capacidade" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
       <option value="">Todas</option>
       {% for capacidade in capacidades_disponiveis %}
         <option value="{{ capacidade }}" {% if capacidade_filtro == capacidade %}selected{% endif %}>{{ capacidade }}</option>
       {% endfor %}
     </select>
+
+    <label for="status" style="font-weight:500; color:#e0e0e0; font-size: 0.98rem; margin-right: 2px;">Status:</label>
+    <select name="status" id="status" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #263159; background: #232b4a; color: #fff; font-size: 0.98rem;">
+      <option value="ativo" {% if status_filtro == 'ativo' %}selected{% endif %}>Ativas</option>
+      <option value="inativo" {% if status_filtro == 'inativo' %}selected{% endif %}>Inativas</option>
+      <option value="todos" {% if status_filtro == 'todos' %}selected{% endif %}>Todas</option>
+    </select>
   </form>
 </div>
+
+
+
+
+
 <div class="tabela-unidades-container" style="overflow-x: hidden; max-height: 500px; overflow-y: auto; width: 100%; box-sizing: border-box;">
-    <table class="tabela-unidades" style="width: 100%; table-layout: fixed; word-wrap: break-word; white-space: normal; overflow-wrap: break-word;">
-    <thead>
+    <table class="tabela-unidades" style="width: 100%; table-layout: fixed; word-wrap: break-word; white-space: normal; overflow-wrap: break-word;">    <thead>
       <tr>
         <th>Nome</th>
         <th>Capacidade</th>
         <th>Fone</th>
         <th>Endereço</th>
-          <th>Bairro</th>
+        <th>Bairro</th>
         <th>Cidade</th>
         <th>Estado</th>
+        <th>Status</th>
         <th>Horário Funcionamento</th>
         <th>Ações</th>
       </tr>
@@ -148,14 +161,20 @@
         data-cnpj="{{ unidade.CNPJ }}"
         data-email="{{ unidade.Email }}"
         data-horario="{{ unidade.Horario_Funcionamento_ID }}"
-      >
-        <td>{{ unidade.Nome_Unidade }}</td>
+      >        <td>{{ unidade.Nome_Unidade }}</td>
         <td>{{ unidade.Capacidade }}</td>
         <td>{{ unidade.Fone }}</td>
         <td>{{ unidade.logradouro_unidade }}, {{ unidade.numero_unidade }}</td>
-         <td>{{ unidade.bairro_unidade }}</td>
-        <td>{{ unidade.cidade_unidade }}
+        <td>{{ unidade.bairro_unidade }}</td>
+        <td>{{ unidade.cidade_unidade }}</td>
         <td>{{ unidade.estado_unidade }}</td>
+        <td>
+          {% if unidade.Ativa == 1 %}
+            <span style="color: #4caf50; font-weight: bold;">✓ Ativa</span>
+          {% else %}
+            <span style="color: #f44336; font-weight: bold;">✗ Inativa</span>
+          {% endif %}
+        </td>
         <td>
           {% for horario in horarios %}
             {% if horario.ID_Horario == unidade.Horario_Funcionamento_ID %}
@@ -165,7 +184,11 @@
         </td>
         <td>
           <button class="btn-acao editar" title="Editar" data-id="{{ unidade.ID_Unidades }}">✏️</button>
-          <button class="btn-acao remover" title="Remover" data-id="{{ unidade.ID_Unidades }}">🗑️</button>
+          {% if unidade.Ativa == 1 %}
+            <button class="btn-acao desativar" title="Desativar" data-id="{{ unidade.ID_Unidades }}">🚫</button>
+          {% else %}
+            <button class="btn-acao reativar" title="Reativar" data-id="{{ unidade.ID_Unidades }}">✅</button>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
@@ -175,9 +198,12 @@
 
 <div class="paginacao-container" style="display:flex; justify-content:center; margin: 18px 0 40px 0; gap: 8px;">
   {% if total_paginas > 1 %}
-    {% for p in range(1, total_paginas+1) %}
-      <form method="get" style="display:inline;">
+    {% for p in range(1, total_paginas+1) %}      <form method="get" style="display:inline;">
         <input type="hidden" name="itensPorPagina" value="{{ itens_por_pagina }}">
+        <input type="hidden" name="cidade" value="{{ cidade_filtro }}">
+        <input type="hidden" name="bairro" value="{{ bairro_filtro }}">
+        <input type="hidden" name="capacidade" value="{{ capacidade_filtro }}">
+        <input type="hidden" name="status" value="{{ status_filtro }}">
         <input type="hidden" name="pagina" value="{{ p }}">
         <button type="submit" class="btn paginacao-btn{% if p == pagina %} ativo{% endif %}">{{ p }}</button>
       </form>
@@ -185,17 +211,38 @@
   {% endif %}
 </div>
 
-<div id="modalRemover" class="modal-overlay">
+<div id="modalReativar" class="modal-overlay">
   <div class="modal-box">
-    <h2>Remover Unidade</h2>
-    <div id="infoRemoverUnidade" style="margin-bottom: 10px; font-weight: bold;">
-      Deseja remover a unidade: <span id="removerId"></span> - <span id="removerNome"></span>, <span id="removerEndereco"></span>?
+    <h2>Reativar Unidade</h2>
+    <div id="infoReativarUnidade" style="margin-bottom: 10px; font-weight: bold;">
+      Deseja reativar a unidade: <span id="reativarId"></span> - <span id="reativarNome"></span>, <span id="reativarEndereco"></span>?
+    </div>
+    <div style="margin-bottom: 15px; color: #4caf50; font-size: 0.9rem;">
+      ✅ <strong>Atenção:</strong> A unidade será reativada e voltará a aparecer nas listagens de unidades ativas.
     </div>
     <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
-      <input type="hidden" name="acao" value="remover">
-      <input type="hidden" name="id" id="removerIdInput">
-      <button type="submit" class="confirmar">Remover</button>
-      <button type="button" class="cancelar" onclick="fecharModal('modalRemover')">Cancelar</button>
+      <input type="hidden" name="acao" value="reativar">
+      <input type="hidden" name="id" id="reativarIdInput">
+      <button type="submit" class="confirmar">Reativar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalReativar')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<div id="modalDesativar" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Desativar Unidade</h2>
+    <div id="infoDesativarUnidade" style="margin-bottom: 10px; font-weight: bold;">
+      Deseja desativar a unidade: <span id="desativarId"></span> - <span id="desativarNome"></span>, <span id="desativarEndereco"></span>?
+    </div>
+    <div style="margin-bottom: 15px; color: #ff6b6b; font-size: 0.9rem;">
+      ⚠️ <strong>Atenção:</strong> A unidade será desativada e não aparecerá mais nas listagens. Só é possível desativar se não houver vínculos ativos (alunos, personais, equipamentos ou aulas agendadas).
+    </div>
+    <form method="POST" action="{{ url_for('unidades.gerenciar_unidade') }}">
+      <input type="hidden" name="acao" value="desativar">
+      <input type="hidden" name="id" id="desativarIdInput">
+      <button type="submit" class="confirmar">Desativar</button>
+      <button type="button" class="cancelar" onclick="fecharModal('modalDesativar')">Cancelar</button>
     </form>
   </div>
 </div>
@@ -315,11 +362,37 @@
         document.getElementById('editHorario').value = linha.dataset.horario || '';
         abrirModal('modalEditar');
       });
-    });
-    document.querySelectorAll('.btn-acao.remover').forEach(function(btn) {
+    });    document.querySelectorAll('.btn-acao.desativar').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.preventDefault();
-        abrirModal('modalRemover');
+        var id = btn.getAttribute('data-id');
+        var linha = document.querySelector('tr[data-id="' + id + '"]');
+        if (!linha) return;
+        
+        // Popula as informações da unidade no modal
+        document.getElementById('desativarId').textContent = id;
+        document.getElementById('desativarNome').textContent = linha.dataset.nome || '';
+        var endereco = (linha.dataset.logradouro || '') + ', ' + (linha.dataset.numero || '') + ' - ' + (linha.dataset.bairro || '') + ', ' + (linha.dataset.cidade || '');
+        document.getElementById('desativarEndereco').textContent = endereco;
+        document.getElementById('desativarIdInput').value = id;
+          abrirModal('modalDesativar');
+      });
+    });
+    document.querySelectorAll('.btn-acao.reativar').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = btn.getAttribute('data-id');
+        var linha = document.querySelector('tr[data-id="' + id + '"]');
+        if (!linha) return;
+        
+        // Popula as informações da unidade no modal de reativar
+        document.getElementById('reativarId').textContent = id;
+        document.getElementById('reativarNome').textContent = linha.dataset.nome || '';
+        var endereco = (linha.dataset.logradouro || '') + ', ' + (linha.dataset.numero || '') + ' - ' + (linha.dataset.bairro || '') + ', ' + (linha.dataset.cidade || '');
+        document.getElementById('reativarEndereco').textContent = endereco;
+        document.getElementById('reativarIdInput').value = id;
+        
+        abrirModal('modalReativar');
       });
     });
     document.querySelectorAll('.btn.verde').forEach(function(btn) {
@@ -378,9 +451,49 @@
           estadoInput.value = '';
         }
       });
+    }  });
+</script>
+
+<!-- JavaScript para busca por texto -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const buscaInput = document.getElementById('buscaTexto');
+    const limparBtn = document.getElementById('limparBusca');
+    const tabela = document.querySelector('.tabela-unidades tbody');
+    const linhas = Array.from(tabela.querySelectorAll('tr'));
+
+    // Função para filtrar as linhas da tabela
+    function filtrarTabela(termo) {
+      termo = termo.toLowerCase().trim();
+      
+      linhas.forEach(function(linha) {
+        if (termo === '') {
+          linha.style.display = '';
+          return;
+        }
+        
+        const textoLinha = linha.textContent.toLowerCase();
+        if (textoLinha.includes(termo)) {
+          linha.style.display = '';
+        } else {
+          linha.style.display = 'none';
+        }
+      });
     }
+
+    // Event listener para busca em tempo real
+    buscaInput.addEventListener('input', function() {
+      filtrarTabela(this.value);
+    });
+
+    // Event listener para limpar busca
+    limparBtn.addEventListener('click', function() {
+      buscaInput.value = '';
+      filtrarTabela('');
+    });
   });
 </script>
+
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const table = document.querySelector('.tabela-unidades');

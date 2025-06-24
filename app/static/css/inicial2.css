@@ -342,6 +342,28 @@ nav.menu-logado a:hover {
   transition: background 0.2s, color 0.2s;
   cursor: pointer;
 }
+.btn-acao.desativar {
+  background: rgba(255, 152, 0, 0.12);
+  border: none;
+  color: #ff9800;
+  font-size: 1.18rem;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 0 2px;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
+.btn-acao.reativar {
+  background: rgba(76, 175, 80, 0.12);
+  border: none;
+  color: #4caf50;
+  font-size: 1.18rem;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 0 2px;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+}
 .btn-acao.remover {
   background: rgba(239, 83, 80, 0.10);
   border: none;
@@ -370,6 +392,21 @@ nav.menu-logado a:hover {
 .paginacao-container .btn.paginacao-btn:hover {
   background: #2979ff;
   color: #fff;
+}
+
+/* CAMPO DE BUSCA */
+.busca-container input[type="text"] {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.busca-container input[type="text"]:focus {
+  outline: none;
+  border-color: #2979ff;
+  box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.2);
+}
+.busca-container button:hover {
+  background: #c0392b !important;
+  transform: translateY(-1px);
+  transition: all 0.2s;
 }
 
 /* MODAIS (merge: visual antigo, centralizado, responsivo) */

@@ -68,12 +68,87 @@ def gerenciar_unidade():
             flash(f'Erro ao atualizar unidade: {str(e)}', 'error')
             return redirect(url_for('unidades.gerenciar_unidade'))
 
+    # --- TRATAMENTO DE DESATIVAÇÃO DE UNIDADE ---
+    if request.method == 'POST' and request.form.get('acao') == 'desativar':
+        id_unidade = request.form.get('id')
+        try:
+            # Verificar se há usuários vinculados à unidade
+            cursor.execute(
+                "SELECT COUNT(*) as total FROM usuario WHERE Unidade_Prox_ID = %s", (id_unidade,))
+            usuarios_vinculados = cursor.fetchone()['total']
+
+            # Verificar se há personais vinculados à unidade
+            cursor.execute(
+                "SELECT COUNT(*) as total FROM personal WHERE ID_Unidade = %s", (id_unidade,))
+            personais_vinculados = cursor.fetchone()['total']
+
+            # Verificar se há equipamentos vinculados à unidade
+            cursor.execute(
+                "SELECT COUNT(*) as total FROM equipamentos WHERE ID_unidade_equipamento = %s", (id_unidade,))
+            equipamentos_vinculados = cursor.fetchone()['total']
+
+            # Verificar se há aulas agendadas para a unidade
+            cursor.execute(
+                "SELECT COUNT(*) as total FROM agendar_treino WHERE ID_Unidade_Treino = %s AND status = 'Agendado'", (id_unidade,))
+            aulas_agendadas = cursor.fetchone()['total']
+
+            # Verificar se existem vínculos que impedem a desativação
+            impedimentos = []
+            if usuarios_vinculados > 0:
+                impedimentos.append(f"{usuarios_vinculados} usuário(s)")
+            if personais_vinculados > 0:
+                impedimentos.append(f"{personais_vinculados} personal(is)")
+            if equipamentos_vinculados > 0:
+                impedimentos.append(
+                    f"{equipamentos_vinculados} equipamento(s)")
+            if aulas_agendadas > 0:
+                impedimentos.append(f"{aulas_agendadas} aula(s) agendada(s)")
+
+            if impedimentos:
+                motivos = ", ".join(impedimentos)
+                flash(
+                    f'Não é possível desativar a unidade. Ainda possui: {motivos}. Remova ou transfira esses vínculos antes de desativar a unidade.', 'error')
+                # Se não há impedimentos, desativar a unidade
+                return redirect(url_for('unidades.gerenciar_unidade'))
+            cursor.execute(
+                "UPDATE unidades SET Ativa = 0 WHERE ID_Unidades = %s", (id_unidade,))
+            conn.commit()
+            flash('Unidade desativada com sucesso!', 'success')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'Erro ao desativar unidade: {str(e)}', 'error')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+
+    # --- TRATAMENTO DE REATIVAÇÃO DE UNIDADE ---
+    if request.method == 'POST' and request.form.get('acao') == 'reativar':
+        id_unidade = request.form.get('id')
+        try:
+            cursor.execute(
+                "UPDATE unidades SET Ativa = 1 WHERE ID_Unidades = %s", (id_unidade,))
+            conn.commit()
+            flash('Unidade reativada com sucesso!', 'success')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+        except Exception as e:
+            conn.rollback()
+            flash(f'Erro ao reativar unidade: {str(e)}', 'error')
+            return redirect(url_for('unidades.gerenciar_unidade'))
+
     # Filtros
     cidade_filtro = request.args.get('cidade', '')
     bairro_filtro = request.args.get('bairro', '')
     capacidade_filtro = request.args.get('capacidade', '')
+    status_filtro = request.args.get(
+        'status', 'ativo')  # Padrão: apenas ativas
 
-    query = "SELECT u.*, h.Descricao_Horario FROM unidades u LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario WHERE Ativa=1"
+    # Construir query base considerando o filtro de status
+    if status_filtro == 'inativo':
+        query = "SELECT u.*, h.Descricao_Horario FROM unidades u LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario WHERE Ativa=0"
+    elif status_filtro == 'todos':
+        query = "SELECT u.*, h.Descricao_Horario FROM unidades u LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario WHERE 1=1"
+    else:  # ativo ou padrão
+        query = "SELECT u.*, h.Descricao_Horario FROM unidades u LEFT JOIN horarios_funcionamento h ON u.Horario_Funcionamento_ID = h.ID_Horario WHERE Ativa=1"
     params = []
 
     if cidade_filtro:
@@ -88,9 +163,7 @@ def gerenciar_unidade():
         query += " AND Capacidade = %s"
         params.append(capacidade_filtro)
     else:
-        capacidade_filtro = None
-
-    # Paginação
+        capacidade_filtro = None    # Paginação
     itens_por_pagina = int(request.args.get('itensPorPagina', 25))
     pagina = int(request.args.get('pagina', 1))
     offset = (pagina - 1) * itens_por_pagina
@@ -101,29 +174,59 @@ def gerenciar_unidade():
     cursor.execute(query, params)
     unidades = cursor.fetchall()
 
-    cursor.execute("SELECT COUNT(*) as total FROM unidades WHERE Ativa=1")
+    # Contar total de unidades considerando o filtro de status
+    count_query = "SELECT COUNT(*) as total FROM unidades u WHERE "
+    if status_filtro == 'inativo':
+        count_query += "Ativa=0"
+    elif status_filtro == 'todos':
+        count_query += "1=1"
+    else:  # ativo ou padrão
+        count_query += "Ativa=1"
+      # Aplicar os mesmos filtros da query principal
+    count_params = []
+    if cidade_filtro:
+        count_query += " AND cidade_unidade = %s"
+        count_params.append(cidade_filtro)
+    if bairro_filtro:
+        count_query += " AND bairro_unidade = %s"
+        count_params.append(bairro_filtro)
+    if capacidade_filtro and capacidade_filtro.lower() != 'todas':
+        count_query += " AND Capacidade = %s"
+        count_params.append(capacidade_filtro)
+
+    cursor.execute(count_query, count_params)
     total_unidades = cursor.fetchone()['total']
     total_paginas = (total_unidades + itens_por_pagina - 1) // itens_por_pagina
 
     cursor.execute("SELECT * FROM horarios_funcionamento")
     horarios = cursor.fetchall()
 
-    # Buscar cidades disponíveis
+    # Determinar condição de status para filtros
+    status_condition = ""
+    if status_filtro == 'inativo':
+        status_condition = "Ativa=0"
+    elif status_filtro == 'todos':
+        status_condition = "1=1"
+    else:  # ativo ou padrão
+        status_condition = "Ativa=1"
+
+    # Buscar cidades disponíveis considerando o status atual
     cursor.execute(
-        "SELECT DISTINCT cidade_unidade FROM unidades WHERE cidade_unidade IS NOT NULL AND cidade_unidade <> '' ORDER BY cidade_unidade")
+        f"SELECT DISTINCT cidade_unidade FROM unidades WHERE {status_condition} AND cidade_unidade IS NOT NULL AND cidade_unidade <> '' ORDER BY cidade_unidade")
     cidades_disponiveis = [row['cidade_unidade'] for row in cursor.fetchall()]
 
-    # Buscar bairros disponíveis, filtrando pela cidade se selecionada
+    # Buscar bairros disponíveis, filtrando pela cidade se selecionada, considerando o status atual
     if cidade_filtro:
-        cursor.execute("SELECT DISTINCT bairro_unidade FROM unidades WHERE cidade_unidade = %s AND bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade", (cidade_filtro,))
+        cursor.execute(
+            f"SELECT DISTINCT bairro_unidade FROM unidades WHERE {status_condition} AND cidade_unidade = %s AND bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade", (cidade_filtro,))
     else:
         cursor.execute(
-            "SELECT DISTINCT bairro_unidade FROM unidades WHERE bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade")
+            f"SELECT DISTINCT bairro_unidade FROM unidades WHERE {status_condition} AND bairro_unidade IS NOT NULL AND bairro_unidade <> '' ORDER BY bairro_unidade")
     bairros_disponiveis = [row['bairro_unidade'] for row in cursor.fetchall()]
 
-    # Buscar capacidades disponíveis
+    # Buscar capacidades disponíveis considerando o status atual
     cursor.execute(
-        "SELECT DISTINCT Capacidade FROM unidades WHERE Capacidade IS NOT NULL AND Capacidade <> '' ORDER BY Capacidade")
+        f"SELECT DISTINCT Capacidade FROM unidades WHERE {status_condition} AND Capacidade IS NOT NULL AND Capacidade <> '' ORDER BY Capacidade")
     capacidades_disponiveis = [row['Capacidade'] for row in cursor.fetchall()]
 
     cursor.close()
@@ -140,5 +243,6 @@ def gerenciar_unidade():
         bairros_disponiveis=bairros_disponiveis,
         cidade_filtro=cidade_filtro,
         bairro_filtro=bairro_filtro,
-        capacidades_disponiveis=capacidades_disponiveis
+        capacidades_disponiveis=capacidades_disponiveis,
+        status_filtro=status_filtro
     )
