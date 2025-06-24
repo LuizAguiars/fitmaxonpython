@@ -635,3 +635,166 @@ def pagar_mensalidade():
     db.close()
     flash('Mensalidade paga com sucesso! Aproveite seu plano.', 'success')
     return redirect(url_for('usuarios.minha_conta'))
+
+
+@usuarios_bp.route('/meus-relatorios')
+def meus_relatorios():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para acessar seus relatórios.", "error")
+        return redirect(url_for('auth.login'))
+
+    user_id = session['usuario']
+
+    # Obter filtros da query string (ano e mês)
+    ano_filtro = request.args.get('ano', 'todos')
+    mes_filtro = request.args.get('mes', 'todos')
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    # Construir a condição WHERE baseada nos filtros
+    where_conditions = ["at.ID_usuario = %s"]
+    params = [user_id]
+
+    if ano_filtro != 'todos':
+        where_conditions.append("YEAR(at.DataTreino) = %s")
+        params.append(int(ano_filtro))
+
+    if mes_filtro != 'todos':
+        where_conditions.append("MONTH(at.DataTreino) = %s")
+        params.append(int(mes_filtro))
+
+    where_clause = " AND ".join(where_conditions)
+    # Consulta para quantidade de aulas por tipo de treino
+    cursor.execute(f"""
+        SELECT tt.nome_tipo_treino, COUNT(*) as quantidade
+        FROM agendar_treino at
+        JOIN tipo_de_treino tt ON at.ID_Tipodetreino = tt.idtipo_de_treino
+        WHERE {where_clause}
+        GROUP BY tt.idtipo_de_treino, tt.nome_tipo_treino
+        ORDER BY quantidade DESC
+    """, params)
+    aulas_por_tipo = cursor.fetchall()
+    # Consulta para quantidade de aulas por status
+    cursor.execute(f"""
+        SELECT 
+            CASE 
+                WHEN at.status = 'Concluído' THEN 'Concluídas'
+                WHEN at.status = 'Cancelado' THEN 'Canceladas'
+                WHEN at.status = 'Ausente' THEN 'Ausentes'
+                WHEN at.status = 'Agendado' THEN 'Agendadas'
+                ELSE at.status
+            END as status_formatado,
+            COUNT(*) as quantidade
+        FROM agendar_treino at
+        WHERE {where_clause}
+        GROUP BY at.status
+        ORDER BY quantidade DESC
+    """, params)
+    aulas_por_status = cursor.fetchall()
+    # Consulta para obter os anos disponíveis
+    cursor.execute("""
+        SELECT DISTINCT YEAR(DataTreino) as ano
+        FROM agendar_treino
+        WHERE ID_usuario = %s
+        ORDER BY ano DESC
+    """, (user_id,))
+    anos_disponiveis = [row['ano'] for row in cursor.fetchall()]
+    # Consulta para estatísticas gerais
+    cursor.execute(f"""
+        SELECT 
+            COUNT(*) as total_aulas,
+            SUM(CASE WHEN status = 'Concluído' THEN 1 ELSE 0 END) as aulas_concluidas,
+            SUM(CASE WHEN status = 'Cancelado' THEN 1 ELSE 0 END) as aulas_canceladas,
+            SUM(CASE WHEN status = 'Ausente' THEN 1 ELSE 0 END) as aulas_ausentes
+        FROM agendar_treino at
+        WHERE {where_clause}    """, params)
+    estatisticas = cursor.fetchone()
+
+    # Consulta para evolução física (peso e IMC ao longo do tempo)
+    cursor.execute("""
+        SELECT 
+            DATE_FORMAT(DataMedicao, '%Y-%m-%d') as data_medicao,
+            Peso,
+            IMC,
+            Altura,
+            GorduraCorporal
+        FROM info_usuario
+        WHERE ID_User = %s
+        ORDER BY DataMedicao ASC
+    """, (user_id,))
+    evolucao_fisica = cursor.fetchall()
+
+    # Consulta para dados físicos mais recentes
+    cursor.execute("""
+        SELECT 
+            Peso,
+            IMC,
+            Altura,
+            GorduraCorporal,
+            DataMedicao
+        FROM info_usuario
+        WHERE ID_User = %s
+        ORDER BY DataMedicao DESC
+        LIMIT 1
+    """, (user_id,))
+    dados_atuais = cursor.fetchone()
+
+    # Calcular comparações entre primeiro e último registro
+    comparacao_evolucao = None
+    if evolucao_fisica and len(evolucao_fisica) > 1:
+        primeiro_registro = evolucao_fisica[0]
+        ultimo_registro = evolucao_fisica[-1]
+
+        # Calcular diferenças
+        diff_peso = float(
+            ultimo_registro['Peso'] or 0) - float(primeiro_registro['Peso'] or 0)
+        diff_imc = float(ultimo_registro['IMC'] or 0) - \
+            float(primeiro_registro['IMC'] or 0)
+        diff_gordura = float(
+            ultimo_registro['GorduraCorporal'] or 0) - float(primeiro_registro['GorduraCorporal'] or 0)
+
+        # Calcular percentuais de mudança
+        perc_peso = (
+            diff_peso / float(primeiro_registro['Peso'])) * 100 if primeiro_registro['Peso'] else 0
+        perc_imc = (
+            diff_imc / float(primeiro_registro['IMC'])) * 100 if primeiro_registro['IMC'] else 0
+        perc_gordura = (diff_gordura / float(
+            primeiro_registro['GorduraCorporal'])) * 100 if primeiro_registro['GorduraCorporal'] else 0
+
+        comparacao_evolucao = {
+            'primeiro': {
+                'peso': float(primeiro_registro['Peso'] or 0),
+                'imc': float(primeiro_registro['IMC'] or 0),
+                'gordura': float(primeiro_registro['GorduraCorporal'] or 0),
+                'data': primeiro_registro['data_medicao']
+            },
+            'ultimo': {
+                'peso': float(ultimo_registro['Peso'] or 0),
+                'imc': float(ultimo_registro['IMC'] or 0),
+                'gordura': float(ultimo_registro['GorduraCorporal'] or 0),
+                'data': ultimo_registro['data_medicao']
+            },
+            'diferencas': {
+                'peso': diff_peso,
+                'imc': diff_imc,
+                'gordura': diff_gordura
+            },
+            'percentuais': {
+                'peso': perc_peso,
+                'imc': perc_imc,
+                'gordura': perc_gordura
+            }
+        }
+
+    db.close()
+
+    return render_template('meus_relatorios.html',
+                           aulas_por_tipo=aulas_por_tipo,
+                           aulas_por_status=aulas_por_status,
+                           anos_disponiveis=anos_disponiveis,
+                           ano_selecionado=ano_filtro,
+                           mes_selecionado=mes_filtro,
+                           estatisticas=estatisticas,
+                           evolucao_fisica=evolucao_fisica,
+                           dados_atuais=dados_atuais,
+                           comparacao_evolucao=comparacao_evolucao)

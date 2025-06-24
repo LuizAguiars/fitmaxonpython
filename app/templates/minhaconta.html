@@ -24,14 +24,14 @@
         </form>
     </div>
 
-    <!-- Aqui vem o horário, abaixo da busca -->
-    <nav class="menu-logado">
+    <!-- Aqui vem o horário, abaixo da busca -->    <nav class="menu-logado">
       <a  href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
       <a  href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
       <a  href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
       <a  href="{{ url_for('usuarios.minhas_aulas') }}">Minhas Aulas</a>
+      <a  href="{{ url_for('usuarios.meus_relatorios') }}">Meus Relatórios</a>
       <a  href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
-      <a  href="{{ url_for('feedbacks.feedbacks') }}">Realizar feedbacks</a>
+     
   </nav>
   
 </header>
