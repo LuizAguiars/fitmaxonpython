@@ -16,30 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `plano`
+-- Table structure for table `modelo_horario`
 --
 
-DROP TABLE IF EXISTS `plano`;
+DROP TABLE IF EXISTS `modelo_horario`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `plano` (
-  `ID_PLANO` int NOT NULL AUTO_INCREMENT,
-  `nome_plano` varchar(100) NOT NULL,
-  `descricao` varchar(255) DEFAULT NULL,
-  `duracao_meses` int NOT NULL,
-  `valor_plano` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`ID_PLANO`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `modelo_horario` (
+  `ID_Modelo` int NOT NULL AUTO_INCREMENT,
+  `Nome` varchar(100) NOT NULL,
+  `Descricao` varchar(255) DEFAULT NULL,
+  `ID_Unidade` int DEFAULT NULL,
+  PRIMARY KEY (`ID_Modelo`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `plano`
+-- Dumping data for table `modelo_horario`
 --
 
-LOCK TABLES `plano` WRITE;
-/*!40000 ALTER TABLE `plano` DISABLE KEYS */;
-INSERT INTO `plano` VALUES (1,'Medio','Plano intermediário com acesso limitado a recursos premium',1,0.10),(2,'Full','Plano completo com todos os recursos disponíveis',6,0.60),(3,'Basic','Plano Básico, com horas limitadas',1,0.02),(4,'unlocked','unlocked',12,1.00);
-/*!40000 ALTER TABLE `plano` ENABLE KEYS */;
+LOCK TABLES `modelo_horario` WRITE;
+/*!40000 ALTER TABLE `modelo_horario` DISABLE KEYS */;
+INSERT INTO `modelo_horario` VALUES (1,'Domingo a Domingo 6:00 as 13:00h',NULL,5),(2,'14 ás 22 dom. - dom.',NULL,5),(3,'Segunda - Sexta 6 - 11 * 12 - 18',NULL,5),(4,'Teste',NULL,5),(5,'seg - sex 17 - 23:59',NULL,5),(6,'segunda - sexta 6 - 12 h',NULL,5);
+/*!40000 ALTER TABLE `modelo_horario` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-19 15:53:25
+-- Dump completed on 2025-06-19 15:53:24

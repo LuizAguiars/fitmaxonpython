@@ -7,8 +7,8 @@ from db import get_db_connection
 
 
 # Configurações do Gmail
-GMAIL_USER = 'luiz.aguiarzqw@gmail.com'
-GMAIL_PASS = 'rshq zcpa bvkj zjar'  # Senha de app gerada
+GMAIL_USER = 'contato.fitmax.cwb@gmail.com'
+GMAIL_PASS = 'kgnb uvnl dpcb tfsu'  # Senha de app gerada
 
 # Função para enviar e-mail
 

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, time
 usuarios_bp = Blueprint('usuarios', __name__)
 
 
-@usuarios_bp.route('/minha-conta')
+@usuarios_bp.route('/minha-conta', methods=['GET', 'POST'])
 def minha_conta():
     if 'usuario' not in session or session.get('tipo') != 'aluno':
         flash("Você precisa estar logado como aluno para acessar sua conta.", "error")
@@ -14,13 +14,99 @@ def minha_conta():
     user_id = session['usuario']
     db = get_db_connection()
     cursor = db.cursor(dictionary=True)
+
+    # --- Mensalidade: checa expiração automática ---
     cursor.execute("""
-        SELECT Nome_User, Email_user, Data_Nascimento, cpf_user, CEP_USER, sexo_user, status_cliente, pagou_mes_atual,
-               logradouro_user, numero_user, bairro_user, cidade_user, estado_user
-        FROM usuario
-        WHERE ID_User = %s
+        SELECT u.*, p.duracao_meses
+        FROM usuario u
+        LEFT JOIN plano p ON u.ID_PLANO = p.ID_PLANO
+        WHERE u.ID_User = %s
     """, (user_id,))
     usuario = cursor.fetchone()
+    mensalidade_expirada = False
+    try:
+        if usuario and usuario.get('pagou_mes_atual') and usuario.get('data_pagamento_mes') and usuario.get('duracao_meses'):
+            data_pagamento = usuario['data_pagamento_mes']
+            if data_pagamento and str(data_pagamento) != 'None':
+                if isinstance(data_pagamento, str):
+                    data_pagamento = datetime.strptime(
+                        data_pagamento, '%Y-%m-%d').date()
+                meses = int(usuario['duracao_meses'])
+                # Cálculo seguro de meses (sem extrapolar datas)
+                try:
+                    from dateutil.relativedelta import relativedelta
+                    data_expira = data_pagamento + relativedelta(months=meses)
+                except ImportError:
+                    # Fallback: 30 dias por mês
+                    data_expira = data_pagamento + timedelta(days=meses*30)
+                hoje = datetime.now().date()
+                if hoje >= data_expira:
+                    cursor.execute(
+                        "UPDATE usuario SET pagou_mes_atual=0, data_pagamento_mes=NULL WHERE ID_User=%s", (user_id,))
+                    db.commit()
+                    usuario['pagou_mes_atual'] = 0
+                    usuario['data_pagamento_mes'] = None
+                    mensalidade_expirada = True
+    except Exception as e:
+        # Se der erro, não expira nada, só segue
+        pass
+
+    # Processa inclusão de info_usuario
+    if request.method == 'POST' and request.form.get('acao') == 'incluir_info_usuario':
+        altura = request.form.get('altura') or None
+        peso = request.form.get('peso') or None
+        gordura = request.form.get('gordura') or None
+        braquial = request.form.get('abdominal') or None
+        abdominal = request.form.get('abdominal') or None
+        toracico = request.form.get('toracico') or None
+        cintura = request.form.get('cintura') or None
+        quadril = request.form.get('quadril') or None
+        imc = request.form.get('imc') or None
+        obs = request.form.get('observacoes') or None
+        classificacao_gordura = None
+        # Buscar sexo do usuário para classificar gordura
+        sexo_usuario = usuario.get('sexo_user') if usuario else None
+        try:
+            # Classificação de gordura corporal
+            if gordura is not None and sexo_usuario is not None and gordura != '':
+                try:
+                    gordura_f = float(gordura)
+                except ValueError:
+                    gordura_f = None
+                if gordura_f is not None:
+                    if sexo_usuario == 'M':
+                        if gordura_f < 6:
+                            classificacao_gordura = 'Muito baixo'
+                        elif gordura_f < 14:
+                            classificacao_gordura = 'Atleta / Excelente'
+                        elif gordura_f < 18:
+                            classificacao_gordura = 'Bom / Fitness'
+                        elif gordura_f < 25:
+                            classificacao_gordura = 'Normal'
+                        else:
+                            classificacao_gordura = 'Alto / Obesidade'
+                    elif sexo_usuario == 'F':
+                        if gordura_f < 16:
+                            classificacao_gordura = 'Muito baixo'
+                        elif gordura_f < 24:
+                            classificacao_gordura = 'Atleta / Excelente'
+                        elif gordura_f < 31:
+                            classificacao_gordura = 'Bom / Fitness'
+                        elif gordura_f < 37:
+                            classificacao_gordura = 'Normal'
+                        else:
+                            classificacao_gordura = 'Alto / Obesidade'
+                    else:
+                        classificacao_gordura = 'Não classificado'
+            cursor.execute("""
+                INSERT INTO info_usuario (ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico, Perimetro_Cintura, Perimetro_Quadril, IMC, Observacoes, ClassificacaoGordura)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril, imc, obs, classificacao_gordura))
+            db.commit()
+            flash('Informações físicas adicionadas com sucesso!', 'success')
+        except Exception as e:
+            db.rollback()
+            flash(f'Erro ao adicionar informações físicas: {str(e)}', 'error')
 
     # Monta endereço formatado
     if usuario:
@@ -37,6 +123,29 @@ def minha_conta():
             partes.append(usuario['estado_user'])
         usuario['endereco_formatado'] = ', '.join(partes) if partes else None
 
+    # Cálculo do próximo vencimento e nome do mês, se pago
+    mes_nome = None
+    proximo_vencimento = None
+    if usuario and usuario.get('pagou_mes_atual') and usuario.get('data_pagamento_mes') and usuario.get('duracao_meses'):
+        data_pagamento = usuario['data_pagamento_mes']
+        if data_pagamento and str(data_pagamento) != 'None':
+            if isinstance(data_pagamento, str):
+                data_pagamento = datetime.strptime(
+                    data_pagamento, '%Y-%m-%d').date()
+            meses = int(usuario['duracao_meses'])
+            try:
+                from dateutil.relativedelta import relativedelta
+                data_venc = data_pagamento + relativedelta(months=meses)
+            except ImportError:
+                data_venc = data_pagamento + timedelta(days=meses*30)
+            proximo_vencimento = data_venc.strftime('%d/%m/%Y')
+            # Mês em português
+            meses_pt = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+            mes_idx = data_pagamento.month - 1
+            mes_nome = meses_pt[mes_idx].capitalize(
+            ) if 0 <= mes_idx < 12 else data_pagamento.strftime('%B')
+
     # Buscar aulas agendadas e concluídas
     cursor.execute("""
         SELECT a.idAgendar_Treino, a.DataTreino, a.HoraTreino, t.nome_tipo_treino, p.Nome_Personal, a.status
@@ -47,8 +156,71 @@ def minha_conta():
         ORDER BY a.DataTreino DESC, a.HoraTreino DESC
     """, (user_id,))
     aulas = cursor.fetchall()
+
+    # Buscar dados de info_usuario
+    cursor.execute("""
+        SELECT * FROM info_usuario WHERE ID_User = %s ORDER BY DataMedicao DESC
+    """, (user_id,))
+    infos_usuario = cursor.fetchall()
+
+    # Dropdown de datas disponíveis (agora mostra todas as datas e horários das medições)
+    datas_medicao = []
+    for i in infos_usuario:
+        if i.get('DataMedicao'):
+            data_str = i['DataMedicao'].strftime('%Y-%m-%d %H:%M:%S')
+            datas_medicao.append(data_str)
+    # já está em ordem decrescente por causa do ORDER BY
+    datas_medicao_unicas = datas_medicao
+
+    # Filtro por data/hora exata (GET)
+    data_escolhida = request.args.get('data_medicao')
+    if data_escolhida:
+        infos_filtradas = [i for i in infos_usuario if i.get(
+            'DataMedicao') and i['DataMedicao'].strftime('%Y-%m-%d %H:%M:%S') == data_escolhida]
+    else:
+        infos_filtradas = infos_usuario[:1]  # só o mais recente
+
+    # Processa edição de conta (modal)
+    if request.method == 'POST' and request.form.get('acao') == 'editar_conta':
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        telefone = request.form.get('telefone')
+        logradouro = request.form.get('logradouro')
+        numero = request.form.get('numero')
+        bairro = request.form.get('bairro')
+        cidade = request.form.get('cidade')
+        estado = request.form.get('estado')
+        cep = request.form.get('cep')
+        id_plano = request.form.get('id_plano')
+        try:
+            update_fields = [
+                'Nome_User=%s', 'Email_user=%s', 'telefone_user=%s',
+                'logradouro_user=%s', 'numero_user=%s', 'bairro_user=%s',
+                'cidade_user=%s', 'estado_user=%s', 'CEP_USER=%s', 'ID_PLANO=%s'
+            ]
+            params = [nome, email, telefone, logradouro, numero,
+                      bairro, cidade, estado, cep, id_plano, user_id]
+            if senha:
+                update_fields.insert(2, 'Senha_User=%s')
+                params.insert(2, senha)
+            cursor.execute(f"""
+                UPDATE usuario SET {', '.join(update_fields)} WHERE ID_User=%s
+            """, tuple(params))
+            db.commit()
+            flash('Dados da conta atualizados com sucesso!', 'success')
+            return redirect(url_for('usuarios.minha_conta'))
+        except Exception as e:
+            db.rollback()
+            flash(f'Erro ao atualizar dados da conta: {str(e)}', 'error')
+            return redirect(url_for('usuarios.minha_conta'))
+
+    # Buscar todos os planos para o modal de edição de conta
+    cursor.execute("SELECT * FROM plano")
+    planos = cursor.fetchall()
+
     db.close()
-    return render_template('minhaconta.html', usuario=usuario, aulas=aulas)
+    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida, mes_nome=mes_nome, proximo_vencimento=proximo_vencimento, planos=planos)
 
 
 # Adicionando lógica para filtrar por plano e status
@@ -136,6 +308,7 @@ def gestao_usuarios():
     status_filtro = request.args.get('status', '')
     cidade_filtro = request.args.get('cidade', '')
     bairro_filtro = request.args.get('bairro', '')
+    sexo_filtro = request.args.get('sexo', '')
 
     query = """
         SELECT u.*, un.Nome_Unidade, p.nome_plano
@@ -161,6 +334,10 @@ def gestao_usuarios():
     if bairro_filtro:
         query += " AND u.bairro_user = %s"
         params.append(bairro_filtro)
+
+    if sexo_filtro:
+        query += " AND u.sexo_user = %s"
+        params.append(sexo_filtro)
 
     cursor.execute(query, params)
     usuarios = cursor.fetchall()
@@ -197,7 +374,8 @@ def gestao_usuarios():
         cidade_filtro=cidade_filtro,
         bairro_filtro=bairro_filtro,
         cidades=cidades,
-        bairros=bairros
+        bairros=bairros,
+        sexo_filtro=sexo_filtro
     )
 
 
@@ -214,11 +392,14 @@ def minhas_aulas():
     mes = request.args.get('mes')
     tipo = request.args.get('tipo')
     status = request.args.get('status')
+
     try:
-        per_page = int(request.args.get('per_page', 8))  # padrão agora é 8
+        per_page = int(request.args.get('per_page', 8))  # padrão é 8
     except ValueError:
         per_page = 8
-    per_page = max(4, min(per_page, 16))
+    # Aceita apenas valores válidos: 4, 8, 12, 16, 32, 64, 128
+    if per_page not in [4, 8, 12, 16, 32, 64, 128]:
+        per_page = 8
     try:
         page = int(request.args.get('page', 1))
     except ValueError:
@@ -339,3 +520,281 @@ def cancelar_aula():
     db.close()
     flash('Aula cancelada com sucesso!', 'success')
     return redirect(url_for('usuarios.minhas_aulas'))
+
+
+@usuarios_bp.route('/inserir_info', methods=['POST'])
+def inserir_info():
+    from flask import request
+    import mysql.connector
+    from datetime import datetime
+    try:
+        # Coleta e validação dos dados do formulário
+        user_id = int(request.form.get('ID_User', 0))
+        altura = request.form.get('Altura')
+        peso = request.form.get('Peso')
+        gordura = request.form.get('GorduraCorporal')
+        braquial = request.form.get('Perimetro_Braquial')
+        abdominal = request.form.get('Perimetro_Abdominal')
+        toracico = request.form.get('Perimetro_Toracico')
+        cintura = request.form.get('Perimetro_Cintura')
+        quadril = request.form.get('Perimetro_Quadril')
+        obs = request.form.get('Observacoes')
+
+        # Conversão para float ou None
+        def to_float(val):
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return None
+        altura = to_float(altura)
+        peso = to_float(peso)
+        gordura = to_float(gordura)
+        braquial = to_float(braquial)
+        abdominal = to_float(abdominal)
+        toracico = to_float(toracico)
+        cintura = to_float(cintura)
+        quadril = to_float(quadril)
+
+        # Calcula IMC se possível
+        imc = None
+        if altura and peso and altura > 0:
+            imc = round(peso / (altura ** 2), 2)
+
+        # Buscar o sexo do usuário
+        from db import get_db_connection
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT sexo_user FROM usuario WHERE ID_User = %s", (user_id,))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            sexo_usuario = user_data['sexo_user']
+        else:
+            sexo_usuario = None  # Caso não encontre, não classifica
+
+        # Classificar gordura corporal
+        classificacao_gordura = None
+        if gordura is not None and sexo_usuario is not None:
+            if sexo_usuario == 'M':
+                if gordura < 6:
+                    classificacao_gordura = 'Muito baixo'
+                elif gordura < 14:
+                    classificacao_gordura = 'Atleta / Excelente'
+                elif gordura < 18:
+                    classificacao_gordura = 'Bom / Fitness'
+                elif gordura < 25:
+                    classificacao_gordura = 'Normal'
+                else:
+                    classificacao_gordura = 'Alto / Obesidade'
+            elif sexo_usuario == 'F':
+                if gordura < 16:
+                    classificacao_gordura = 'Muito baixo'
+                elif gordura < 24:
+                    classificacao_gordura = 'Atleta / Excelente'
+                elif gordura < 31:
+                    classificacao_gordura = 'Bom / Fitness'
+                elif gordura < 37:
+                    classificacao_gordura = 'Normal'
+                else:
+                    classificacao_gordura = 'Alto / Obesidade'
+            else:
+                classificacao_gordura = 'Não classificado'
+
+        # Inserir no banco de dados
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO info_usuario (
+                ID_User, Altura, Peso, GorduraCorporal, Perimetro_Braquial, Perimetro_Abdominal, Perimetro_Toracico,
+                Perimetro_Cintura, Perimetro_Quadril, IMC, ClassificacaoGordura, Observacoes, DataMedicao
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+        """, (
+            user_id, altura, peso, gordura, braquial, abdominal, toracico, cintura, quadril,
+            imc, classificacao_gordura, obs
+        ))
+
+        db.commit()
+        cursor.close()
+        db.close()
+        return 'Informações físicas inseridas com sucesso!'
+    except Exception as e:
+        return f'Erro ao inserir informações físicas: {str(e)}'
+
+
+@usuarios_bp.route('/pagar-mensalidade', methods=['POST'])
+def pagar_mensalidade():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para pagar a mensalidade.", "error")
+        return redirect(url_for('auth.login'))
+    user_id = session['usuario']
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "UPDATE usuario SET pagou_mes_atual=1, data_pagamento_mes=CURDATE() WHERE ID_User=%s", (user_id,))
+    db.commit()
+    db.close()
+    flash('Mensalidade paga com sucesso! Aproveite seu plano.', 'success')
+    return redirect(url_for('usuarios.minha_conta'))
+
+
+@usuarios_bp.route('/meus-relatorios')
+def meus_relatorios():
+    if 'usuario' not in session or session.get('tipo') != 'aluno':
+        flash("Você precisa estar logado como aluno para acessar seus relatórios.", "error")
+        return redirect(url_for('auth.login'))
+
+    user_id = session['usuario']
+
+    # Obter filtros da query string (ano e mês)
+    ano_filtro = request.args.get('ano', 'todos')
+    mes_filtro = request.args.get('mes', 'todos')
+
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    # Construir a condição WHERE baseada nos filtros
+    where_conditions = ["at.ID_usuario = %s"]
+    params = [user_id]
+
+    if ano_filtro != 'todos':
+        where_conditions.append("YEAR(at.DataTreino) = %s")
+        params.append(int(ano_filtro))
+
+    if mes_filtro != 'todos':
+        where_conditions.append("MONTH(at.DataTreino) = %s")
+        params.append(int(mes_filtro))
+
+    where_clause = " AND ".join(where_conditions)
+    # Consulta para quantidade de aulas por tipo de treino
+    cursor.execute(f"""
+        SELECT tt.nome_tipo_treino, COUNT(*) as quantidade
+        FROM agendar_treino at
+        JOIN tipo_de_treino tt ON at.ID_Tipodetreino = tt.idtipo_de_treino
+        WHERE {where_clause}
+        GROUP BY tt.idtipo_de_treino, tt.nome_tipo_treino
+        ORDER BY quantidade DESC
+    """, params)
+    aulas_por_tipo = cursor.fetchall()
+    # Consulta para quantidade de aulas por status
+    cursor.execute(f"""
+        SELECT 
+            CASE 
+                WHEN at.status = 'Concluído' THEN 'Concluídas'
+                WHEN at.status = 'Cancelado' THEN 'Canceladas'
+                WHEN at.status = 'Ausente' THEN 'Ausentes'
+                WHEN at.status = 'Agendado' THEN 'Agendadas'
+                ELSE at.status
+            END as status_formatado,
+            COUNT(*) as quantidade
+        FROM agendar_treino at
+        WHERE {where_clause}
+        GROUP BY at.status
+        ORDER BY quantidade DESC
+    """, params)
+    aulas_por_status = cursor.fetchall()
+    # Consulta para obter os anos disponíveis
+    cursor.execute("""
+        SELECT DISTINCT YEAR(DataTreino) as ano
+        FROM agendar_treino
+        WHERE ID_usuario = %s
+        ORDER BY ano DESC
+    """, (user_id,))
+    anos_disponiveis = [row['ano'] for row in cursor.fetchall()]
+    # Consulta para estatísticas gerais
+    cursor.execute(f"""
+        SELECT 
+            COUNT(*) as total_aulas,
+            SUM(CASE WHEN status = 'Concluído' THEN 1 ELSE 0 END) as aulas_concluidas,
+            SUM(CASE WHEN status = 'Cancelado' THEN 1 ELSE 0 END) as aulas_canceladas,
+            SUM(CASE WHEN status = 'Ausente' THEN 1 ELSE 0 END) as aulas_ausentes
+        FROM agendar_treino at
+        WHERE {where_clause}    """, params)
+    estatisticas = cursor.fetchone()
+
+    # Consulta para evolução física (peso e IMC ao longo do tempo)
+    cursor.execute("""
+        SELECT 
+            DATE_FORMAT(DataMedicao, '%Y-%m-%d') as data_medicao,
+            Peso,
+            IMC,
+            Altura,
+            GorduraCorporal
+        FROM info_usuario
+        WHERE ID_User = %s
+        ORDER BY DataMedicao ASC
+    """, (user_id,))
+    evolucao_fisica = cursor.fetchall()
+
+    # Consulta para dados físicos mais recentes
+    cursor.execute("""
+        SELECT 
+            Peso,
+            IMC,
+            Altura,
+            GorduraCorporal,
+            DataMedicao
+        FROM info_usuario
+        WHERE ID_User = %s
+        ORDER BY DataMedicao DESC
+        LIMIT 1
+    """, (user_id,))
+    dados_atuais = cursor.fetchone()
+
+    # Calcular comparações entre primeiro e último registro
+    comparacao_evolucao = None
+    if evolucao_fisica and len(evolucao_fisica) > 1:
+        primeiro_registro = evolucao_fisica[0]
+        ultimo_registro = evolucao_fisica[-1]
+
+        # Calcular diferenças
+        diff_peso = float(
+            ultimo_registro['Peso'] or 0) - float(primeiro_registro['Peso'] or 0)
+        diff_imc = float(ultimo_registro['IMC'] or 0) - \
+            float(primeiro_registro['IMC'] or 0)
+        diff_gordura = float(
+            ultimo_registro['GorduraCorporal'] or 0) - float(primeiro_registro['GorduraCorporal'] or 0)
+
+        # Calcular percentuais de mudança
+        perc_peso = (
+            diff_peso / float(primeiro_registro['Peso'])) * 100 if primeiro_registro['Peso'] else 0
+        perc_imc = (
+            diff_imc / float(primeiro_registro['IMC'])) * 100 if primeiro_registro['IMC'] else 0
+        perc_gordura = (diff_gordura / float(
+            primeiro_registro['GorduraCorporal'])) * 100 if primeiro_registro['GorduraCorporal'] else 0
+
+        comparacao_evolucao = {
+            'primeiro': {
+                'peso': float(primeiro_registro['Peso'] or 0),
+                'imc': float(primeiro_registro['IMC'] or 0),
+                'gordura': float(primeiro_registro['GorduraCorporal'] or 0),
+                'data': primeiro_registro['data_medicao']
+            },
+            'ultimo': {
+                'peso': float(ultimo_registro['Peso'] or 0),
+                'imc': float(ultimo_registro['IMC'] or 0),
+                'gordura': float(ultimo_registro['GorduraCorporal'] or 0),
+                'data': ultimo_registro['data_medicao']
+            },
+            'diferencas': {
+                'peso': diff_peso,
+                'imc': diff_imc,
+                'gordura': diff_gordura
+            },
+            'percentuais': {
+                'peso': perc_peso,
+                'imc': perc_imc,
+                'gordura': perc_gordura
+            }
+        }
+
+    db.close()
+
+    return render_template('meus_relatorios.html',
+                           aulas_por_tipo=aulas_por_tipo,
+                           aulas_por_status=aulas_por_status,
+                           anos_disponiveis=anos_disponiveis,
+                           ano_selecionado=ano_filtro,
+                           mes_selecionado=mes_filtro,
+                           estatisticas=estatisticas,
+                           evolucao_fisica=evolucao_fisica,
+                           dados_atuais=dados_atuais,
+                           comparacao_evolucao=comparacao_evolucao)

@@ -106,15 +106,15 @@ def gestao_equipamentos():
     )
 
 
-@equipamentos_bp.route('/relatorio-equipamentos', methods=['GET'])
-def relatorio_equipamentos():
-    if 'usuario' not in session:
-        flash(
-            "Você precisa estar logado para acessar o relatório de equipamentos.", "error")
-        return redirect(url_for('auth.login'))
+# @equipamentos_bp.route('/relatorio-equipamentos', methods=['GET'])
+# def relatorio_equipamentos():
+#     if 'usuario' not in session:
+#         flash(
+#             "Você precisa estar logado para acessar o relatório de equipamentos.", "error")
+#         return redirect(url_for('auth.login'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
 
     # Buscar unidades para o filtro
     cursor.execute("SELECT id_unidades, nome_unidade FROM unidades")
@@ -127,8 +127,14 @@ def relatorio_equipamentos():
     if unidade_id:
         filtro_unidade = 'WHERE e.ID_unidade_equipamento = %s'
         params.append(unidade_id)
-        unidade_nome = next((u['Nome_Unidade'] for u in unidades if str(
-            u['ID_Unidades']) == unidade_id), None)
+        unidade_nome = next(
+            (
+                u.get('Nome_Unidade') or u.get('nome_unidade')
+                for u in unidades
+                if str(u.get('ID_Unidades') or u.get('id_unidades')) == str(unidade_id)
+            ),
+            None
+        )
 
     # Relatório: Equipamento mais usado e menos usado
     cursor.execute(f"""
@@ -160,7 +166,8 @@ def relatorio_equipamentos():
     cursor.execute(
         "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
-        horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
+        # Fix: use lowercase keys to match MySQL/Python dict output
+        horarios_unidade[row['id_unidades']] = row['horario_funcionamento_id']
 
     horarios_funcionamento = {}
     if unidade_id and horarios_unidade.get(int(unidade_id)):
@@ -341,15 +348,7 @@ def relatorio_equipamentos():
     cursor.execute(
         "SELECT id_unidades, horario_funcionamento_id FROM unidades")
     for row in cursor.fetchall():
-        horarios_unidade[row['ID_Unidades']] = row['Horario_Funcionamento_ID']
-
-    horarios_funcionamento = {}
-    if unidade_id and horarios_unidade.get(int(unidade_id)):
-        cursor.execute("SELECT * FROM horarios_funcionamento WHERE id_horario = %s",
-                       (horarios_unidade[int(unidade_id)],))
-        horario = cursor.fetchone()
-        if horario:
-            horarios_funcionamento = horario
+        horarios_unidade[row['id_unidades']] = row['horario_funcionamento_id']
 
     # Relatório de ociosidade por equipamento no mês
     from datetime import datetime, timedelta
@@ -404,7 +403,7 @@ def relatorio_equipamentos():
                     if atual < fim_dia:
                         total_ocioso += (fim_dia - atual).total_seconds() // 60
             ociosidade_mensal.append({
-                'nome': eq['Nome_Equipamento'],
+                'nome': eq.get('Nome_Equipamento') or eq.get('nome_equipamento'),
                 'minutos_ocioso': int(total_ocioso),
                 'horas_ocioso': round(total_ocioso/60, 2)
             })

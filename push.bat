@@ -11,7 +11,8 @@ git add .
 REM Comita com mensagem automatica com data e hora
 set DATAHORA=%date% %time%
 
-git commit -m "Banco com letra minuscula  %DATAHORA%"
+git commit -m "relatorio usuario novo  %DATAHORA%"
+ %DATAHORA%"
 
 
 

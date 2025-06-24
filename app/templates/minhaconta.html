@@ -14,9 +14,7 @@
         <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
     </div>
 
-    <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+       <h1> MINHA CONTA </h1>
     </div>
 
     <div class="usuario-logado">
@@ -26,25 +24,35 @@
         </form>
     </div>
 
-    <!-- Aqui vem o horário, abaixo da busca -->
-    <nav class="menu-logado">
+    <!-- Aqui vem o horário, abaixo da busca -->    <nav class="menu-logado">
       <a  href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
       <a  href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
       <a  href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
       <a  href="{{ url_for('usuarios.minhas_aulas') }}">Minhas Aulas</a>
+      <a  href="{{ url_for('usuarios.meus_relatorios') }}">Meus Relatórios</a>
       <a  href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
-      <a  href="{{ url_for('feedbacks.feedbacks') }}">Realizar feedbacks</a>
+     
   </nav>
   
 </header>
-    
+
+
+
+
+
 <div class="minha-conta">
-    <h2>MINHA CONTA</h2>
+    <h2>MEUS DADOS</h2>
     <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
     <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
     <p><strong>CPF:</strong> {{ usuario.cpf_user }}</p>
-    <p><strong>Endereço:</strong> {{ usuario.endereco_user or 'Não informado' }}</p>
+    <p><strong>Endereço:</strong> 
+        {% if usuario.logradouro_user or usuario.numero_user or usuario.bairro_user or usuario.cidade_user or usuario.estado_user %}
+            {{ usuario.logradouro_user or '' }}{% if usuario.logradouro_user and usuario.numero_user %}, {% endif %}{{ usuario.numero_user or '' }}{% if usuario.bairro_user %} - {{ usuario.bairro_user }}{% endif %}{% if usuario.cidade_user %}, {{ usuario.cidade_user }}{% endif %}{% if usuario.estado_user %} - {{ usuario.estado_user }}{% endif %}
+        {% else %}
+            Não informado
+        {% endif %}
+    </p>
     <p><strong>CEP:</strong> {{ usuario.CEP_USER or 'Não informado' }}</p>
     <p><strong>Sexo:</strong> 
         {% if usuario.sexo_user == 'M' %}Masculino
@@ -53,12 +61,259 @@
     </p>
     <p><strong>Status:</strong> {{ usuario.status_cliente }}</p>
     <p><strong>Mensalidade:</strong> 
-        {% if usuario.pagou_mes_atual %}Paga{% else %}Em aberto{% endif %}
+        {% if usuario.pagou_mes_atual %}
+            <span style="color:#388e3c;font-weight:bold;">Paga</span>
+            <br>
+            <span style="color:#fff;font-size:1em;">Mensalidade de <b style="color:#ffd600;">{{ mes_nome }}</b> paga.<br>Próximo vencimento: <b style="color:#ffd600;">{{ proximo_vencimento }}</b></span>
+        {% else %}
+            <span style="color:#d32f2f;font-weight:bold;">Em aberto</span>
+        {% endif %}
     </p>
+    <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalEditarConta')">Editar Conta</button>
 </div>
 
+<!-- MODAL EDITAR CONTA -->
+<div id="modalEditarConta" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Editar Informações da Conta</h2>
+    <form method="POST" action="{{ url_for('usuarios.minha_conta') }}">
+      <input type="hidden" name="acao" value="editar_conta">
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <input type="text" name="nome" id="editNome" placeholder="Nome" value="{{ usuario.Nome_User }}" required>
+        <input type="email" name="email" id="editEmail" placeholder="Email" value="{{ usuario.Email_user }}" required>
+        <input type="password" name="senha" id="editSenha" placeholder="Nova Senha (deixe em branco para não alterar)">
+        <input type="tel" name="telefone" id="editTelefone" placeholder="Telefone" value="{{ usuario.telefone_user }}" pattern="[0-9()\-\s]+" title="Digite apenas números" maxlength="20" oninput="this.value=this.value.replace(/[^0-9()\-\s]/g,'');">
+        <input type="text" name="logradouro" id="editLogradouro" placeholder="Rua" value="{{ usuario.logradouro_user }}">
+        <input type="text" name="numero" id="editNumero" placeholder="Número" value="{{ usuario.numero_user }}">
+        <input type="text" name="bairro" id="editBairro" placeholder="Bairro" value="{{ usuario.bairro_user }}">
+        <input type="text" name="cidade" id="editCidade" placeholder="Cidade" value="{{ usuario.cidade_user }}">
+        <input type="text" name="estado" id="editEstado" placeholder="UF" maxlength="2" value="{{ usuario.estado_user }}">
+        <input type="text" name="cep" id="editCEP" placeholder="CEP" maxlength="9" value="{{ usuario.CEP_USER }}">
+        <select name="id_plano" id="editPlano" required>
+          <option value="">Plano</option>
+          {% for plano in planos %}
+          <option value="{{ plano.ID_PLANO }}" {% if usuario.ID_PLANO == plano.ID_PLANO %}selected{% endif %}>{{ plano.nome_plano }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="margin-top:16px; display:flex; gap:12px;">
+        <button type="submit" class="confirmar">Salvar</button>
+        <button type="button" class="cancelar" onclick="fecharModal('modalEditarConta')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Botão flutuante para abrir painel lateral de informações físicas -->
+<button id="btn-abrir-info-fisica" style="position:fixed;left:0;top:40%;z-index:1200;background:#001f5b;color:#fff;font-size:1.1em;font-weight:bold;padding:18px 12px 18px 8px;border-radius:0 16px 16px 0;border:none;box-shadow:2px 2px 8px #0003;cursor:pointer;transition:background 0.2s;">INFORMAÇÕES FÍSICAS</button>
+
+<!-- Painel lateral de informações físicas -->
+<div id="painel-info-fisica" class="painel-info-fisica-fechado">
+  <div class="painel-info-fisica-conteudo">
+    <button id="btn-fechar-info-fisica" style="position:absolute;top:12px;right:18px;font-size:1.6em;background:none;border:none;color:#001f5b;cursor:pointer;">&times;</button>
+    <h2 style="margin-top:0;">INFORMAÇÕES FÍSICAS</h2>
+    {% if datas_medicao and datas_medicao|length > 0 %}
+    <form method="get" style="margin-bottom:18px; text-align:center;">
+        <select name="data_medicao" id="data_medicao" onchange="this.form.submit()" style="padding:6px 14px; border-radius:6px; font-size:1em;">
+            {% for data in datas_medicao %}
+                <option value="{{ data }}" {% if data == data_escolhida %}selected{% endif %}>{{ data|replace('-', '/') }}</option>
+            {% endfor %}
+        </select>
+    </form>
+    {% endif %}
+    {% if infos_usuario and infos_usuario|length > 0 %}
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: flex-start;">
+        {% for info in infos_usuario %}
+            {% set imc = info.IMC|float if info.IMC else None %}
+            {% set imc_class =
+                'MAGREZA GRAVE' if imc is not none and imc < 16 else
+                'MAGREZA MODERADA' if imc is not none and imc < 17 else
+                'MAGREZA LEVE' if imc is not none and imc < 18.5 else
+                'PESO NORMAL' if imc is not none and imc < 25 else
+                'SOBREPESO' if imc is not none and imc < 30 else
+                'OBESIDADE GRAU I' if imc is not none and imc < 35 else
+                'OBESIDADE GRAU II (SEVERA)' if imc is not none and imc < 40 else
+                'OBESIDADE GRAU III (MÓRBIDA)' if imc is not none and imc >= 40 else ''
+            %}
+            {% set imc_color =
+                '#388e3c' if imc is not none and imc >= 18.5 and imc < 25 else
+                '#ff9800' if imc is not none and ((imc >= 16 and imc < 18.5) or (imc >= 25 and imc < 30)) else
+                '#d32f2f' if imc is not none and ((imc < 16) or (imc >= 30 and imc < 40)) else
+                '#b71c1c' if imc is not none and imc >= 40 else ''
+            %}
+            <div style="background: #f5f5f5; border-radius: 14px; box-shadow: 0 2px 8px #0001; padding: 18px 24px 12px 24px; min-width: 260px; max-width: 320px; margin-bottom: 12px; display: flex; flex-direction: column; align-items: center; color: #111;">
+                <div style="font-size: 1.1em; color: #232b4a; font-weight: bold; margin-bottom: 4px;">{{ info.DataMedicao.strftime('%d/%m/%Y') if info.DataMedicao else '' }}</div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em;"><b>Altura:</b> {{ info.Altura or '-' }} m</div>
+                    <div style="font-size: 1em;"><b>Peso:</b> {{ info.Peso or '-' }} kg</div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em; text-align: center; width: 100%;">
+                        <b>Gordura:</b> {{ info.GorduraCorporal or '-' }}%
+                        <br>
+                        <span class="gordura-class" style="font-size:0.95em; color:#111; font-weight:bold; display:inline-block; margin-top:2px; text-align:center; width:100%;">
+                            {{ info.ClassificacaoGordura if info.ClassificacaoGordura is not none else '-' }}
+                        </span>
+                    </div>
+                    <div style="font-size: 1em;"><b>Braço:</b> {{ info.Perimetro_Braquial or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Abdômen:</b> {{ info.Perimetro_Abdominal or '-' }} cm</div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; color: #111;">
+                    <div style="font-size: 1em;"><b>Tórax:</b> {{ info.Perimetro_Toracico or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Cintura:</b> {{ info.Perimetro_Cintura or '-' }} cm</div>
+                    <div style="font-size: 1em;"><b>Quadril:</b> {{ info.Perimetro_Quadril or '-' }} cm</div>
+                </div>
+                <div style="margin: 8px 0 4px 0; text-align: center;">
+                    <span class="imc">{{ info.IMC or '-' }}</span>
+                    <span class="imc-class" {% if imc_color %}style="color: {{ imc_color }};"{% endif %}>{{ imc_class }}</span>
+                </div>
+                {% if info.Observacoes %}
+                <div class="observacoes">{{ info.Observacoes }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p style="color:#888;">Nenhum dado físico cadastrado.</p>
+    {% endif %}
+    <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalInfoUsuario')">Adicionar Valor</button>
+  </div>
+</div>
+
+<!-- MODAL DE INFORMAÇÕES FÍSICAS -->
+<div id="modalInfoUsuario" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Adicionar Informações Físicas</h2>
+    <form method="POST" action="{{ url_for('usuarios.minha_conta') }}">
+      <input type="hidden" name="acao" value="incluir_info_usuario">
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <input type="number" step="0.01" name="altura" id="altura" placeholder="Altura (m)" min="0.5" max="3" style="width:120px;" required>
+        <input type="number" step="0.01" name="peso" id="peso" placeholder="Peso (kg)" min="0" max="600" style="width:120px;" required>
+        <input type="number" step="0.01" name="gordura" id="gordura" placeholder="Gordura (%)" min="0" max="100" style="width:120px;" required>
+        <input type="number" step="0.01" name="braquial" id="braquial" placeholder="Braço (cm)" min="0" max="100" style="width:120px;">
+        <input type="number" step="0.01" name="abdominal" id="abdominal" placeholder="Abdômen (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="toracico" id="toracico" placeholder="Tórax (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="cintura" id="cintura" placeholder="Cintura (cm)" min="0" max="200" style="width:120px;">
+        <input type="number" step="0.01" name="quadril" id="quadril" placeholder="Quadril (cm)" min="0" max="200" style="width:120px;">
+        <div style="position:relative; width:100%; display:flex; align-items:center; margin-top:8px;">
+          <input type="number" step="0.01" name="imc" placeholder="IMC" min="0" max="100" style="width:120px; background:#eee; color:#888;" readonly tabindex="-1">
+          <span id="imc-classificacao" style="flex:1; text-align:center; font-size:1.1em; font-weight:bold; letter-spacing:1px; display:block;"></span>
+        </div>
+      </div>
+      <div id="erro-validacao" style="color:#d32f2f; font-weight:bold; margin-top:6px; display:none;"></div>
+      <textarea name="observacoes" placeholder="Observações" style="width:100%; margin-top:8px; border-radius:6px; padding:6px;"></textarea>
+      <div style="margin-top:16px; display:flex; gap:12px;">
+        <button type="submit" class="confirmar">Salvar</button>
+        <button type="button" class="cancelar" onclick="fecharModal('modalInfoUsuario')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirModal(id) {
+  document.getElementById(id).classList.add('ativo');
+}
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('ativo');
+}
+
+// Validação dos campos do modal de informações físicas
+function validarCamposInfoUsuario() {
+  const altura = parseFloat(document.getElementById('altura').value.replace(',', '.'));
+  const peso = parseFloat(document.getElementById('peso').value.replace(',', '.'));
+  const gordura = parseFloat(document.getElementById('gordura').value.replace(',', '.'));
+  let erro = '';
+  if (isNaN(altura) || altura < 0.5 || altura > 3) {
+    erro = 'Altura deve ser entre 0,50m e 3,00m';
+  } else if (isNaN(peso) || peso < 0 || peso > 600) {
+    erro = 'Peso deve ser entre 0kg e 600kg';
+  } else if (isNaN(gordura) || gordura < 0 || gordura > 100) {
+    erro = 'Gordura deve ser entre 0% e 100%';
+  }
+  const erroDiv = document.getElementById('erro-validacao');
+  if (erro) {
+    erroDiv.textContent = erro;
+    erroDiv.style.display = 'block';
+    return false;
+  } else {
+    erroDiv.textContent = '';
+    erroDiv.style.display = 'none';
+    return true;
+  }
+}
+
+// Aplica validação ao submit do modal
+const formInfoUsuario = document.querySelector('#modalInfoUsuario form');
+if (formInfoUsuario) {
+  formInfoUsuario.addEventListener('submit', function(e) {
+    if (!validarCamposInfoUsuario()) {
+      e.preventDefault();
+    }
+  });
+}
+
+// Ações do botão flutuante e painel lateral de informações físicas
+const btnAbrirInfoFisica = document.getElementById('btn-abrir-info-fisica');
+const painelInfoFisica = document.getElementById('painel-info-fisica');
+const btnFecharInfoFisica = document.getElementById('btn-fechar-info-fisica');
+
+if (btnAbrirInfoFisica) {
+  btnAbrirInfoFisica.addEventListener('click', function() {
+    painelInfoFisica.classList.remove('painel-info-fisica-fechado');
+    painelInfoFisica.classList.add('painel-info-fisica-aberto');
+  });
+}
+
+if (btnFecharInfoFisica) {
+  btnFecharInfoFisica.addEventListener('click', function() {
+    painelInfoFisica.classList.remove('painel-info-fisica-aberto');
+    painelInfoFisica.classList.add('painel-info-fisica-fechado');
+  });
+}
+
+// Atualiza painel lateral de informações físicas ao salvar o modal
+const formInfoUsuario2 = document.querySelector('#modalInfoUsuario form');
+if (formInfoUsuario2) {
+  formInfoUsuario2.addEventListener('submit', function(e) {
+    if (!validarCamposInfoUsuario()) {
+      e.preventDefault();
+      return;
+    }
+    e.preventDefault();
+    const formData = new FormData(formInfoUsuario2);
+    fetch(formInfoUsuario2.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.text())
+    .then(html => {
+      // Atualiza o painel lateral com o novo HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const novoPainel = doc.querySelector('#painel-info-fisica .painel-info-fisica-conteudo');
+      if (novoPainel) {
+        document.querySelector('#painel-info-fisica .painel-info-fisica-conteudo').innerHTML = novoPainel.innerHTML;
+      }
+      // Atualiza as notificações (flash messages)
+      const novasFlash = doc.querySelectorAll('.flash-messages, .flash-message');
+      if (novasFlash && novasFlash.length > 0) {
+        novasFlash.forEach(function(msg) {
+          document.body.insertAdjacentHTML('afterbegin', msg.outerHTML);
+        });
+      }
+      fecharModal('modalInfoUsuario');
+    })
+    .catch(() => {
+      alert('Erro ao salvar informações físicas.');
+    });
+  });
+}
+</script>
 
     <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/minhaconta_fisica.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validacoes.js') }}"></script>
     
 
 </body>

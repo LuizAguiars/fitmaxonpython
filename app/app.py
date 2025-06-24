@@ -14,6 +14,7 @@ from routes.relatorios import relatorios_bp
 import threading
 import time
 from notifica_aulas import notificar_aulas
+from routes.pagamento import pagamento_bp
 
 
 app = Flask(__name__)
@@ -32,6 +33,8 @@ app.register_blueprint(treino_bp)
 app.register_blueprint(agendar_bp)
 app.register_blueprint(concluir_bp)
 app.register_blueprint(relatorios_bp)
+
+app.register_blueprint(pagamento_bp)
 
 
 def notificacao_background():

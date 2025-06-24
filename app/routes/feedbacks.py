@@ -85,12 +85,9 @@ def relatorios():
          SELECT 
         f.nota_user,
         f.Comentario,
-        f.id_user_feedback,
-        u.Nome_Unidade AS nome_unidade,
-        r.Nome_Regiao AS nome_regiao
+        u.Nome_Unidade AS nome_unidade
         FROM feedback f
         LEFT JOIN unidades u ON f.id_unidade = u.ID_Unidades
-        LEFT JOIN regiao r ON u.ID_Regiao = r.ID_Regiao
         WHERE f.Comentario IS NOT NULL AND f.Comentario != ''
         ORDER BY f.nota_user;
     """)
@@ -221,7 +218,7 @@ def feedback_comentarios(id_unidade):
         total = cursor.fetchone()['total']
         # Comentários paginados
         query = f'''
-            SELECT f.nota_user, f.Comentario, f.id_user_feedback, u.Nome_Unidade AS nome_unidade, usr.Nome_User AS nome_usuario
+            SELECT f.nota_user, f.Comentario, u.Nome_Unidade AS nome_unidade, usr.Nome_User AS nome_usuario
             {query_base}
             ORDER BY f.nota_user DESC, f.idfeedback DESC
             LIMIT %s OFFSET %s

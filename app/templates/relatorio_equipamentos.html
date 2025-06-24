@@ -67,12 +67,11 @@
     </div>
 
     <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+        <h1>RELATÓRIO DE EQUIPAMENTOS</h1>
     </div>
 
     <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
+        
         <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>
@@ -94,7 +93,9 @@
     <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for unidade in unidades %}
-        <option value="{{ unidade.ID_Unidades }}" {% if unidade_id == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
+        <option value="{{ unidade.ID_Unidades if unidade.ID_Unidades is defined else unidade.id_unidades }}" {% if unidade_id == (unidade.ID_Unidades|string if unidade.ID_Unidades is defined else unidade.id_unidades|string) %}selected{% endif %}>
+          {{ unidade.Nome_Unidade if unidade.Nome_Unidade is defined else unidade.nome_unidade if unidade.nome_unidade is defined else 'Sem nome' }}
+        </option>
       {% endfor %}
     </select>
     {% if unidade_nome %}<span style="margin-left:10px;">Unidade selecionada: <b>{{ unidade_nome }}</b></span>{% endif %}
@@ -104,22 +105,23 @@
   </form>
 
   <section class="relatorio-card">
-    <h2>Equipamento Mais Usado</h2>
-    {% if mais_usado %}
-      <p><b>{{ mais_usado.Nome_Equipamento }}</b> ({{ (mais_usado.total_minutos // 60) }}h {{ (mais_usado.total_minutos % 60) }}min)</p>
-    {% else %}
-      <p>Nenhum dado encontrado.</p>
-    {% endif %}
-  </section>
+  <h2>Equipamento Mais Usado</h2>
+  {% if mais_usado %}
+    <p><b>{{ mais_usado.nome }}</b> ({{ (mais_usado.total_minutos // 60) }}h {{ (mais_usado.total_minutos % 60) }}min)</p>
+  {% else %}
+    <p>Nenhum dado encontrado.</p>
+  {% endif %}
+</section>
 
-  <section class="relatorio-card">
-    <h2>Equipamento Menos Usado</h2>
-    {% if menos_usado %}
-      <p><b>{{ menos_usado.Nome_Equipamento }}</b> ({{ (menos_usado.total_minutos // 60) }}h {{ (menos_usado.total_minutos % 60) }}min)</p>
-    {% else %}
-      <p>Nenhum dado encontrado.</p>
-    {% endif %}
-  </section>
+<section class="relatorio-card">
+  <h2>Equipamento Menos Usado</h2>
+  {% if menos_usado %}
+    <p><b>{{ menos_usado.nome }}</b> ({{ (menos_usado.total_minutos // 60) }}h {{ (menos_usado.total_minutos % 60) }}min)</p>
+  {% else %}
+    <p>Nenhum dado encontrado.</p>
+  {% endif %}
+</section>
+
 
   <section class="relatorio-card">
     <h2>Todos os Equipamentos e Totais de Uso</h2>
@@ -160,6 +162,7 @@
   </section>
 </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <script src="{{ url_for('static', filename='js/relatoriofeedback.js') }}"></script>
   <script src="{{ url_for('static', filename='js/comentarios_feedback.js') }}"></script>
   <script src="{{ url_for('static', filename='js/flash.js') }}"></script>
@@ -189,6 +192,16 @@
             display: true,
             text: 'Total de Uso dos Equipamentos (em horas)',
             font: { size: 18 }
+          },
+          tooltip: { enabled: false }, // Desativa tooltip
+          datalabels: {
+            anchor: 'end',
+            align: 'start',
+            color: '#222',
+            font: { weight: 'bold', size: 14 },
+            formatter: function(value) {
+              return value;
+            }
           }
         },
         scales: {
@@ -201,8 +214,10 @@
             beginAtZero: true
           }
         }
-      }
+      },
+      plugins: [ChartDataLabels]
     });
   </script>
+  
 </body>
 </html>

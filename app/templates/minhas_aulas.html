@@ -23,12 +23,12 @@
         </form>
     </div>
 
-    <!-- Aqui vem o horário, abaixo da busca -->
-    <nav class="menu-logado">
+    <!-- Aqui vem o horário, abaixo da busca -->    <nav class="menu-logado">
       <a  href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
       <a  href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
       <a  href="{{ url_for('usuarios.minha_conta') }}">Minha Conta</a>
       <a  href="{{ url_for('usuarios.minhas_aulas') }}">Minhas Aulas</a>
+      <a  href="{{ url_for('usuarios.meus_relatorios') }}">Meus Relatórios</a>
       <a  href="{{ url_for('home.inicial_logado') }}">Voltar a Tela Inicial</a>
       <a  href="{{ url_for('feedbacks.feedbacks') }}">Realizar feedbacks</a>
   </nav>
@@ -128,11 +128,10 @@
         text-transform: uppercase;
         letter-spacing: 1px;
       }
-    </style>
-    <form method="get" class="filtros-aulas">
+    </style>    <form method="get" class="filtros-aulas" id="filtros-form">
       <label>
         ANO
-        <select name="ano">
+        <select name="ano" id="filtro-ano" onchange="aplicarFiltros()">
           <option value="">Todos</option>
           {% for ano in anos_disponiveis %}
             <option value="{{ ano }}" {% if request.args.get('ano') == ano|string %}selected{% endif %}>{{ ano }}</option>
@@ -141,7 +140,7 @@
       </label>
       <label>
         MÊS
-        <select name="mes">
+        <select name="mes" id="filtro-mes" onchange="aplicarFiltros()">
           <option value="">Todos</option>
           {% set meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'] %}
           {% for m in range(1,13) %}
@@ -151,7 +150,7 @@
       </label>
       <label>
         TIPO
-        <select name="tipo">
+        <select name="tipo" id="filtro-tipo" onchange="aplicarFiltros()">
           <option value="">Todos</option>
           {% for tipo in tipos_treino %}
             <option value="{{ tipo.idtipo_de_treino }}" {% if request.args.get('tipo') == tipo.idtipo_de_treino|string %}selected{% endif %}>{{ tipo.nome_tipo_treino }}</option>
@@ -160,56 +159,334 @@
       </label>
       <label>
         STATUS
-        <select name="status">
+        <select name="status" id="filtro-status" onchange="aplicarFiltros()">
           <option value="">Todos</option>
           <option value="Agendado" {% if request.args.get('status') == 'Agendado' %}selected{% endif %}>Agendado</option>
           <option value="Concluído" {% if request.args.get('status') == 'Concluído' %}selected{% endif %}>Concluído</option>
           <option value="Cancelado" {% if request.args.get('status') == 'Cancelado' %}selected{% endif %}>Cancelado</option>
           <option value="Ausente" {% if request.args.get('status') == 'Ausente' %}selected{% endif %}>Ausente</option>
         </select>
-      </label>
-      <label style="min-width:unset;">
+      </label>      <label style="min-width:unset;">
         <span>Itens</span>
-        <select name="per_page" style="min-width:60px;">
-          {% for n in [4, 8, 12, 16] %}
+        <select name="per_page" id="filtro-per-page" style="min-width:60px;" onchange="aplicarFiltros()">
+          {% for n in [4, 8, 12, 16, 32, 64, 128] %}
             <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
           {% endfor %}
         </select>
       </label>
-      <button type="submit">Filtrar</button>
-      <!-- Mantém os outros filtros ao navegar -->
-      <input type="hidden" name="ano" value="{{ request.args.get('ano','') }}">
-      <input type="hidden" name="mes" value="{{ request.args.get('mes','') }}">
-      <input type="hidden" name="tipo" value="{{ request.args.get('tipo','') }}">
-      <input type="hidden" name="status" value="{{ request.args.get('status','') }}">
+      <button type="button" onclick="limparFiltros()" style="background: #6c757d;">Limpar</button>
     </form>
+      <script>
+      // Função para verificar se pode cancelar a aula (mínimo 1 hora antes)
+      function podeCancelarAula(dataAula, horaAula) {
+        const agora = new Date();
+        const dataHoraAula = new Date(dataAula + 'T' + horaAula);
+        const umaHora = 60 * 60 * 1000; // 1 hora em milissegundos
+        
+        const tempoRestante = dataHoraAula.getTime() - agora.getTime();
+        
+        if (tempoRestante < umaHora) {
+          alert('Não é possível cancelar a aula com menos de 1 hora de antecedência.\n\n' +
+                'Aula marcada para: ' + dataHoraAula.toLocaleString('pt-BR') + '\n' +
+                'Horário atual: ' + agora.toLocaleString('pt-BR'));
+          return false;
+        }
+        
+        const horas = Math.floor(tempoRestante / (1000 * 60 * 60));
+        const minutos = Math.floor((tempoRestante % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return confirm('Tem certeza que deseja cancelar esta aula?\n\n' +
+                      'Aula marcada para: ' + dataHoraAula.toLocaleString('pt-BR') + '\n' +
+                      'Tempo restante: ' + horas + 'h ' + minutos + 'min');
+      }
+      
+      // Função para verificar se o botão de cancelar deve estar habilitado
+      function verificarBotoesCancelar() {
+        const botoesCancelar = document.querySelectorAll('.cancel-btn');
+        botoesCancelar.forEach(botao => {
+          const form = botao.closest('form');
+          const dataAula = form.querySelector('input[name="data_aula"]').value;
+          const horaAula = form.querySelector('input[name="hora_aula"]').value;
+          
+          const agora = new Date();
+          const dataHoraAula = new Date(dataAula + 'T' + horaAula);
+          const umaHora = 60 * 60 * 1000;
+          
+          const tempoRestante = dataHoraAula.getTime() - agora.getTime();
+          
+          if (tempoRestante < umaHora) {
+            botao.disabled = true;
+            botao.style.background = '#ccc';
+            botao.style.cursor = 'not-allowed';
+            botao.textContent = 'Expirado';
+            botao.title = 'Não é possível cancelar com menos de 1 hora de antecedência';
+          }
+        });
+      }
+      
+      // Função para aplicar filtros automaticamente
+      function aplicarFiltros() {
+        const form = document.getElementById('filtros-form');
+        const params = new URLSearchParams();
+        
+        const ano = document.getElementById('filtro-ano').value;
+        const mes = document.getElementById('filtro-mes').value;
+        const tipo = document.getElementById('filtro-tipo').value;
+        const status = document.getElementById('filtro-status').value;
+        const perPage = document.getElementById('filtro-per-page').value;
+        
+        if (ano) params.append('ano', ano);
+        if (mes) params.append('mes', mes);
+        if (tipo) params.append('tipo', tipo);
+        if (status) params.append('status', status);
+        if (perPage) params.append('per_page', perPage);
+        
+        // Redireciona com os novos filtros
+        window.location.href = '{{ url_for("usuarios.minhas_aulas") }}?' + params.toString();
+      }
+      
+      // Função para limpar todos os filtros
+      function limparFiltros() {
+        window.location.href = '{{ url_for("usuarios.minhas_aulas") }}';
+      }
+      
+      // Salva os filtros atuais no localStorage
+      function salvarFiltros() {
+        const filtros = {
+          ano: document.getElementById('filtro-ano').value,
+          mes: document.getElementById('filtro-mes').value,
+          tipo: document.getElementById('filtro-tipo').value,
+          status: document.getElementById('filtro-status').value,
+          per_page: document.getElementById('filtro-per-page').value
+        };
+        localStorage.setItem('filtros_minhas_aulas', JSON.stringify(filtros));
+      }
+      
+      // Carrega os filtros salvos
+      function carregarFiltros() {
+        const filtrosSalvos = localStorage.getItem('filtros_minhas_aulas');
+        if (filtrosSalvos && !window.location.search) {
+          const filtros = JSON.parse(filtrosSalvos);
+          const params = new URLSearchParams();
+          
+          if (filtros.ano) params.append('ano', filtros.ano);
+          if (filtros.mes) params.append('mes', filtros.mes);
+          if (filtros.tipo) params.append('tipo', filtros.tipo);
+          if (filtros.status) params.append('status', filtros.status);
+          if (filtros.per_page) params.append('per_page', filtros.per_page);
+          
+          if (params.toString()) {
+            window.location.href = '{{ url_for("usuarios.minhas_aulas") }}?' + params.toString();
+          }
+        }
+      }
+      
+      // Salva os filtros sempre que a página carrega
+      window.addEventListener('load', function() {
+        salvarFiltros();
+      });
+      
+      // Modifica os formulários de cancelar para manter os filtros
+      function modificarFormsCancelar() {
+        const forms = document.querySelectorAll('form[action*="cancelar_aula"]');
+        forms.forEach(form => {
+          // Adiciona campos hidden com os filtros atuais
+          const filtros = ['ano', 'mes', 'tipo', 'status', 'per_page'];
+          filtros.forEach(filtro => {
+            const valor = new URLSearchParams(window.location.search).get(filtro);
+            if (valor) {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'redirect_' + filtro;
+              input.value = valor;
+              form.appendChild(input);
+            }
+          });
+          
+          // Modifica a ação do formulário para incluir um parâmetro de redirecionamento
+          const originalAction = form.action;
+          form.addEventListener('submit', function(e) {
+            const currentParams = window.location.search;
+            if (currentParams) {
+              const separator = originalAction.includes('?') ? '&' : '?';
+              form.action = originalAction + separator + 'redirect_to=' + encodeURIComponent(window.location.pathname + currentParams);
+            }
+          });
+        });
+      }
+      
+      // Executa quando a página carrega
+      document.addEventListener('DOMContentLoaded', function() {
+        carregarFiltros();
+        modificarFormsCancelar();
+        verificarBotoesCancelar();
+        
+        // Atualiza os botões a cada minuto
+        setInterval(verificarBotoesCancelar, 60000);
+      });
+    </script>
+    
+    <style>
+      .aulas-table {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+      }
+      .aulas-table table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95em;
+      }      .aulas-table th {
+        background: #001772;
+        color: #fff;
+        font-weight: bold;
+        padding: 14px 12px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.88em;
+        border-bottom: 2px solid #e33500;
+      }
+      .aulas-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #232b4a;
+        vertical-align: middle;
+      }
+      .aulas-table tr:hover {
+        background: #f8f9fa;
+      }
+      .aulas-table tr:nth-child(even) {
+        background: #fafbfc;
+      }
+      .aulas-table tr:nth-child(even):hover {
+        background: #f0f2f5;
+      }
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.82em;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+      }
+      .status-badge.agendado {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #bbdefb;
+      }      .status-badge.concluido,
+      .status-badge.concluído {
+        background: #e8f5e8;
+        color: #2e7d32;
+        border: 1px solid #c8e6c9;
+      }
+      .status-badge.cancelado {
+        background: #fff3e0;
+        color: #f57c00;
+        border: 1px solid #ffcc02;
+      }
+      .status-badge.ausente {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+      }
+      .id-aula {
+        color: #e33500;
+        font-weight: bold;
+        font-size: 0.9em;
+      }      .cancel-btn {
+        background: #e33500;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-size: 0.82em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .cancel-btn:hover:not(:disabled) {
+        background: #b82a00;
+      }
+      .cancel-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+      @media (max-width: 768px) {
+        .aulas-table {
+          margin: 0 10px;
+          border-radius: 8px;
+        }
+        .aulas-table th,
+        .aulas-table td {
+          padding: 8px 6px;
+          font-size: 0.85em;
+        }
+        .aulas-table th {
+          font-size: 0.78em;
+        }
+      }
+    </style>
+    
     {% if aulas %}
-      <div class="minhas-aulas-cards">
-        {% for aula in aulas %}
-          <div class="aula-card {{ aula.status|lower }}">
-            <div style="color:#e33500; font-weight:bold; margin-bottom:4px;">#{{ aula.idAgendar_Treino }}</div>
-            <h3 style="margin-left: 0; padding-left: 0;">{{ aula.nome_tipo_treino }}</h3>
-            <p style="color:#232b4a; margin-bottom: 2px;"><b>Personal:</b> {{ aula.Nome_Personal }}</p>
-            <p style="color:#232b4a;"><b>Data:</b> {{ aula.DataTreino.strftime('%d/%m/%Y') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino }} | <b>Hora:</b> {% if aula.HoraTreino.__class__.__name__ == 'time' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}{{ "%02d" % (aula.HoraTreino.seconds // 3600) }}:{{ "%02d" % ((aula.HoraTreino.seconds // 60) % 60) }}{% else %}{{ aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino }}{% endif %}</p>
-            <p style="color:#232b4a;"><b>Status:</b> <span class="status {{ aula.status|lower }}">{{ 'Falta' if aula.status in ['Ausente','Falta','Não Concluído'] else aula.status }}</span></p>
-            {% if aula.status == 'Agendado' %}
-              {% set data_str = aula.DataTreino.strftime('%Y-%m-%d') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino %}
-              {% if aula.HoraTreino.__class__.__name__ == 'time' %}
-                {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
-              {% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}
-                {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
-              {% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}
-                {% set hora_str = ("%02d" % (aula.HoraTreino.seconds // 3600)) ~ ':' ~ ("%02d" % ((aula.HoraTreino.seconds // 60) % 60)) %}
-              {% else %}
-                {% set hora_str = aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino %}
-              {% endif %}
-              <form method="POST" action="{{ url_for('usuarios.cancelar_aula') }}" style="margin-top: 8px; display:inline;" onsubmit="return podeCancelarAula('{{ data_str }}', '{{ hora_str }}')">
-                <input type="hidden" name="id_agenda" value="{{ aula.idAgendar_Treino }}">
-                <button type="submit" class="cancel-btn" id="cancel-btn-{{ loop.index }}">Cancelar Aula</button>
-              </form>
-            {% endif %}
-          </div>
-        {% endfor %}
+      <div class="aulas-table">
+        <table>
+          <thead>            <tr>
+              <th>Codigo</th>
+              <th>Tipo de Treino</th>
+              <th>Personal</th>
+              <th>Data</th>
+              <th>Hora</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for aula in aulas %}
+              <tr>
+                <td><span class="id-aula">#{{ aula.idAgendar_Treino }}</span></td>
+                <td><strong>{{ aula.nome_tipo_treino }}</strong></td>
+                <td>{{ aula.Nome_Personal }}</td>
+                <td>{{ aula.DataTreino.strftime('%d/%m/%Y') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino }}</td>
+                <td>{% if aula.HoraTreino.__class__.__name__ == 'time' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}{{ aula.HoraTreino.strftime('%H:%M') }}{% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}{{ "%02d" % (aula.HoraTreino.seconds // 3600) }}:{{ "%02d" % ((aula.HoraTreino.seconds // 60) % 60) }}{% else %}{{ aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino }}{% endif %}</td>
+                <td>
+                  <span class="status-badge {{ aula.status|lower }}">
+                    {{ 'Falta' if aula.status in ['Ausente','Falta','Não Concluído'] else aula.status }}
+                  </span>
+                </td>                <td>
+                  {% if aula.status == 'Agendado' %}
+                    {% set data_str = aula.DataTreino.strftime('%Y-%m-%d') if aula.DataTreino.__class__.__name__ in ['date', 'datetime'] else aula.DataTreino %}
+                    {% if aula.HoraTreino.__class__.__name__ == 'time' %}
+                      {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
+                    {% elif aula.HoraTreino.__class__.__name__ == 'datetime' %}
+                      {% set hora_str = aula.HoraTreino.strftime('%H:%M') %}
+                    {% elif aula.HoraTreino.__class__.__name__ == 'timedelta' %}
+                      {% set hora_str = ("%02d" % (aula.HoraTreino.seconds // 3600)) ~ ':' ~ ("%02d" % ((aula.HoraTreino.seconds // 60) % 60)) %}
+                    {% else %}
+                      {% set hora_str = aula.HoraTreino[:5] if ':' in aula.HoraTreino else aula.HoraTreino %}
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('usuarios.cancelar_aula') }}" style="display:inline;" onsubmit="return podeCancelarAula('{{ data_str }}', '{{ hora_str }}')">
+                      <input type="hidden" name="id_agenda" value="{{ aula.idAgendar_Treino }}">
+                      <input type="hidden" name="data_aula" value="{{ data_str }}">
+                      <input type="hidden" name="hora_aula" value="{{ hora_str }}">
+                      <button type="submit" class="cancel-btn" id="cancel-btn-{{ loop.index }}">Cancelar</button>
+                    </form>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
       <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin:24px 0;">
         <div style="background:rgba(0,31,91,0.82); border-radius:14px; padding:10px 28px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 8px rgba(0,31,91,0.10);">

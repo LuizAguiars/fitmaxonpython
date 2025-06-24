@@ -279,9 +279,7 @@
     document.getElementById('btnMenuHamburguer').classList.remove('menu-oculto');
     document.getElementById('menuOverlay').classList.remove('ativo');
   }
-</script>
 
-<script>
   document.addEventListener('DOMContentLoaded', () => {
     const table = document.querySelector('.tabela-unidades');
     const headers = table.querySelectorAll('th');
@@ -335,6 +333,17 @@
       header.addEventListener('mouseleave', () => {
         icon.style.visibility = 'hidden';
       });
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const camposData = [
+      document.querySelector('#modalIncluir input[name="data_compra"]'),
+      document.querySelector('#modalEditar input[name="data_compra"]')
+    ];
+    camposData.forEach(function(campo) {
+      if (campo) campo.max = hoje;
     });
   });
 </script>

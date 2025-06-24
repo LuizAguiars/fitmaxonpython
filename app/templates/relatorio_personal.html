@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatório de Personais - Fitmax Gym</title>
@@ -64,6 +65,18 @@
   <div class="logo">
     <img src="{{ url_for('static', filename='IMG/logo.png') }}" alt="FitmaxLogo">
   </div>
+  
+  <div class="search-container">
+      <h1>RELATÓRIO DE PERSONAIS</h1>
+  </div>
+  
+  <div class="usuario-logado">
+    
+      <form method="POST" action="{{ url_for('auth.logout') }}">
+        <button type="submit">Sair</button>
+      </form>
+  </div>
+
   <nav class="menu-logado">
     <a href="{{ url_for('home.painel_gestor') }}">Painel do Gestor</a>
     <a href="{{ url_for('home.painel_personal') }}">Painel do Personal</a>
@@ -72,16 +85,16 @@
   </nav>
 </header>
 <main>
-  <form method="get" action="" class="relatorio-card">
+  <form id="filtro-unidade-mes-form" method="get" action="" class="relatorio-card" autocomplete="off">
     <label for="unidade_id"><strong>Filtrar por Unidade:</strong></label>
-    <select name="unidade_id" id="unidade_id" onchange="this.form.submit()">
+    <select name="unidade_id" id="unidade_id">
       <option value="">Todas</option>
       {% for unidade in unidades %}
         <option value="{{ unidade.ID_Unidades }}" {% if unidade_id == unidade.ID_Unidades|string %}selected{% endif %}>{{ unidade.Nome_Unidade }}</option>
       {% endfor %}
     </select>
     <label for="mes" style="margin-left:20px;"><strong>Filtrar por Mês:</strong></label>
-    <input type="month" name="mes" id="mes" value="{{ mes }}" onchange="this.form.submit()" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #ccc;">
+    <input type="month" name="mes" id="mes" value="{{ mes }}" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #ccc;" min="2000-01" max="2099-12">
   </form>
 
   <section class="relatorio-card">
@@ -137,6 +150,34 @@
       </tbody>
     </table>
   </section>
+
+  <section class="relatorio-card">
+    <h2>Tempo Ocioso dos Personais</h2>
+    <table id="tabela-ocioso">
+      <thead>
+        <tr>
+          <th onclick="ordenarTabela(0)">Personal</th>
+          <th onclick="ordenarTabela(1)">Tempo Disponível Diário</th>
+          <th onclick="ordenarTabela(2)">Tempo de Trabalho Semanal</th>
+          <th onclick="ordenarTabela(3)">Tempo Ocioso do Dia</th>
+          <th>Tempo Ocioso Mensal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for personal in tempo_ocioso_personais %}
+          <tr>
+            <td>{{ personal.Nome_Personal }}</td>
+            <td data-valor="{{ personal.tempo_disponivel }}">{{ personal.tempo_disponivel }}min / {{ personal.tempo_disponivel_horas }}</td>
+            <td data-valor="{{ personal.tempo_utilizado }}">{{ personal.tempo_utilizado }}min / {{ personal.tempo_utilizado_horas }}</td>
+            <td data-valor="{{ personal.tempo_ocioso }}">{{ personal.tempo_ocioso }}min / {{ personal.tempo_ocioso_horas }}</td>
+            <td data-valor="{{ personal.tempo_ocioso_mensal }}">{{ personal.tempo_ocioso_mensal }}min / {{ personal.tempo_ocioso_mensal_horas }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">Nenhum dado encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
 </main>
 <script>
   var nomesPersonais = JSON.parse('{{ lista_personais | map(attribute="Nome_Personal") | list | tojson | safe }}');
@@ -162,7 +203,17 @@
           display: true,
           text: 'Total de Aulas por Personal',
           font: { size: 18 }
-        }
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: '#222',
+          font: { weight: 'bold', size: 14 },
+          formatter: function(value) {
+            return value;
+          }
+        },
+        tooltip: { enabled: false }
       },
       scales: {
         x: {
@@ -174,8 +225,55 @@
           beginAtZero: true
         }
       }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // Remover AJAX e usar apenas submit automático para evitar problemas de atualização do filtro
+  document.addEventListener('DOMContentLoaded', function() {
+    var unidadeSelect = document.getElementById('unidade_id');
+    var mesInput = document.getElementById('mes');
+    var form = document.getElementById('filtro-unidade-mes-form');
+    if (unidadeSelect) {
+      unidadeSelect.onchange = function() { form.submit(); };
+    }
+    if (mesInput) {
+      mesInput.onchange = function() { form.submit(); };
     }
   });
+
+  // Ordenação da tabela de tempo ocioso (decrescente por padrão)
+  document.addEventListener('DOMContentLoaded', function() {
+    ordenarTabela(3, true); // Ordena por tempo ocioso decrescente ao carregar
+  });
+
+  // Função para ordenar tabela por coluna (crescente/decrescente ao clicar)
+  let ordemColunas = [null, null, null, null]; // null: não ordenado, true: crescente, false: decrescente
+  function ordenarTabela(indice, forcarDecrescente) {
+    var tabela = document.getElementById('tabela-ocioso');
+    var tbody = tabela.tBodies[0];
+    var linhas = Array.from(tbody.rows);
+    let isNumero = indice > 0; // Colunas 1,2,3 são numéricas
+
+    // Alterna ordem ou força decrescente se solicitado
+    if (forcarDecrescente !== undefined) {
+      ordemColunas[indice] = false;
+    } else {
+      ordemColunas[indice] = ordemColunas[indice] === null ? false : !ordemColunas[indice];
+    }
+    let crescente = ordemColunas[indice];
+
+    linhas.sort(function(a, b) {
+      let va = isNumero ? parseInt(a.cells[indice].getAttribute('data-valor')) : a.cells[indice].innerText.toLowerCase();
+      let vb = isNumero ? parseInt(b.cells[indice].getAttribute('data-valor')) : b.cells[indice].innerText.toLowerCase();
+      if (va < vb) return crescente ? -1 : 1;
+      if (va > vb) return crescente ? 1 : -1;
+      return 0;
+    });
+
+    // Remove linhas e reinsere ordenadas
+    linhas.forEach(linha => tbody.appendChild(linha));
+  }
 </script>
 </body>
 </html>

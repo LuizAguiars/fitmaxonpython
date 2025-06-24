@@ -13,8 +13,8 @@
     </div>
 
 
-    
-    <h1>Relatório de Avaliações</h1>
+
+    <h1>RELATÓRIO DE AVALIAÇÕES</h1>
 
     <form action="/logout" method="POST">
       <button type="submit">Sair</button>
@@ -33,10 +33,14 @@
       <a href="{{ url_for('feedbacks.feedbackstar') }}" class="btn grande">RELATORIOS DE FEEDBACKS</a>
     </div>
     <div class="botao-imagem">
-      <a href="{{ url_for('equipamentos.relatorio_equipamentos') }}" class="btn grande">RELATÓRIOS DE EQUIPAMENTOS</a>
+<a href="{{ url_for('relatorios.relatorio_equipamentos') }}" class="btn grande">RELATÓRIOS DE EQUIPAMENTOS</a>
+
     </div>
     <div class="botao-imagem">
       <a href="{{ url_for('relatorios.relatorio_personal') }}" class="btn grande">RELATÓRIOS DE PERSONAIS</a>
+    </div>
+    <div class="botao-imagem">
+      <a href="{{ url_for('relatorios.relatorio_usuarios') }}" class="btn grande">RELATÓRIOS DE USUARIOS</a>
     </div>
   </div>
 

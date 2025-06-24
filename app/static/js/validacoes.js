@@ -109,8 +109,32 @@ function validarCapacidade(capacidade) {
   return !isNaN(capacidade) && capacidade > 0;
 }
 
+// Validação de idade mínima genérica
+function validarIdadeMinima(data, idadeMinima) {
+  const dataObj = new Date(data);
+  if (isNaN(dataObj.getTime())) return false;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - dataObj.getFullYear();
+  const m = hoje.getMonth() - dataObj.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < dataObj.getDate())) {
+    idade--;
+  }
+  return idade >= idadeMinima;
+}
+
 // Aplicação das máscaras e validações nos campos
 document.addEventListener("DOMContentLoaded", function() {
+  // Validação de idade mínima apenas em campos com classe "validar-idade-personal"
+  document.querySelectorAll('.validar-idade-personal').forEach(input => {
+    input.addEventListener('change', function () {
+      this.setCustomValidity(
+        validarIdadeMinima(this.value, 20)
+          ? ''
+          : 'Personal deve ter pelo menos 20 anos completos.'
+      );
+    });
+  });
+
   // Máscaras
   const mascaraCPF = (value) => {
     value = value.replace(/\D/g, '').slice(0, 11); // Limita a 11 dígitos
@@ -181,11 +205,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  document.querySelectorAll('input[type="date"]').forEach(input => {
-    input.addEventListener('change', function() {
-      this.setCustomValidity(validarData(this.value) ? '' : 'Data inválida');
-    });
-  });
+
+
 
   document.querySelectorAll('input[name="valor"]').forEach(input => {
     input.addEventListener('input', function() {
@@ -281,9 +302,27 @@ document.addEventListener("DOMContentLoaded", function() {
           formValido = false;
         }
 
-        if (campo.type === 'date' && !validarData(campo.value)) {
-          campo.setCustomValidity('Data inválida');
-          formValido = false;
+        // Validação de datas
+        if (campo.type === 'date') {
+          // Só valida idade mínima para data_nascimento
+          if (isPersonalForm && campo.name === 'data_nascimento') {
+            if (!validarIdadeMinima(campo.value, 20)) {
+              campo.setCustomValidity('Personal deve ter pelo menos 20 anos completos.');
+              formValido = false;
+            } else {
+              campo.setCustomValidity('');
+            }
+          } else if (campo.name !== 'data_nascimento') {
+            // Para outros campos date (ex: certificado_data), só valida se é uma data válida (não futura)
+            const dataObj = new Date(campo.value);
+            const hoje = new Date();
+            if (isNaN(dataObj.getTime()) || dataObj > hoje) {
+              campo.setCustomValidity('Data inválida');
+              formValido = false;
+            } else {
+              campo.setCustomValidity('');
+            }
+          }
         }
 
         if (campo.name === 'valor' && !validarValor(campo.value)) {
@@ -425,4 +464,61 @@ document.addEventListener('DOMContentLoaded', function() {
       overlay.classList.remove('ativo');
     });
   }
+});
+
+// ===== Validações específicas para inclusão/edição de unidade =====
+
+// Permitir apenas letras e espaços para Nome, Logradouro, Cidade, Estado
+document.addEventListener('DOMContentLoaded', function() {
+  // Nome da unidade (apenas letras e espaços)
+  document.querySelectorAll('input[name="nome"]').forEach(input => {
+    const form = input.closest('form');
+    const isUnidadeForm = form && (form.action.includes('unidade') || form.action.includes('gerenciar_unidade'));
+    if (isUnidadeForm) {
+      input.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+        this.setCustomValidity(this.value.length > 0 ? '' : 'Nome inválido');
+      });
+    }
+  });
+
+  // Logradouro (apenas letras e espaços)
+  document.querySelectorAll('input[name="logradouro"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Logradouro inválido');
+    });
+  });
+
+  // Cidade (apenas letras e espaços)
+  document.querySelectorAll('input[name="cidade"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Cidade inválida');
+    });
+  });
+
+  // Estado (apenas letras e espaços)
+  document.querySelectorAll('input[name="estado"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ' ]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Estado inválido');
+    });
+  });
+
+  // Número (apenas números)
+  document.querySelectorAll('input[name="numero"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '');
+      this.setCustomValidity(this.value.length > 0 ? '' : 'Número inválido');
+    });
+  });
+
+  // CNPJ (apenas números, 14 dígitos)
+  document.querySelectorAll('input[name="cnpj"]').forEach(input => {
+    input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 14);
+      this.setCustomValidity(this.value.length === 14 ? '' : 'CNPJ deve ter 14 dígitos numéricos');
+    });
+  });
 });

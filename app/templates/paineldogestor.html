@@ -15,12 +15,11 @@
     </div>
 
     <div class="search-container">
-        <input type="text" placeholder="Pesquisar..." />
-        <button><a href="../TELA-agendar-aula/agendar-aula.html" style="text-decoration: none;">🔍</a></button>
+        <h1>PAINEL DO GESTOR</h1>
     </div>
 
     <div class="usuario-logado">
-        <p>Olá, {{ nome }} 👋</p>
+        
         <form method="POST" action="{{ url_for('auth.logout') }}">
             <button type="submit">Sair</button>
         </form>
@@ -87,7 +86,7 @@
       <div class="imagem-overlay">
         <img src="{{ url_for('static', filename='IMG/relatorio.webp') }}" alt="Relatórios">
       </div>
-      <a href="{{ url_for('relatorios.utilizacao_equipamentos') }}" class="btn grande">Relatórios</a>
+      <a href="{{ url_for('feedbacks.relatorios') }}" class="btn grande">Relatórios</a>
     </div>
   </div>
   
