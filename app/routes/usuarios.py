@@ -51,6 +51,39 @@ def minha_conta():
         # Se der erro, não expira nada, só segue
         pass
 
+    # Processa simulação de pagamento
+    if request.method == 'POST' and request.form.get('acao') == 'simular_pagamento':
+        try:
+            # Buscar valor do plano do usuário
+            cursor.execute("""
+                SELECT p.valor_plano, p.duracao_meses 
+                FROM usuario u 
+                JOIN plano p ON u.ID_PLANO = p.ID_PLANO 
+                WHERE u.ID_User = %s
+            """, (user_id,))
+            plano_info = cursor.fetchone()
+
+            if plano_info:
+                # Atualizar status de pagamento
+                data_pagamento = datetime.now().date()
+                cursor.execute("""
+                    UPDATE usuario 
+                    SET pagou_mes_atual = 1, data_pagamento_mes = %s 
+                    WHERE ID_User = %s
+                """, (data_pagamento, user_id))
+                db.commit()
+
+                flash(
+                    f'Pagamento realizado com sucesso! Valor: R$ {plano_info["valor_plano"]:.2f}', 'success')
+            else:
+                flash('Erro: Usuário não possui plano associado.', 'error')
+
+        except Exception as e:
+            db.rollback()
+            flash(f'Erro ao simular pagamento: {str(e)}', 'error')
+
+        return redirect(url_for('usuarios.minha_conta'))
+
     # Processa inclusão de info_usuario
     if request.method == 'POST' and request.form.get('acao') == 'incluir_info_usuario':
         altura = request.form.get('altura') or None
@@ -213,14 +246,22 @@ def minha_conta():
         except Exception as e:
             db.rollback()
             flash(f'Erro ao atualizar dados da conta: {str(e)}', 'error')
+            # Buscar todos os planos para o modal de edição de conta
             return redirect(url_for('usuarios.minha_conta'))
-
-    # Buscar todos os planos para o modal de edição de conta
     cursor.execute("SELECT * FROM plano")
     planos = cursor.fetchall()
 
+    # Buscar valor do plano do usuário atual
+    plano_valor = None
+    if usuario and usuario.get('ID_PLANO'):
+        cursor.execute(
+            "SELECT valor_plano FROM plano WHERE ID_PLANO = %s", (usuario['ID_PLANO'],))
+        plano_info = cursor.fetchone()
+        if plano_info:
+            plano_valor = plano_info['valor_plano']
+
     db.close()
-    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida, mes_nome=mes_nome, proximo_vencimento=proximo_vencimento, planos=planos)
+    return render_template('minhaconta.html', usuario=usuario, aulas=aulas, infos_usuario=infos_filtradas, datas_medicao=datas_medicao_unicas, data_escolhida=data_escolhida, mes_nome=mes_nome, proximo_vencimento=proximo_vencimento, planos=planos, plano_valor=plano_valor)
 
 
 # Adicionando lógica para filtrar por plano e status

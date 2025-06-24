@@ -2,10 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitmax Gym</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Fitmax Gym</title>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/minhaconta.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
 </head>
 <body>
@@ -41,10 +41,9 @@
 
 
 <div class="minha-conta">
-    <h2>MEUS DADOS</h2>
-    <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
+    <h2>MEUS DADOS</h2>    <p><strong>Nome:</strong> {{ usuario.Nome_User }}</p>
     <p><strong>Email:</strong> {{ usuario.Email_user }}</p>
-    <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento }}</p>
+    <p><strong>Data de Nascimento:</strong> {{ usuario.Data_Nascimento.strftime('%d/%m/%Y') if usuario.Data_Nascimento else 'Não informado' }}</p>
     <p><strong>CPF:</strong> {{ usuario.cpf_user }}</p>
     <p><strong>Endereço:</strong> 
         {% if usuario.logradouro_user or usuario.numero_user or usuario.bairro_user or usuario.cidade_user or usuario.estado_user %}
@@ -59,14 +58,18 @@
         {% elif usuario.sexo_user == 'F' %}Feminino
         {% else %}Outro{% endif %}
     </p>
-    <p><strong>Status:</strong> {{ usuario.status_cliente }}</p>
-    <p><strong>Mensalidade:</strong> 
+    <p><strong>Status:</strong> {{ usuario.status_cliente }}</p>    <p><strong>Mensalidade:</strong> 
         {% if usuario.pagou_mes_atual %}
             <span style="color:#388e3c;font-weight:bold;">Paga</span>
             <br>
             <span style="color:#fff;font-size:1em;">Mensalidade de <b style="color:#ffd600;">{{ mes_nome }}</b> paga.<br>Próximo vencimento: <b style="color:#ffd600;">{{ proximo_vencimento }}</b></span>
         {% else %}
             <span style="color:#d32f2f;font-weight:bold;">Em aberto</span>
+            <br>
+            <span style="color:#fff;font-size:0.9em;">Valor: <b style="color:#ffd600;">R$ {{ "%.2f"|format(plano_valor) if plano_valor else '0,00' }}</b></span>
+            <br>            <button style="background:#28a745; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="simularPagamento()">
+                <i class="fas fa-credit-card"></i> Pagar Mensalidade
+            </button>
         {% endif %}
     </p>
     <button style="background:#232b4a; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:1rem; font-weight:500; cursor:pointer; margin-top:8px;" onclick="abrirModal('modalEditarConta')">Editar Conta</button>
@@ -216,6 +219,24 @@ function abrirModal(id) {
 }
 function fecharModal(id) {
   document.getElementById(id).classList.remove('ativo');
+}
+
+// Função para simular pagamento
+function simularPagamento() {
+  if (confirm('Deseja efetuar o pagamento da mensalidade?')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ url_for('usuarios.minha_conta') }}";
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'acao';
+    input.value = 'simular_pagamento';
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+  }
 }
 
 // Validação dos campos do modal de informações físicas
